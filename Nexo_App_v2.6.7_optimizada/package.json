@@ -1,0 +1,52 @@
+{
+  "name": "nexoapp",
+  "version": "2.6.17",
+  "description": "Nexo.app - Sistema de parqueadero (offline)",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.nexoapp.facaparking",
+    "productName": "Nexo.app",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "icon.ico",
+      "icon.png",
+      "login.html",
+      "index.html",
+      "ParkApp.html",
+      "mensualidades.html",
+      "caja.html",
+      "pagos.html",
+      "egresos.html",
+      "reportes.html",
+      "configuracion.html",
+      "registro.html",
+      "pendientes.html",
+      "mvc/**/*",
+      "assets/**/*",
+      "fonts/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "Nexo.app",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}

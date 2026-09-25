@@ -1,0 +1,2886 @@
+<!DOCTYPE html>
+<!-- saved from url=(0025)ParkApp.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <link rel="apple-touch-icon" sizes="76x76" href="#">
+  <link rel="icon" type="image/png" href="#">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <title>Nexo.app</title>
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no" name="viewport">
+  <!--     Fonts and icons     -->
+  <link rel="stylesheet" type="text/css" href="">
+  <link rel="stylesheet" href="./assets/font-awesome.min.css">
+  <!-- CSS Files -->
+  <link href="./assets/material-dashboard.css" rel="stylesheet">
+  <!-- CSS Just for demo purpose, dont include it in your project -->
+  <link href="./assets/demo.css" rel="stylesheet">
+  <script src="./assets/moment-parkapp.min.js"></script>
+  <script src="./assets/numeral.min.js"></script>
+  
+    <style>
+        @font-face {
+            font-family: "Roboto_condensed";
+            src: url("../assets/css/Roboto_condensed/RobotoCondensed-Bold.ttf");
+        }
+
+        @media print {
+            @page { size: 50mm auto; margin: 0; }
+            html, body { width: 50mm; min-height: 0; margin: 0; padding: 0; }
+            body { text-align: left; }
+            #imprimir_recibo { width: 48mm !important; max-width: 48mm !important; margin: 0 auto !important; text-align: center; font-size: 12px !important; line-height: 1.35 !important; overflow-wrap:anywhere; }
+            @font-face {
+                font-family: "Roboto_condensed";
+                src: url("../assets/css/Roboto_condensed/RobotoCondensed-Bold.ttf");
+            }
+            *{
+                font-family: 'Roboto_condensed';
+            }
+        }
+
+    </style>
+
+<style>
+    input[type="placa"]{
+        font-size: 100px;
+        width: 100%;
+        text-transform: uppercase;
+        padding: 5%;
+    }
+    input[type="number"]{
+        text-transform: capitalize;
+    }
+</style><style>@-webkit-keyframes swal2-show {
+  0% {
+    -webkit-transform: scale(0.7);
+            transform: scale(0.7); }
+  45% {
+    -webkit-transform: scale(1.05);
+            transform: scale(1.05); }
+  80% {
+    -webkit-transform: scale(0.95);
+            transform: scale(0.95); }
+  100% {
+    -webkit-transform: scale(1);
+            transform: scale(1); } }
+
+@keyframes swal2-show {
+  0% {
+    -webkit-transform: scale(0.7);
+            transform: scale(0.7); }
+  45% {
+    -webkit-transform: scale(1.05);
+            transform: scale(1.05); }
+  80% {
+    -webkit-transform: scale(0.95);
+            transform: scale(0.95); }
+  100% {
+    -webkit-transform: scale(1);
+            transform: scale(1); } }
+
+@-webkit-keyframes swal2-hide {
+  0% {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+    opacity: 1; }
+  100% {
+    -webkit-transform: scale(0.5);
+            transform: scale(0.5);
+    opacity: 0; } }
+
+@keyframes swal2-hide {
+  0% {
+    -webkit-transform: scale(1);
+            transform: scale(1);
+    opacity: 1; }
+  100% {
+    -webkit-transform: scale(0.5);
+            transform: scale(0.5);
+    opacity: 0; } }
+
+@-webkit-keyframes swal2-animate-success-line-tip {
+  0% {
+    top: 1.1875em;
+    left: .0625em;
+    width: 0; }
+  54% {
+    top: 1.0625em;
+    left: .125em;
+    width: 0; }
+  70% {
+    top: 2.1875em;
+    left: -.375em;
+    width: 3.125em; }
+  84% {
+    top: 3em;
+    left: 1.3125em;
+    width: 1.0625em; }
+  100% {
+    top: 2.8125em;
+    left: .875em;
+    width: 1.5625em; } }
+
+@keyframes swal2-animate-success-line-tip {
+  0% {
+    top: 1.1875em;
+    left: .0625em;
+    width: 0; }
+  54% {
+    top: 1.0625em;
+    left: .125em;
+    width: 0; }
+  70% {
+    top: 2.1875em;
+    left: -.375em;
+    width: 3.125em; }
+  84% {
+    top: 3em;
+    left: 1.3125em;
+    width: 1.0625em; }
+  100% {
+    top: 2.8125em;
+    left: .875em;
+    width: 1.5625em; } }
+
+@-webkit-keyframes swal2-animate-success-line-long {
+  0% {
+    top: 3.375em;
+    right: 2.875em;
+    width: 0; }
+  65% {
+    top: 3.375em;
+    right: 2.875em;
+    width: 0; }
+  84% {
+    top: 2.1875em;
+    right: 0;
+    width: 3.4375em; }
+  100% {
+    top: 2.375em;
+    right: .5em;
+    width: 2.9375em; } }
+
+@keyframes swal2-animate-success-line-long {
+  0% {
+    top: 3.375em;
+    right: 2.875em;
+    width: 0; }
+  65% {
+    top: 3.375em;
+    right: 2.875em;
+    width: 0; }
+  84% {
+    top: 2.1875em;
+    right: 0;
+    width: 3.4375em; }
+  100% {
+    top: 2.375em;
+    right: .5em;
+    width: 2.9375em; } }
+
+@-webkit-keyframes swal2-rotate-success-circular-line {
+  0% {
+    -webkit-transform: rotate(-45deg);
+            transform: rotate(-45deg); }
+  5% {
+    -webkit-transform: rotate(-45deg);
+            transform: rotate(-45deg); }
+  12% {
+    -webkit-transform: rotate(-405deg);
+            transform: rotate(-405deg); }
+  100% {
+    -webkit-transform: rotate(-405deg);
+            transform: rotate(-405deg); } }
+
+@keyframes swal2-rotate-success-circular-line {
+  0% {
+    -webkit-transform: rotate(-45deg);
+            transform: rotate(-45deg); }
+  5% {
+    -webkit-transform: rotate(-45deg);
+            transform: rotate(-45deg); }
+  12% {
+    -webkit-transform: rotate(-405deg);
+            transform: rotate(-405deg); }
+  100% {
+    -webkit-transform: rotate(-405deg);
+            transform: rotate(-405deg); } }
+
+@-webkit-keyframes swal2-animate-error-x-mark {
+  0% {
+    margin-top: 1.625em;
+    -webkit-transform: scale(0.4);
+            transform: scale(0.4);
+    opacity: 0; }
+  50% {
+    margin-top: 1.625em;
+    -webkit-transform: scale(0.4);
+            transform: scale(0.4);
+    opacity: 0; }
+  80% {
+    margin-top: -.375em;
+    -webkit-transform: scale(1.15);
+            transform: scale(1.15); }
+  100% {
+    margin-top: 0;
+    -webkit-transform: scale(1);
+            transform: scale(1);
+    opacity: 1; } }
+
+@keyframes swal2-animate-error-x-mark {
+  0% {
+    margin-top: 1.625em;
+    -webkit-transform: scale(0.4);
+            transform: scale(0.4);
+    opacity: 0; }
+  50% {
+    margin-top: 1.625em;
+    -webkit-transform: scale(0.4);
+            transform: scale(0.4);
+    opacity: 0; }
+  80% {
+    margin-top: -.375em;
+    -webkit-transform: scale(1.15);
+            transform: scale(1.15); }
+  100% {
+    margin-top: 0;
+    -webkit-transform: scale(1);
+            transform: scale(1);
+    opacity: 1; } }
+
+@-webkit-keyframes swal2-animate-error-icon {
+  0% {
+    -webkit-transform: rotateX(100deg);
+            transform: rotateX(100deg);
+    opacity: 0; }
+  100% {
+    -webkit-transform: rotateX(0deg);
+            transform: rotateX(0deg);
+    opacity: 1; } }
+
+@keyframes swal2-animate-error-icon {
+  0% {
+    -webkit-transform: rotateX(100deg);
+            transform: rotateX(100deg);
+    opacity: 0; }
+  100% {
+    -webkit-transform: rotateX(0deg);
+            transform: rotateX(0deg);
+    opacity: 1; } }
+
+body.swal2-toast-shown.swal2-has-input > .swal2-container > .swal2-toast {
+  flex-direction: column;
+  align-items: stretch; }
+  body.swal2-toast-shown.swal2-has-input > .swal2-container > .swal2-toast .swal2-actions {
+    flex: 1;
+    align-self: stretch;
+    justify-content: flex-end;
+    height: 2.2em; }
+  body.swal2-toast-shown.swal2-has-input > .swal2-container > .swal2-toast .swal2-loading {
+    justify-content: center; }
+  body.swal2-toast-shown.swal2-has-input > .swal2-container > .swal2-toast .swal2-input {
+    height: 2em;
+    margin: .3125em auto;
+    font-size: 1em; }
+  body.swal2-toast-shown.swal2-has-input > .swal2-container > .swal2-toast .swal2-validationerror {
+    font-size: 1em; }
+
+body.swal2-toast-shown > .swal2-container {
+  position: fixed;
+  background-color: transparent; }
+  body.swal2-toast-shown > .swal2-container.swal2-shown {
+    background-color: transparent; }
+  body.swal2-toast-shown > .swal2-container.swal2-top {
+    top: 0;
+    right: auto;
+    bottom: auto;
+    left: 50%;
+    -webkit-transform: translateX(-50%);
+            transform: translateX(-50%); }
+  body.swal2-toast-shown > .swal2-container.swal2-top-end, body.swal2-toast-shown > .swal2-container.swal2-top-right {
+    top: 0;
+    right: 0;
+    bottom: auto;
+    left: auto; }
+  body.swal2-toast-shown > .swal2-container.swal2-top-start, body.swal2-toast-shown > .swal2-container.swal2-top-left {
+    top: 0;
+    right: auto;
+    bottom: auto;
+    left: 0; }
+  body.swal2-toast-shown > .swal2-container.swal2-center-start, body.swal2-toast-shown > .swal2-container.swal2-center-left {
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    left: 0;
+    -webkit-transform: translateY(-50%);
+            transform: translateY(-50%); }
+  body.swal2-toast-shown > .swal2-container.swal2-center {
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%); }
+  body.swal2-toast-shown > .swal2-container.swal2-center-end, body.swal2-toast-shown > .swal2-container.swal2-center-right {
+    top: 50%;
+    right: 0;
+    bottom: auto;
+    left: auto;
+    -webkit-transform: translateY(-50%);
+            transform: translateY(-50%); }
+  body.swal2-toast-shown > .swal2-container.swal2-bottom-start, body.swal2-toast-shown > .swal2-container.swal2-bottom-left {
+    top: auto;
+    right: auto;
+    bottom: 0;
+    left: 0; }
+  body.swal2-toast-shown > .swal2-container.swal2-bottom {
+    top: auto;
+    right: auto;
+    bottom: 0;
+    left: 50%;
+    -webkit-transform: translateX(-50%);
+            transform: translateX(-50%); }
+  body.swal2-toast-shown > .swal2-container.swal2-bottom-end, body.swal2-toast-shown > .swal2-container.swal2-bottom-right {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: auto; }
+
+.swal2-popup.swal2-toast {
+  flex-direction: row;
+  align-items: center;
+  width: auto;
+  padding: 0.625em;
+  box-shadow: 0 0 0.625em #d9d9d9;
+  overflow-y: hidden; }
+  .swal2-popup.swal2-toast .swal2-header {
+    flex-direction: row; }
+  .swal2-popup.swal2-toast .swal2-title {
+    justify-content: flex-start;
+    margin: 0 .6em;
+    font-size: 1em; }
+  .swal2-popup.swal2-toast .swal2-close {
+    position: initial; }
+  .swal2-popup.swal2-toast .swal2-content {
+    justify-content: flex-start;
+    font-size: 1em; }
+  .swal2-popup.swal2-toast .swal2-icon {
+    width: 2em;
+    min-width: 2em;
+    height: 2em;
+    margin: 0; }
+    .swal2-popup.swal2-toast .swal2-icon-text {
+      font-size: 2em;
+      font-weight: bold;
+      line-height: 1em; }
+    .swal2-popup.swal2-toast .swal2-icon.swal2-success .swal2-success-ring {
+      width: 2em;
+      height: 2em; }
+    .swal2-popup.swal2-toast .swal2-icon.swal2-error [class^='swal2-x-mark-line'] {
+      top: .875em;
+      width: 1.375em; }
+      .swal2-popup.swal2-toast .swal2-icon.swal2-error [class^='swal2-x-mark-line'][class$='left'] {
+        left: .3125em; }
+      .swal2-popup.swal2-toast .swal2-icon.swal2-error [class^='swal2-x-mark-line'][class$='right'] {
+        right: .3125em; }
+  .swal2-popup.swal2-toast .swal2-actions {
+    height: auto;
+    margin: 0 .3125em; }
+  .swal2-popup.swal2-toast .swal2-styled {
+    margin: 0 .3125em;
+    padding: .3125em .625em;
+    font-size: 1em; }
+    .swal2-popup.swal2-toast .swal2-styled:focus {
+      box-shadow: 0 0 0 0.0625em #fff, 0 0 0 0.125em rgba(50, 100, 150, 0.4); }
+  .swal2-popup.swal2-toast .swal2-success {
+    border-color: #a5dc86; }
+    .swal2-popup.swal2-toast .swal2-success [class^='swal2-success-circular-line'] {
+      position: absolute;
+      width: 2em;
+      height: 2.8125em;
+      -webkit-transform: rotate(45deg);
+              transform: rotate(45deg);
+      border-radius: 50%; }
+      .swal2-popup.swal2-toast .swal2-success [class^='swal2-success-circular-line'][class$='left'] {
+        top: -.25em;
+        left: -.9375em;
+        -webkit-transform: rotate(-45deg);
+                transform: rotate(-45deg);
+        -webkit-transform-origin: 2em 2em;
+                transform-origin: 2em 2em;
+        border-radius: 4em 0 0 4em; }
+      .swal2-popup.swal2-toast .swal2-success [class^='swal2-success-circular-line'][class$='right'] {
+        top: -.25em;
+        left: .9375em;
+        -webkit-transform-origin: 0 2em;
+                transform-origin: 0 2em;
+        border-radius: 0 4em 4em 0; }
+    .swal2-popup.swal2-toast .swal2-success .swal2-success-ring {
+      width: 2em;
+      height: 2em; }
+    .swal2-popup.swal2-toast .swal2-success .swal2-success-fix {
+      top: 0;
+      left: .4375em;
+      width: .4375em;
+      height: 2.6875em; }
+    .swal2-popup.swal2-toast .swal2-success [class^='swal2-success-line'] {
+      height: .3125em; }
+      .swal2-popup.swal2-toast .swal2-success [class^='swal2-success-line'][class$='tip'] {
+        top: 1.125em;
+        left: .1875em;
+        width: .75em; }
+      .swal2-popup.swal2-toast .swal2-success [class^='swal2-success-line'][class$='long'] {
+        top: .9375em;
+        right: .1875em;
+        width: 1.375em; }
+  .swal2-popup.swal2-toast.swal2-show {
+    -webkit-animation: showSweetToast .5s;
+            animation: showSweetToast .5s; }
+  .swal2-popup.swal2-toast.swal2-hide {
+    -webkit-animation: hideSweetToast .2s forwards;
+            animation: hideSweetToast .2s forwards; }
+  .swal2-popup.swal2-toast .swal2-animate-success-icon .swal2-success-line-tip {
+    -webkit-animation: animate-toast-success-tip .75s;
+            animation: animate-toast-success-tip .75s; }
+  .swal2-popup.swal2-toast .swal2-animate-success-icon .swal2-success-line-long {
+    -webkit-animation: animate-toast-success-long .75s;
+            animation: animate-toast-success-long .75s; }
+
+@-webkit-keyframes showSweetToast {
+  0% {
+    -webkit-transform: translateY(-0.625em) rotateZ(2deg);
+            transform: translateY(-0.625em) rotateZ(2deg);
+    opacity: 0; }
+  33% {
+    -webkit-transform: translateY(0) rotateZ(-2deg);
+            transform: translateY(0) rotateZ(-2deg);
+    opacity: .5; }
+  66% {
+    -webkit-transform: translateY(0.3125em) rotateZ(2deg);
+            transform: translateY(0.3125em) rotateZ(2deg);
+    opacity: .7; }
+  100% {
+    -webkit-transform: translateY(0) rotateZ(0);
+            transform: translateY(0) rotateZ(0);
+    opacity: 1; } }
+
+@keyframes showSweetToast {
+  0% {
+    -webkit-transform: translateY(-0.625em) rotateZ(2deg);
+            transform: translateY(-0.625em) rotateZ(2deg);
+    opacity: 0; }
+  33% {
+    -webkit-transform: translateY(0) rotateZ(-2deg);
+            transform: translateY(0) rotateZ(-2deg);
+    opacity: .5; }
+  66% {
+    -webkit-transform: translateY(0.3125em) rotateZ(2deg);
+            transform: translateY(0.3125em) rotateZ(2deg);
+    opacity: .7; }
+  100% {
+    -webkit-transform: translateY(0) rotateZ(0);
+            transform: translateY(0) rotateZ(0);
+    opacity: 1; } }
+
+@-webkit-keyframes hideSweetToast {
+  0% {
+    opacity: 1; }
+  33% {
+    opacity: .5; }
+  100% {
+    -webkit-transform: rotateZ(1deg);
+            transform: rotateZ(1deg);
+    opacity: 0; } }
+
+@keyframes hideSweetToast {
+  0% {
+    opacity: 1; }
+  33% {
+    opacity: .5; }
+  100% {
+    -webkit-transform: rotateZ(1deg);
+            transform: rotateZ(1deg);
+    opacity: 0; } }
+
+@-webkit-keyframes animate-toast-success-tip {
+  0% {
+    top: .5625em;
+    left: .0625em;
+    width: 0; }
+  54% {
+    top: .125em;
+    left: .125em;
+    width: 0; }
+  70% {
+    top: .625em;
+    left: -.25em;
+    width: 1.625em; }
+  84% {
+    top: 1.0625em;
+    left: .75em;
+    width: .5em; }
+  100% {
+    top: 1.125em;
+    left: .1875em;
+    width: .75em; } }
+
+@keyframes animate-toast-success-tip {
+  0% {
+    top: .5625em;
+    left: .0625em;
+    width: 0; }
+  54% {
+    top: .125em;
+    left: .125em;
+    width: 0; }
+  70% {
+    top: .625em;
+    left: -.25em;
+    width: 1.625em; }
+  84% {
+    top: 1.0625em;
+    left: .75em;
+    width: .5em; }
+  100% {
+    top: 1.125em;
+    left: .1875em;
+    width: .75em; } }
+
+@-webkit-keyframes animate-toast-success-long {
+  0% {
+    top: 1.625em;
+    right: 1.375em;
+    width: 0; }
+  65% {
+    top: 1.25em;
+    right: .9375em;
+    width: 0; }
+  84% {
+    top: .9375em;
+    right: 0;
+    width: 1.125em; }
+  100% {
+    top: .9375em;
+    right: .1875em;
+    width: 1.375em; } }
+
+@keyframes animate-toast-success-long {
+  0% {
+    top: 1.625em;
+    right: 1.375em;
+    width: 0; }
+  65% {
+    top: 1.25em;
+    right: .9375em;
+    width: 0; }
+  84% {
+    top: .9375em;
+    right: 0;
+    width: 1.125em; }
+  100% {
+    top: .9375em;
+    right: .1875em;
+    width: 1.375em; } }
+
+body.swal2-shown:not(.swal2-no-backdrop):not(.swal2-toast-shown) {
+  overflow-y: hidden; }
+
+body.swal2-height-auto {
+  height: auto !important; }
+
+body.swal2-no-backdrop .swal2-shown {
+  top: auto;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  background-color: transparent; }
+  body.swal2-no-backdrop .swal2-shown > .swal2-modal {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4); }
+  body.swal2-no-backdrop .swal2-shown.swal2-top {
+    top: 0;
+    left: 50%;
+    -webkit-transform: translateX(-50%);
+            transform: translateX(-50%); }
+  body.swal2-no-backdrop .swal2-shown.swal2-top-start, body.swal2-no-backdrop .swal2-shown.swal2-top-left {
+    top: 0;
+    left: 0; }
+  body.swal2-no-backdrop .swal2-shown.swal2-top-end, body.swal2-no-backdrop .swal2-shown.swal2-top-right {
+    top: 0;
+    right: 0; }
+  body.swal2-no-backdrop .swal2-shown.swal2-center {
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%); }
+  body.swal2-no-backdrop .swal2-shown.swal2-center-start, body.swal2-no-backdrop .swal2-shown.swal2-center-left {
+    top: 50%;
+    left: 0;
+    -webkit-transform: translateY(-50%);
+            transform: translateY(-50%); }
+  body.swal2-no-backdrop .swal2-shown.swal2-center-end, body.swal2-no-backdrop .swal2-shown.swal2-center-right {
+    top: 50%;
+    right: 0;
+    -webkit-transform: translateY(-50%);
+            transform: translateY(-50%); }
+  body.swal2-no-backdrop .swal2-shown.swal2-bottom {
+    bottom: 0;
+    left: 50%;
+    -webkit-transform: translateX(-50%);
+            transform: translateX(-50%); }
+  body.swal2-no-backdrop .swal2-shown.swal2-bottom-start, body.swal2-no-backdrop .swal2-shown.swal2-bottom-left {
+    bottom: 0;
+    left: 0; }
+  body.swal2-no-backdrop .swal2-shown.swal2-bottom-end, body.swal2-no-backdrop .swal2-shown.swal2-bottom-right {
+    right: 0;
+    bottom: 0; }
+
+.swal2-container {
+  display: flex;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background-color: transparent;
+  z-index: 1060;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch; }
+  .swal2-container.swal2-top {
+    align-items: flex-start; }
+  .swal2-container.swal2-top-start, .swal2-container.swal2-top-left {
+    align-items: flex-start;
+    justify-content: flex-start; }
+  .swal2-container.swal2-top-end, .swal2-container.swal2-top-right {
+    align-items: flex-start;
+    justify-content: flex-end; }
+  .swal2-container.swal2-center {
+    align-items: center; }
+  .swal2-container.swal2-center-start, .swal2-container.swal2-center-left {
+    align-items: center;
+    justify-content: flex-start; }
+  .swal2-container.swal2-center-end, .swal2-container.swal2-center-right {
+    align-items: center;
+    justify-content: flex-end; }
+  .swal2-container.swal2-bottom {
+    align-items: flex-end; }
+  .swal2-container.swal2-bottom-start, .swal2-container.swal2-bottom-left {
+    align-items: flex-end;
+    justify-content: flex-start; }
+  .swal2-container.swal2-bottom-end, .swal2-container.swal2-bottom-right {
+    align-items: flex-end;
+    justify-content: flex-end; }
+  .swal2-container.swal2-grow-fullscreen > .swal2-modal {
+    display: flex !important;
+    flex: 1;
+    align-self: stretch;
+    justify-content: center; }
+  .swal2-container.swal2-grow-row > .swal2-modal {
+    display: flex !important;
+    flex: 1;
+    align-content: center;
+    justify-content: center; }
+  .swal2-container.swal2-grow-column {
+    flex: 1;
+    flex-direction: column; }
+    .swal2-container.swal2-grow-column.swal2-top, .swal2-container.swal2-grow-column.swal2-center, .swal2-container.swal2-grow-column.swal2-bottom {
+      align-items: center; }
+    .swal2-container.swal2-grow-column.swal2-top-start, .swal2-container.swal2-grow-column.swal2-center-start, .swal2-container.swal2-grow-column.swal2-bottom-start, .swal2-container.swal2-grow-column.swal2-top-left, .swal2-container.swal2-grow-column.swal2-center-left, .swal2-container.swal2-grow-column.swal2-bottom-left {
+      align-items: flex-start; }
+    .swal2-container.swal2-grow-column.swal2-top-end, .swal2-container.swal2-grow-column.swal2-center-end, .swal2-container.swal2-grow-column.swal2-bottom-end, .swal2-container.swal2-grow-column.swal2-top-right, .swal2-container.swal2-grow-column.swal2-center-right, .swal2-container.swal2-grow-column.swal2-bottom-right {
+      align-items: flex-end; }
+    .swal2-container.swal2-grow-column > .swal2-modal {
+      display: flex !important;
+      flex: 1;
+      align-content: center;
+      justify-content: center; }
+  .swal2-container:not(.swal2-top):not(.swal2-top-start):not(.swal2-top-end):not(.swal2-top-left):not(.swal2-top-right):not(.swal2-center-start):not(.swal2-center-end):not(.swal2-center-left):not(.swal2-center-right):not(.swal2-bottom):not(.swal2-bottom-start):not(.swal2-bottom-end):not(.swal2-bottom-left):not(.swal2-bottom-right) > .swal2-modal {
+    margin: auto; }
+  @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+    .swal2-container .swal2-modal {
+      margin: 0 !important; } }
+  .swal2-container.swal2-fade {
+    transition: background-color .1s; }
+  .swal2-container.swal2-shown {
+    background-color: rgba(0, 0, 0, 0.4); }
+
+.swal2-popup {
+  display: none;
+  position: relative;
+  flex-direction: column;
+  justify-content: center;
+  width: 32em;
+  max-width: 100%;
+  padding: 1.25em;
+  border-radius: 0.3125em;
+  background: #fff;
+  font-family: inherit;
+  font-size: 1rem;
+  box-sizing: border-box; }
+  .swal2-popup:focus {
+    outline: none; }
+  .swal2-popup.swal2-loading {
+    overflow-y: hidden; }
+  .swal2-popup .swal2-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center; }
+  .swal2-popup .swal2-title {
+    display: block;
+    position: relative;
+    max-width: 100%;
+    margin: 0 0 0.4em;
+    padding: 0;
+    color: #595959;
+    font-size: 1.875em;
+    font-weight: 600;
+    text-align: center;
+    text-transform: none;
+    word-wrap: break-word; }
+  .swal2-popup .swal2-actions {
+    align-items: center;
+    justify-content: center;
+    margin: 1.25em auto 0; }
+    .swal2-popup .swal2-actions:not(.swal2-loading) .swal2-styled[disabled] {
+      opacity: .4; }
+    .swal2-popup .swal2-actions:not(.swal2-loading) .swal2-styled:hover {
+      background-image: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)); }
+    .swal2-popup .swal2-actions:not(.swal2-loading) .swal2-styled:active {
+      background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)); }
+    .swal2-popup .swal2-actions.swal2-loading .swal2-styled.swal2-confirm {
+      width: 2.5em;
+      height: 2.5em;
+      margin: .46875em;
+      padding: 0;
+      border: .25em solid transparent;
+      border-radius: 100%;
+      border-color: transparent;
+      background-color: transparent !important;
+      color: transparent;
+      cursor: default;
+      box-sizing: border-box;
+      -webkit-animation: swal2-rotate-loading 1.5s linear 0s infinite normal;
+              animation: swal2-rotate-loading 1.5s linear 0s infinite normal;
+      -webkit-user-select: none;
+         -moz-user-select: none;
+          -ms-user-select: none;
+              user-select: none; }
+    .swal2-popup .swal2-actions.swal2-loading .swal2-styled.swal2-cancel {
+      margin-right: 30px;
+      margin-left: 30px; }
+    .swal2-popup .swal2-actions.swal2-loading :not(.swal2-styled).swal2-confirm::after {
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      margin-left: 5px;
+      border: 3px solid #999999;
+      border-radius: 50%;
+      border-right-color: transparent;
+      box-shadow: 1px 1px 1px #fff;
+      content: '';
+      -webkit-animation: swal2-rotate-loading 1.5s linear 0s infinite normal;
+              animation: swal2-rotate-loading 1.5s linear 0s infinite normal; }
+  .swal2-popup .swal2-styled {
+    margin: 0 .3125em;
+    padding: .625em 2em;
+    font-weight: 500;
+    box-shadow: none; }
+    .swal2-popup .swal2-styled:not([disabled]) {
+      cursor: pointer; }
+    .swal2-popup .swal2-styled.swal2-confirm {
+      border: 0;
+      border-radius: 0.25em;
+      background: initial;
+      background-color: #3085d6;
+      color: #fff;
+      font-size: 1.0625em; }
+    .swal2-popup .swal2-styled.swal2-cancel {
+      border: 0;
+      border-radius: 0.25em;
+      background: initial;
+      background-color: #aaa;
+      color: #fff;
+      font-size: 1.0625em; }
+    .swal2-popup .swal2-styled:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(50, 100, 150, 0.4); }
+    .swal2-popup .swal2-styled::-moz-focus-inner {
+      border: 0; }
+  .swal2-popup .swal2-footer {
+    justify-content: center;
+    margin: 1.25em 0 0;
+    padding-top: 1em;
+    border-top: 1px solid #eee;
+    color: #545454;
+    font-size: 1em; }
+  .swal2-popup .swal2-image {
+    max-width: 100%;
+    margin: 1.25em auto; }
+  .swal2-popup .swal2-close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    justify-content: center;
+    width: 1.2em;
+    height: 1.2em;
+    padding: 0;
+    transition: color 0.1s ease-out;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    color: #cccccc;
+    font-family: serif;
+    font-size: 2.5em;
+    line-height: 1.2;
+    cursor: pointer;
+    overflow: hidden; }
+    .swal2-popup .swal2-close:hover {
+      -webkit-transform: none;
+              transform: none;
+      color: #f27474; }
+  .swal2-popup > .swal2-input,
+  .swal2-popup > .swal2-file,
+  .swal2-popup > .swal2-textarea,
+  .swal2-popup > .swal2-select,
+  .swal2-popup > .swal2-radio,
+  .swal2-popup > .swal2-checkbox {
+    display: none; }
+  .swal2-popup .swal2-content {
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    color: #545454;
+    font-size: 1.125em;
+    font-weight: 300;
+    line-height: normal;
+    word-wrap: break-word; }
+  .swal2-popup #swal2-content {
+    text-align: center; }
+  .swal2-popup .swal2-input,
+  .swal2-popup .swal2-file,
+  .swal2-popup .swal2-textarea,
+  .swal2-popup .swal2-select,
+  .swal2-popup .swal2-radio,
+  .swal2-popup .swal2-checkbox {
+    margin: 1em auto; }
+  .swal2-popup .swal2-input,
+  .swal2-popup .swal2-file,
+  .swal2-popup .swal2-textarea {
+    width: 100%;
+    transition: border-color .3s, box-shadow .3s;
+    border: 1px solid #d9d9d9;
+    border-radius: 0.1875em;
+    font-size: 1.125em;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.06);
+    box-sizing: border-box; }
+    .swal2-popup .swal2-input.swal2-inputerror,
+    .swal2-popup .swal2-file.swal2-inputerror,
+    .swal2-popup .swal2-textarea.swal2-inputerror {
+      border-color: #f27474 !important;
+      box-shadow: 0 0 2px #f27474 !important; }
+    .swal2-popup .swal2-input:focus,
+    .swal2-popup .swal2-file:focus,
+    .swal2-popup .swal2-textarea:focus {
+      border: 1px solid #b4dbed;
+      outline: none;
+      box-shadow: 0 0 3px #c4e6f5; }
+    .swal2-popup .swal2-input::-webkit-input-placeholder,
+    .swal2-popup .swal2-file::-webkit-input-placeholder,
+    .swal2-popup .swal2-textarea::-webkit-input-placeholder {
+      color: #cccccc; }
+    .swal2-popup .swal2-input:-ms-input-placeholder,
+    .swal2-popup .swal2-file:-ms-input-placeholder,
+    .swal2-popup .swal2-textarea:-ms-input-placeholder {
+      color: #cccccc; }
+    .swal2-popup .swal2-input::-ms-input-placeholder,
+    .swal2-popup .swal2-file::-ms-input-placeholder,
+    .swal2-popup .swal2-textarea::-ms-input-placeholder {
+      color: #cccccc; }
+    .swal2-popup .swal2-input::placeholder,
+    .swal2-popup .swal2-file::placeholder,
+    .swal2-popup .swal2-textarea::placeholder {
+      color: #cccccc; }
+  .swal2-popup .swal2-range input {
+    width: 80%; }
+  .swal2-popup .swal2-range output {
+    width: 20%;
+    font-weight: 600;
+    text-align: center; }
+  .swal2-popup .swal2-range input,
+  .swal2-popup .swal2-range output {
+    height: 2.625em;
+    margin: 1em auto;
+    padding: 0;
+    font-size: 1.125em;
+    line-height: 2.625em; }
+  .swal2-popup .swal2-input {
+    height: 2.625em;
+    padding: 0.75em; }
+    .swal2-popup .swal2-input[type='number'] {
+      max-width: 10em; }
+  .swal2-popup .swal2-file {
+    font-size: 1.125em; }
+  .swal2-popup .swal2-textarea {
+    height: 6.75em;
+    padding: 0.75em; }
+  .swal2-popup .swal2-select {
+    min-width: 50%;
+    max-width: 100%;
+    padding: .375em .625em;
+    color: #545454;
+    font-size: 1.125em; }
+  .swal2-popup .swal2-radio,
+  .swal2-popup .swal2-checkbox {
+    align-items: center;
+    justify-content: center; }
+    .swal2-popup .swal2-radio label,
+    .swal2-popup .swal2-checkbox label {
+      margin: 0 .6em;
+      font-size: 1.125em; }
+    .swal2-popup .swal2-radio input,
+    .swal2-popup .swal2-checkbox input {
+      margin: 0 .4em; }
+  .swal2-popup .swal2-validationerror {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 0.625em;
+    background: #f0f0f0;
+    color: #666666;
+    font-size: 1em;
+    font-weight: 300;
+    overflow: hidden; }
+    .swal2-popup .swal2-validationerror::before {
+      display: inline-block;
+      width: 1.5em;
+      min-width: 1.5em;
+      height: 1.5em;
+      margin: 0 .625em;
+      border-radius: 50%;
+      background-color: #f27474;
+      color: #fff;
+      font-weight: 600;
+      line-height: 1.5em;
+      text-align: center;
+      content: '!';
+      zoom: normal; }
+
+@supports (-ms-accelerator: true) {
+  .swal2-range input {
+    width: 100% !important; }
+  .swal2-range output {
+    display: none; } }
+
+@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+  .swal2-range input {
+    width: 100% !important; }
+  .swal2-range output {
+    display: none; } }
+
+@-moz-document url-prefix() {
+  .swal2-close:focus {
+    outline: 2px solid rgba(50, 100, 150, 0.4); } }
+
+.swal2-icon {
+  position: relative;
+  justify-content: center;
+  width: 5em;
+  height: 5em;
+  margin: 1.25em auto 1.875em;
+  border: .25em solid transparent;
+  border-radius: 50%;
+  line-height: 5em;
+  cursor: default;
+  box-sizing: content-box;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  zoom: normal; }
+  .swal2-icon-text {
+    font-size: 3.75em; }
+  .swal2-icon.swal2-error {
+    border-color: #f27474; }
+    .swal2-icon.swal2-error .swal2-x-mark {
+      position: relative;
+      flex-grow: 1; }
+    .swal2-icon.swal2-error [class^='swal2-x-mark-line'] {
+      display: block;
+      position: absolute;
+      top: 2.3125em;
+      width: 2.9375em;
+      height: .3125em;
+      border-radius: .125em;
+      background-color: #f27474; }
+      .swal2-icon.swal2-error [class^='swal2-x-mark-line'][class$='left'] {
+        left: 1.0625em;
+        -webkit-transform: rotate(45deg);
+                transform: rotate(45deg); }
+      .swal2-icon.swal2-error [class^='swal2-x-mark-line'][class$='right'] {
+        right: 1em;
+        -webkit-transform: rotate(-45deg);
+                transform: rotate(-45deg); }
+  .swal2-icon.swal2-warning {
+    border-color: #facea8;
+    color: #f8bb86; }
+  .swal2-icon.swal2-info {
+    border-color: #9de0f6;
+    color: #3fc3ee; }
+  .swal2-icon.swal2-question {
+    border-color: #c9dae1;
+    color: #87adbd; }
+  .swal2-icon.swal2-success {
+    border-color: #a5dc86; }
+    .swal2-icon.swal2-success [class^='swal2-success-circular-line'] {
+      position: absolute;
+      width: 3.75em;
+      height: 7.5em;
+      -webkit-transform: rotate(45deg);
+              transform: rotate(45deg);
+      border-radius: 50%; }
+      .swal2-icon.swal2-success [class^='swal2-success-circular-line'][class$='left'] {
+        top: -.4375em;
+        left: -2.0635em;
+        -webkit-transform: rotate(-45deg);
+                transform: rotate(-45deg);
+        -webkit-transform-origin: 3.75em 3.75em;
+                transform-origin: 3.75em 3.75em;
+        border-radius: 7.5em 0 0 7.5em; }
+      .swal2-icon.swal2-success [class^='swal2-success-circular-line'][class$='right'] {
+        top: -.6875em;
+        left: 1.875em;
+        -webkit-transform: rotate(-45deg);
+                transform: rotate(-45deg);
+        -webkit-transform-origin: 0 3.75em;
+                transform-origin: 0 3.75em;
+        border-radius: 0 7.5em 7.5em 0; }
+    .swal2-icon.swal2-success .swal2-success-ring {
+      position: absolute;
+      top: -.25em;
+      left: -.25em;
+      width: 100%;
+      height: 100%;
+      border: 0.25em solid rgba(165, 220, 134, 0.3);
+      border-radius: 50%;
+      z-index: 2;
+      box-sizing: content-box; }
+    .swal2-icon.swal2-success .swal2-success-fix {
+      position: absolute;
+      top: .5em;
+      left: 1.625em;
+      width: .4375em;
+      height: 5.625em;
+      -webkit-transform: rotate(-45deg);
+              transform: rotate(-45deg);
+      z-index: 1; }
+    .swal2-icon.swal2-success [class^='swal2-success-line'] {
+      display: block;
+      position: absolute;
+      height: .3125em;
+      border-radius: .125em;
+      background-color: #a5dc86;
+      z-index: 2; }
+      .swal2-icon.swal2-success [class^='swal2-success-line'][class$='tip'] {
+        top: 2.875em;
+        left: .875em;
+        width: 1.5625em;
+        -webkit-transform: rotate(45deg);
+                transform: rotate(45deg); }
+      .swal2-icon.swal2-success [class^='swal2-success-line'][class$='long'] {
+        top: 2.375em;
+        right: .5em;
+        width: 2.9375em;
+        -webkit-transform: rotate(-45deg);
+                transform: rotate(-45deg); }
+
+.swal2-progresssteps {
+  align-items: center;
+  margin: 0 0 1.25em;
+  padding: 0;
+  font-weight: 600; }
+  .swal2-progresssteps li {
+    display: inline-block;
+    position: relative; }
+  .swal2-progresssteps .swal2-progresscircle {
+    width: 2em;
+    height: 2em;
+    border-radius: 2em;
+    background: #3085d6;
+    color: #fff;
+    line-height: 2em;
+    text-align: center;
+    z-index: 20; }
+    .swal2-progresssteps .swal2-progresscircle:first-child {
+      margin-left: 0; }
+    .swal2-progresssteps .swal2-progresscircle:last-child {
+      margin-right: 0; }
+    .swal2-progresssteps .swal2-progresscircle.swal2-activeprogressstep {
+      background: #3085d6; }
+      .swal2-progresssteps .swal2-progresscircle.swal2-activeprogressstep ~ .swal2-progresscircle {
+        background: #add8e6; }
+      .swal2-progresssteps .swal2-progresscircle.swal2-activeprogressstep ~ .swal2-progressline {
+        background: #add8e6; }
+  .swal2-progresssteps .swal2-progressline {
+    width: 2.5em;
+    height: .4em;
+    margin: 0 -1px;
+    background: #3085d6;
+    z-index: 10; }
+
+[class^='swal2'] {
+  -webkit-tap-highlight-color: transparent; }
+
+.swal2-show {
+  -webkit-animation: swal2-show 0.3s;
+          animation: swal2-show 0.3s; }
+  .swal2-show.swal2-noanimation {
+    -webkit-animation: none;
+            animation: none; }
+
+.swal2-hide {
+  -webkit-animation: swal2-hide 0.15s forwards;
+          animation: swal2-hide 0.15s forwards; }
+  .swal2-hide.swal2-noanimation {
+    -webkit-animation: none;
+            animation: none; }
+
+[dir='rtl'] .swal2-close {
+  right: auto;
+  left: 0; }
+
+.swal2-animate-success-icon .swal2-success-line-tip {
+  -webkit-animation: swal2-animate-success-line-tip 0.75s;
+          animation: swal2-animate-success-line-tip 0.75s; }
+
+.swal2-animate-success-icon .swal2-success-line-long {
+  -webkit-animation: swal2-animate-success-line-long 0.75s;
+          animation: swal2-animate-success-line-long 0.75s; }
+
+.swal2-animate-success-icon .swal2-success-circular-line-right {
+  -webkit-animation: swal2-rotate-success-circular-line 4.25s ease-in;
+          animation: swal2-rotate-success-circular-line 4.25s ease-in; }
+
+.swal2-animate-error-icon {
+  -webkit-animation: swal2-animate-error-icon 0.5s;
+          animation: swal2-animate-error-icon 0.5s; }
+  .swal2-animate-error-icon .swal2-x-mark {
+    -webkit-animation: swal2-animate-error-x-mark 0.5s;
+            animation: swal2-animate-error-x-mark 0.5s; }
+
+@-webkit-keyframes swal2-rotate-loading {
+  0% {
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg); }
+  100% {
+    -webkit-transform: rotate(360deg);
+            transform: rotate(360deg); } }
+
+@keyframes swal2-rotate-loading {
+  0% {
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg); }
+  100% {
+    -webkit-transform: rotate(360deg);
+            transform: rotate(360deg); } }</style>
+<!-- La verificación de sesión de esta página quedó unificada en mvc/app-controller.js
+     (funciones ensure()/auth(), llamadas desde init() al cargar). Antes había aquí un
+     segundo mecanismo paralelo basado en sessionStorage.fp_login_ok que podía cerrar
+     una sesión válida de localStorage.fp_session si, por ejemplo, se abría esta página
+     en una pestaña nueva. Se eliminó para que todas las páginas usen exactamente el
+     mismo criterio de sesión. -->
+<style id="fp-reference-theme">
+:root{--fp-navy:#031a35;--fp-navy2:#06284d;--fp-orange:#ff7a00;--fp-orange2:#ffad00;--fp-text:#f6f8fc;--fp-muted:#aab7ca;--fp-border:rgba(150,180,215,.28)}
+body{background:#031a35!important;color:var(--fp-text)} .wrapper{background:#031a35!important}.sidebar{background:linear-gradient(180deg,#031a35 0%,#02152c 100%)!important;border-right:1px solid rgba(150,180,215,.22)}.sidebar .logo a,.sidebar .nav li>a,.sidebar .nav p,.navbar .navbar-brand,.card-title,.card-category,h1,h2,h3,h4,h5,h6,label{color:#f6f8fc!important}.sidebar .nav li>a{border-radius:9px;margin:3px 10px;width:calc(100% - 20px);transition:.15s}.sidebar .nav li>a i{color:#ff9a00!important}.sidebar .nav li.active>a,.sidebar .nav li>a:hover{background:linear-gradient(90deg,#ff5b13,#ff9f00)!important;box-shadow:0 6px 16px rgba(255,122,0,.18)}.sidebar .nav li.active>a i,.sidebar .nav li.active>a p,.sidebar .nav li>a:hover i,.sidebar .nav li>a:hover p{color:#fff!important}.sidebar .logo{padding:18px 10px}.sidebar .logo a{font-weight:800;font-size:22px}.main-panel{background:#031a35!important}.navbar{background:transparent!important}.card{background:linear-gradient(145deg,#06284d,#031d3b)!important;border:1px solid rgba(150,180,215,.24)!important;border-radius:14px!important;box-shadow:0 12px 28px rgba(0,0,0,.18)!important;color:#f6f8fc}.card-header-primary{background:linear-gradient(90deg,#ff5b13,#ff9f00)!important;box-shadow:none!important}.btn-primary,.btn-success{background:linear-gradient(90deg,#ff5b13,#ff9f00)!important;border:0!important;color:#fff!important;box-shadow:0 7px 16px rgba(255,122,0,.2)!important}.btn-warning{background:#ff9f00!important;color:#071b32!important;border:0!important}.btn-danger{background:#d84a3a!important}.form-control,select.form-control,textarea.form-control,input.form-control{background:#061c36!important;color:#f6f8fc!important;border:1px solid rgba(150,180,215,.34)!important;border-radius:9px!important}.form-control:focus{border-color:#ff8a00!important;box-shadow:0 0 0 2px rgba(255,122,0,.13)!important}.table{color:#eef3fa!important}.table thead th{color:#ff9f00!important;background:rgba(8,44,77,.8)!important;border-color:rgba(150,180,215,.18)!important}.table td{border-color:rgba(150,180,215,.16)!important}.table tbody tr:hover{background:rgba(255,122,0,.06)!important}.alert-info{background:rgba(5,55,92,.7)!important;color:#d9e9fb!important;border-color:rgba(130,180,220,.25)!important}.text-muted,.help-block{color:#aab7ca!important}.sidebar-background{opacity:.12!important}.navbar .navbar-toggler .navbar-toggler-icon{background:#fff!important}.offline-nav{cursor:pointer}.fp-user-name,.fp-user-role{color:#f6f8fc!important}.fp-user-role{color:#ff9f00!important}
+</style>
+
+<style id="fp-light-parkapp">
+body{background:#f7f8fa!important;color:#30343b!important}.wrapper{background:#f7f8fa!important}.sidebar{background:linear-gradient(180deg,#071a33 0%,#0b2748 55%,#06162c 100%)!important;border-right:1px solid rgba(255,255,255,.08)!important}.sidebar .logo a,.sidebar .nav li>a,.sidebar .nav p{color:#fff!important}.navbar .navbar-brand,.card-title,.card-category,h1,h2,h3,h4,h5,h6,label{color:#30343b!important}.sidebar .nav li>a i{color:#fff!important}.sidebar .nav li.active>a,.sidebar .nav li>a:hover{background:linear-gradient(90deg,#ff6b00,#ffb300)!important}.sidebar .nav li.active>a i,.sidebar .nav li.active>a p,.sidebar .nav li>a:hover i,.sidebar .nav li>a:hover p{color:#fff!important}.main-panel{background:#f7f8fa!important}.card{background:#fff!important;border:1px solid #e1e4e8!important;box-shadow:0 8px 24px rgba(20,30,40,.08)!important;color:#30343b!important}.form-control,select.form-control,textarea.form-control,input.form-control{background:#fff!important;color:#30343b!important;border-color:#d5d9de!important}.table{color:#30343b!important}.table thead th{color:#e97800!important;background:#f3f5f7!important}.table td{border-color:#e1e4e8!important}.text-muted,.help-block{color:#737b84!important}.btn-warning{background:#ffb300!important;color:#fff!important}.btn-success,.btn-primary{background:linear-gradient(90deg,#ff6b00,#ffb300)!important;border:0!important;color:#fff!important}
+#imprimir_recibo{background:#fff!important;color:#222!important;padding:8px!important}
+#myModal .modal-content{background:#fff!important;color:#30343b!important;border-radius:12px!important}#myModal .modal-header,#myModal .modal-footer{border-color:#e1e4e8!important}#myModal .close{color:#30343b!important}
+#monthlyEntryNotice{background:#fff5e8!important;color:#9b4d00!important;border-color:#ffd09a!important}
+</style>
+<style id="fp-v61-ui">
+:root{--fp-nav-blue:#0b2748;--fp-nav-blue-2:#071a33;--fp-nav-hover:#123b68}
+/* Botones principales: mismo azul del panel de navegación */
+.btn-primary,.btn-success,.btn-warning,.fp-new-payment{background:var(--fp-nav-blue)!important;background-image:none!important;border-color:var(--fp-nav-blue)!important;color:#fff!important;box-shadow:none!important}
+.btn-primary:hover,.btn-success:hover,.btn-warning:hover,.fp-new-payment:hover{background:var(--fp-nav-hover)!important;border-color:var(--fp-nav-hover)!important;color:#fff!important}
+/* Acciones con flecha/cuadro: azul */
+.btn-arrow,.offline-select .btn,.editConfigUser,.editMonthly,.renewMonthly,.delMonthly{background:var(--fp-nav-blue)!important;color:#fff!important;border-color:var(--fp-nav-blue)!important}
+/* Impresión: solo icono, cuadro blanco y pequeño */
+.printSale,.printMonthlyPayment{width:42px!important;height:38px!important;padding:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;background:#fff!important;color:#0b2748!important;border:1px solid #d5dbe2!important;border-radius:7px!important;box-shadow:none!important}
+.printSale i,.printMonthlyPayment i{margin:0!important;font-size:16px!important;color:#0b2748!important}
+/* Paginación / cuadros de navegación */
+.fp-pager button,.fp-pager button.active,#salesPager button{background:var(--fp-nav-blue)!important;border-color:var(--fp-nav-blue)!important;color:#fff!important}
+.fp-pager button:disabled,#salesPager button:disabled{background:#eef1f4!important;border-color:#d7dce2!important;color:#8a929c!important}
+/* Selectores: caja limpia y flecha azul */
+select.form-control{color:#30343b!important}
+/* Íconos de navegación pequeños y uniformes */
+.sidebar .nav li>a i{width:24px!important;min-width:24px!important;font-size:17px!important}
+/* No usar íconos grandes decorativos en acciones */
+.btn i:only-child{margin-right:0!important}
+</style><style id="fp-v61-entry">.fp-entry-top-btn{background:#0b2748!important;color:#fff!important;border-radius:0 0 57px 57px!important}.fp-entry-top-btn:hover{background:#123b68!important}</style><style id="fp-v63-fixes">
+:root{--fp-nav-blue:#0b2748;--fp-nav-hover:#123b68;--fp-orange:#ff6b00;--fp-orange2:#ffb300}
+.fp-entry-top-btn{background:var(--fp-nav-blue)!important;color:#fff!important}
+.fp-entry-top-btn:hover{background:var(--fp-nav-hover)!important}
+a[href="index.html"] > div{background:var(--fp-nav-blue)!important;color:#fff!important}
+#btnRegistrar,#pagar{background:linear-gradient(90deg,var(--fp-orange),var(--fp-orange2))!important;background-image:linear-gradient(90deg,var(--fp-orange),var(--fp-orange2))!important;border-color:var(--fp-orange)!important;color:#fff!important}
+#btnRegistrar:hover,#pagar:hover{background:var(--fp-orange)!important}
+.fp-arrow-btn{width:34px!important;height:30px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;padding:0!important;background:var(--fp-nav-blue)!important;border-color:var(--fp-nav-blue)!important}
+.fp-arrow-btn svg{width:15px;height:15px;fill:none;stroke:#fff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.fp-print-icon{width:18px!important;height:18px!important;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+</style><style id="fp-v70-payment-ui">
+.fp-payment-panel{margin-top:8px;margin-bottom:12px}.fp-payment-title{font-weight:700;font-size:14px;margin:0 0 8px;color:#30343b}.fp-payment-methods{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.fp-payment-method{min-height:54px;border:1px solid #d5d9de;border-radius:12px;background:#fff;color:#30343b;font-weight:700;font-size:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;transition:.15s}.fp-payment-method.active{background:#0b2748;color:#fff;border-color:#0b2748}.fp-payment-method:hover:not(.active){background:#f4f6f8}.fp-pay-icon{font-size:15px;line-height:1}.fp-payment-amounts{margin-top:10px}.fp-payment-row{display:grid;grid-template-columns:96px 1fr;align-items:center;gap:8px;margin-bottom:6px}.fp-payment-row label{margin:0!important;color:#666!important;font-size:12px!important}.fp-payment-row input{height:38px;border:1px solid #d9dde2;border-radius:11px;padding:7px 12px;background:#fff;color:#30343b;font-weight:600;width:100%;box-sizing:border-box}.fp-payment-summary{margin-top:8px;border:1px solid #c9d8ea;background:#eef4fb;border-radius:11px;padding:8px 12px}.fp-payment-summary>div{display:flex;justify-content:space-between;align-items:center;font-size:12px}.fp-payment-summary strong{font-size:14px;color:#222}.fp-payment-summary .fp-balance span,.fp-payment-summary .fp-balance strong{color:#0b2748;font-weight:700}.fp-payment-summary .fp-balance{margin-top:2px}.fp-payment-panel input:focus{outline:none;border-color:#0b2748;box-shadow:0 0 0 2px rgba(11,39,72,.12)}#fpPaymentAmounts .fp-payment-summary{padding:5px 9px}#fpPaymentAmounts .fp-payment-summary>div{font-size:10.5px}#fpPaymentAmounts .fp-payment-summary strong{font-size:12px}#divtipopago .fp-payment-panel~*{}#pagar{background:#0b2748!important;background-image:none!important;border-color:#0b2748!important;color:#fff!important}#pagar:hover{background:#123b68!important;border-color:#123b68!important}
+</style><style id="fp-v78-payment-colors">
+/* Solo el método seleccionado queda azul. */
+#divtipopago .fp-payment-method{background:#fff!important;color:#30343b!important;border-color:#d5d9de!important;}
+#divtipopago .fp-payment-method.active{background:#0b2748!important;color:#fff!important;border-color:#0b2748!important;}
+#divtipopago .fp-payment-method:hover:not(.active){background:#fff!important;color:#30343b!important;}
+</style>
+</head>
+
+
+
+
+
+<body class="" data-module="entries">
+    <div>
+      <div class="content">
+        <div class="container-fluid">
+           <form action="#" method="POST">
+            <input type="hidden" name="_token" value="hLkWIYGXCJyMhMF8POCZNXcLGhq6niAwgnr5OCsd">
+               <a href="index.html" onclick="window.location.href='index.html'; return false;"><div style="background: rgba(73,155,234,1);border-radius: 0px 0px 57px 57px;
+               -moz-border-radius: 0px 0px 57px 57px;
+               -webkit-border-radius: 0px 0px 57px 57px;
+               border: 0px solid #000000;width: 100px;text-aling:center;position:absolute;color:white;z-index:1000;"><center><strong>Regresar</strong></center></div></a>
+               <a href="#" onclick="nuevaEntrada(); return false;"><div class="fp-entry-top-btn" style="background: #0b2748;border-radius: 0px 0px 57px 57px;
+                -moz-border-radius: 0px 0px 57px 57px;
+                -webkit-border-radius: 0px 0px 57px 57px;
+                border: 0px solid #000000;width: 100px;text-aling:center;position:absolute;color:white;z-index:1000;left:90%;"><center><strong>Nueva</strong></center></div></a>
+               <a href="#" data-toggle="modal" data-target="#myModal" id="imprimir"><div class="fp-entry-top-btn" style="background: #0b2748;border-radius: 0px 0px 57px 57px;
+                -moz-border-radius: 0px 0px 57px 57px;
+                -webkit-border-radius: 0px 0px 57px 57px;
+                border: 0px solid #000000;width: 100px;text-aling:center;position:absolute;color:white;z-index:1000;left:80%;"><center><strong>imprimir</strong></center></div></a>
+               
+               
+               <!-- Modal -->
+<div id="myModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+  
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">×</button>
+          <h4 class="modal-title">Imprimir</h4>
+        </div>
+        <div class="modal-body">
+          <div id="imprimir_recibo" style="background: white;">
+            <div id="receiptBusinessBlock" style="font-size:12.5px;font-family:Times New Roman,Times,serif;text-align:center;line-height:1.25;margin-bottom:6px;">
+                <strong id="receiptBusinessName" style="font-size:14px;">FACAPARKING</strong><br>
+                <span class="bizinfo"><strong id="receiptNitLabel">NIT.</strong> <span id="receiptBusinessNit">35529806-9</span></span>
+                <span class="bizinfo"><strong id="receiptPhoneLabel">TEL.</strong> <span id="receiptBusinessPhone">3137139757</span></span>
+                <span class="bizinfo"><strong id="receiptAddressLabel">DIR.</strong> <span id="receiptBusinessAddress">CARRERA 3 # 7 -132</span></span>
+            </div>
+            <div class="receipt-divider"></div>
+            <div id="receiptMainBlock" class="receiptMainBlock" style="font-size:14px;font-family:Times New Roman,Times,serif;line-height:1.35;text-align:left;">
+                <span id="receiptPlateRow" class="receipt-row"><strong id="receiptPlateLabel">Placa:</strong> <span id="impplaca" style="font-family:Arial,Helvetica,sans-serif;font-size:calc(1em - 1px);font-weight:normal;"></span></span>
+                <span id="receiptEntryRow" class="receipt-row"><strong id="receiptEntryLabel">Entrada:</strong> <span id="impentrada" style="font-family:Arial,Helvetica,sans-serif;font-size:calc(1em - 1px);font-weight:normal;"></span></span>
+                <span id="impSalidaRow" class="receipt-row" style="display:none;"><strong id="receiptExitLabel">Salida:</strong> <span id="impsalida" style="font-family:Arial,Helvetica,sans-serif;font-size:calc(1em - 1px);font-weight:normal;"></span></span>
+                <span id="impServiceRow" class="receipt-row" style="display:none;"><strong id="receiptServiceLabel">Servicio:</strong> <span id="imptarifa" style="font-family:Arial,Helvetica,sans-serif;font-size:calc(1em - 1px);font-weight:normal;"></span></span>
+                <span id="impTimeRow" class="receipt-row" style="display:none;"><strong id="receiptTimeLabel">Tiempo:</strong> <span id="imptiempo" style="font-family:Arial,Helvetica,sans-serif;font-size:calc(1em - 1px);font-weight:normal;"></span></span>
+                <span id="receiptNumberRow" class="receipt-row receiptno"><strong>Recibo:</strong> <span id="imprecibo" style="font-family:Arial,Helvetica,sans-serif;font-size:calc(1em - 1px);font-weight:normal;"></span></span>
+                <span id="impSubtotalRow" class="receipt-row" style="display:none;"><strong>Valor original:</strong> <span id="impsubtotal" style="font-family:Arial,Helvetica,sans-serif;font-size:calc(1em - 1px);font-weight:normal;"></span></span>
+                <span id="impDiscountRow" class="receipt-row" style="display:none;"><strong>Descuento:</strong> <span id="impdescuento" style="font-family:Arial,Helvetica,sans-serif;font-size:calc(1em - 1px);font-weight:normal;"></span></span>
+                <span id="impTotalRow" class="receipt-row total" style="display:none;"><strong id="receiptTotalLabel">Total:</strong> <span id="imptotal" style="font-family:Arial,Helvetica,sans-serif;font-size:calc(1em - 1px);font-weight:normal;"></span></span>
+                <span id="receiptPaymentMethodRow" class="receipt-row" style="display:none;"><strong id="receiptPaymentMethodLabel">Forma de pago:</strong> <span id="imppaymentmethod" style="font-family:Arial,Helvetica,sans-serif;font-size:calc(1em - 1px);font-weight:normal;"></span></span><span id="impCashRow" class="receipt-row" style="display:none;"><strong>Efectivo:</strong> <span id="impcash" style="font-family:Arial,Helvetica,sans-serif;font-size:calc(1em - 1px);font-weight:normal;"></span></span><span id="impNequiRow" class="receipt-row" style="display:none;"><strong>Nequi:</strong> <span id="impnequi" style="font-family:Arial,Helvetica,sans-serif;font-size:calc(1em - 1px);font-weight:normal;"></span></span>
+                <span id="receiptCustomMessageRow" class="receipt-row" style="display:none;"><span id="receiptCustomMessage"></span></span>
+                <span id="receiptAdditionalInfoRow" class="receipt-row" style="display:none;"><span id="receiptAdditionalInfo"></span></span>
+            </div>
+            <div class="receipt-divider" id="receiptHoursDivider"></div>
+            <div id="receiptHoursBlock" style="font-size:13px;font-family:Times New Roman,Times,serif;line-height:1.35;text-align:center;white-space:pre-line;">
+                <strong>HORARIOS DE ATENCIÓN</strong>
+                <div id="receiptHoursText"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+            <div class="btn btn-success" data-dismiss="modal" onclick="imprimir();">Imprimir</div>
+          <div type="button" class="btn btn-default" data-dismiss="modal">Close</div>
+        </div>
+      </div>
+  
+    </div>
+  </div>
+
+
+               <div class="row">
+                    <div class="col-md-7">    
+                        <center><label>PLACA</label></center>
+                        <div id="placaSuggestWrap" style="position:relative;">
+                            <input type="placa" maxlength="6" id="placa" name="placa" autocomplete="off" onkeyup="myFunction()" required="">
+                            <div id="placaSuggestions" role="listbox" style="display:none;position:absolute;left:0;right:0;top:100%;z-index:9999;background:#fff;border:1px solid #ddd;border-radius:0 0 5px 5px;box-shadow:0 4px 12px rgba(0,0,0,.18);max-height:230px;overflow-y:auto;text-align:left;"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <center><label>Valor A Pagar</label></center><br>
+                        <h1 style="font-size: 100px; font-weight: 900 !important;"><span id="total" style="font-weight: 900 !important;">0</span></h1>
+                    </div>
+               </div>
+               <div class="row">
+                    <div class="col-md-7">
+                        <div class="card" style="height: 300px;overflow-y:scroll;">
+                            <div class="card-header card-header-primary">
+                                <h4 class="card-title ">Entradas</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                <table class="table" id="myTable">
+                                    <thead class=" text-primary">
+                                    <tr>
+                                        <th>Placa</th>
+                                        <th>Entrada Fecha</th>
+                                        <th>Entrada Hora</th>
+                                        <th>Tarifa</th>
+                                        <th>Recibo</th>
+                                        <th></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    </tbody>
+                                </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-5">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label style="background:white;padding:5%;font-size:30px;width: 100%;" id="resta">
+                                    0Mes 0Dia 0Hora 0min</label>
+                            </div>
+                            <label class="col-md-2">Servicio</label>
+                            <div class="col-md-10">
+                                <select id="idTarifa" name="idTarifa" class="form-control" onchange="calcularTarifaServidor()" required="">
+                                    <option value="">Seleccione Servicio</option>
+                                                                        <option value="5">parqueadero Carro</option>
+                                                                        <option value="6">parqueadero Moto</option>
+                                                                        <option value="7">parqueadero cicla</option>
+                                                                    </select>
+                            </div>
+                            <!--<label class="col-md-2">Entrada</label>-->
+                            <div class="col-md-12">
+                                    <input type="hidden" id="entradaFecha" class="form-control" name="entradaFecha" value="02-09-2026 14:38:52" required="" disabled="">
+                                    <!--<input type="datetime-local" id="entradaFecha" class="form-control" onchange="calcularTarifaServidor()" name="entradaFecha" value="2026-09-02T14:38" required>-->
+                            </div>
+                            <label class="col-md-2">Salida</label>
+                            <div class="col-md-10">
+                                <label>02-09-2026</label> <label id="salidaFecha"> Hora: 14 : 44 : 47</label>                                <!--<input type="datetime-local" id="salidaFecha" class="form-control" onchange="calcularTarifaServidor()" name="salidaFecha" value="2026-09-02T14:38">-->
+                            </div>
+                            <div class="col-md-1" style="height:6px;">
+                            </div>
+                            <div class="col-md-12" id="divtipopago" style="display: none;">
+                                <div class="fp-payment-panel" id="fpDiscountPanel" style="margin-bottom:10px;">
+                                  <div class="fp-payment-title">Descuento</div>
+                                  <div class="row" style="margin:0;">
+                                    <div class="col-md-6" style="padding-left:0;">
+                                      <input type="number" id="fpValorCobrado" class="form-control" min="0" step="1" value="0" placeholder="Valor a cobrar">
+                                    </div>
+                                    <div class="col-md-6" style="padding-right:0;">
+                                      <input type="text" id="fpDiscountReason" class="form-control" placeholder="Motivo (opcional)">
+                                    </div>
+                                  </div>
+                                  <div class="fp-payment-summary" id="fpDiscountSummary" style="display:none;margin-top:10px;">
+                                    <div><span>Valor original</span><strong id="fpDiscountOriginal">$0</strong></div>
+                                    <div><span>Descuento aplicado</span><strong id="fpDiscountApplied">-$0</strong></div>
+                                    <div class="fp-balance"><span>Total a pagar</span><strong id="fpDiscountFinal">$0</strong></div>
+                                  </div>
+                                </div>
+                                <div id="monthlyPendingExitNotice" style="display:none;background:#fff3cd;color:#856404;border:1px solid #ffe69c;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:13px;"></div>
+                                <div class="fp-payment-panel" id="fpPaymentPanel" data-payment-selected="cash">
+                                  <div class="fp-payment-title" style="display:flex;align-items:center;justify-content:space-between;">
+                                    <span>Método de pago</span>
+                                    <button type="button" id="btnPendiente" title="Registrar la salida sin cobrar ahora; el cobro queda en Pendientes." style="background:#0b2748;color:#fff;border:0;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;">Pendiente</button>
+                                  </div>
+                                  <div class="fp-payment-methods">
+                                    <button type="button" class="fp-payment-method active" data-payment-method="cash" onclick="return window.fpSeleccionarMetodoPago('cash')"><span class="fp-pay-icon">▣</span><span>Efectivo</span></button>
+                                    <button type="button" class="fp-payment-method" data-payment-method="nequi" onclick="return window.fpSeleccionarMetodoPago('nequi')"><span class="fp-pay-icon">▯</span><span>Electrónico</span></button>
+                                    <button type="button" class="fp-payment-method" data-payment-method="both" onclick="return window.fpSeleccionarMetodoPago('both')"><span class="fp-pay-icon">⇄</span><span>Ambos</span></button>
+                                  </div>
+                                  <div class="fp-payment-amounts" id="fpPaymentAmounts" style="display:block;">
+                                    <div class="fp-payment-row"><label for="fpCashAmount">Efectivo</label><input type="number" id="fpCashAmount" min="0" step="1" value="0"></div>
+                                    <div class="fp-payment-row"><label for="fpNequiAmount">Electrónico (calculado)</label><input type="number" id="fpNequiAmount" min="0" step="1" value="0" readonly></div>
+                                    <div class="fp-payment-summary">
+                                      <div><span>Total pagado</span><strong id="fpTotalPaid">$0</strong></div>
+                                      <div class="fp-balance"><span>Saldo</span><strong id="fpPaymentBalance">$0</strong></div>
+                                    </div>
+                                  </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="button" name="actionRegistrar" id="btnRegistrar" style="width: 100%;" class="btn btn-warning">Registrar</button>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="button" value="Finalizar venta" name="pagar" id="pagar" style="width: 100%; display: none;" class="btn btn-success">
+                            </div>
+                        </div>
+                        
+                        <input type="hidden" id="idEntrada" name="idEntrada" value="0">
+                        <input type="hidden" id="subtotal" name="subtotal" value="0">
+                        <input type="hidden" id="valor" name="valor" value="0">
+                        <input type="hidden" id="valorDescuento" name="valorDescuento" value="0">
+                        <input type="hidden" id="iva" name="iva" value="0">
+                        <input type="hidden" id="retencion" name="retencion" value="0">
+                        <input type="hidden" value="3" id="idUsuario" name="idUsuario" placeholder="idUsuaroi">
+                        <input type="hidden" value="1" id="idParqueadero" name="idParqueadero" placeholder="idparqueadero">
+                        <input type="hidden" id="reciboPrefijo" value="FA" name="reciboPrefijo" placeholder="reciboPrefijo">
+                        <input type="hidden" id="reciboNumero" value="0" name="reciboNumero" placeholder="reciboNumero">
+                        <input type="hidden" id="codigoBarras" value="NA" name="codigoBarras" placeholder="codigoBarras">
+                    </div>
+               </div>
+               
+           </form>
+
+            
+        </div>
+      </div>
+    </div>
+
+
+
+
+  <script>
+
+
+  function horaSalida(idendificador){
+      
+  }
+  
+  function cantidadTiempo(){
+    /*var fecha_entrada = $('#entradaFecha').val().split('-');
+    var fecha_salida = $('#salidaFecha').val().split('-');
+    let ano = fecha_salida[0] - fecha_entrada[0];
+    let mes = fecha_salida[1] - fecha_entrada[1];
+    let dia = fecha_salida[2].split("T")[0] - fecha_entrada[2].split("T")[0];
+    let hora = fecha_salida[2].split("T")[1].split(":")[0] - fecha_entrada[2].split("T")[1].split(":")[0];
+    let min = fecha_salida[2].split("T")[1].split(":")[1] - fecha_entrada[2].split("T")[1].split(":")[1];
+
+    if(min < 0){
+        min = min + 60;
+    }
+    if(hora < 0){
+        hora = hora + 24;
+    }
+    if(dia < 0){
+        dia = dia + 31;
+    }
+*/
+    /*var fecha1 = moment($('#entradaFecha').val());
+    var fecha2 = moment($('#salidaFecha').val());
+    
+    var minutos = fecha2.diff(fecha1, 'minutes');
+    hora = parseInt(minutos/60);
+    min = parseInt(minutos);
+    if(min > 60){
+        min = min -60;
+    }
+    console.log(fecha2.diff(fecha1, 'minutes'), ' minutos de diferencia');
+    */
+    /*if(min<0){
+        min = Math.abs(min);
+    }
+    if(hora<0){
+        hora = Math.abs(hora);
+    }
+    if(dia<0){
+        dia = Math.abs(dia);
+    }
+    if(mes<0){
+        mes = Math.abs(mes);
+    }*/
+
+    /*console.log(min);
+
+    $('#resta').html(mes + "Mes " + dia + "Dia " + hora + "hora " + min + "min ");*/
+
+    //calcular tarifa
+    //calcularTarifaServidor();
+    //calcularTarifa(ano,mes,dia,hora,min);
+  }
+
+  function calcularTarifa(ano,mes,dia,hora,min){
+    /*var tarifa_select = $('#idTarifa').val();
+    parametros = {
+        "id" : tarifa_select
+    };
+    $.ajax({
+        data:  parametros,
+        url:   '/servicios/'+tarifa_select,
+        type:  'get',
+        success:  function (response) {
+            //console.log(response.tarifas[0]);
+            tarifas = response.tarifas[0];
+
+            //min
+            min_1 = min;
+            hora_1 = hora;
+            dia_1 = dia;
+            mes_1 = mes;
+
+            total = 0;
+            
+            if(mes_1>=1 ){
+                total = total + (tarifas.mensualidad * mes);
+                console.log("1");
+                if(dia_1>=30 ){
+                    total = total + tarifas.mensualidad;
+                    console.log("25");
+                }
+                if(dia_1<30 ){
+                    total = total + (tarifas.quincena * (dia * 2));
+                    console.log("35");
+                    if(hora_1>=12 ){
+                        total = total + tarifas.quincena;
+                        let h = hora_1 - 12;
+                        if(h>0){
+                            total = total + (tarifas.valorHora * h);
+                            console.log("45");
+                        }
+                        if(min_1<=45 ){
+                            total = total + tarifas.valorMinuto;
+                            console.log("75");
+                        }
+                        if(min_1>45 ){
+                            total = total + tarifas.valorHora;
+                            console.log("66");
+                        }
+                        console.log("46");
+                    }
+                    if(hora_1<12){
+                        total = total + (tarifas.valorHora * hora);
+                        if(min_1<=45 && dia_1==0 ){
+                            total = total + tarifas.valorMinuto;
+                            console.log("76");
+                        }
+                        if(min_1>45 && dia_1==0 ){
+                            total = total + tarifas.valorHora;
+                            console.log("66");
+                        }
+                        console.log("56");
+                    }
+                    
+                }
+            }
+            if(dia_1>=30 && mes_1==0){
+                total = total + tarifas.mensualidad;
+                console.log("2");
+            }
+            if(dia_1<30 && mes_1==0 && dia_1!=0){
+                total = total + (tarifas.quincena * (dia * 2));
+                console.log("3");
+                if(hora_1>=12 && mes_1==0){
+                    total = total + tarifas.quincena;
+                    let h = hora_1 - 12;
+                    if(h>0){
+                        total = total + (tarifas.valorHora * h);
+                        console.log("44");
+                    }
+                    if(min_1<=45 && mes_1==0){
+                        total = total + tarifas.valorMinuto;
+                        console.log("74");
+                    }
+                    if(min_1>45 && mes_1==0){
+                        total = total + tarifas.valorHora;
+                        console.log("64");
+                    }
+                    console.log("41");
+                }
+                if(hora_1<12 && mes_1==0 ){
+                    total = total + (tarifas.valorHora * hora);
+                    if(min_1<=45  && mes_1==0){
+                        total = total + tarifas.valorMinuto;
+                        console.log("73");
+                    }
+                    if(min_1>45 && mes_1==0){
+                        total = total + tarifas.valorHora;
+                        console.log("63");
+                    }
+                    console.log("51");
+                }
+                
+            }
+            if(hora_1>=12 && dia_1==0 && mes_1==0){
+                total = total + tarifas.quincena;
+                let h = hora_1 - 12;
+                if(h>0){
+                    total = total + (tarifas.valorHora * h);
+                    console.log("41");
+                }
+                if(min_1<=45 && mes_1==0){
+                    total = total + tarifas.valorMinuto;
+                    console.log("72");
+                }
+                if(min_1>45 && mes_1==0){
+                    total = total + tarifas.valorHora;
+                    console.log("62");
+                }
+                console.log("4");
+            }
+            if(hora_1<12 && dia_1==0 && mes_1==0 && hora_1!=0){
+                total = total + (tarifas.valorHora * hora);
+                if(min_1<=45 && dia_1==0 && mes_1==0){
+                    total = total + tarifas.valorMinuto;
+                    console.log("71");
+                }
+                if(min_1>45 && dia_1==0 && mes_1==0){
+                    total = total + tarifas.valorHora;
+                    console.log("61");
+                }
+                console.log("5");
+            }
+            if(min_1>45 && hora_1==0 && dia_1==0 && mes_1==0){
+                total = total + tarifas.valorHora;
+                console.log("6");
+            }
+            if(min_1<=45 && hora_1==0 && dia_1==0 && mes_1==0){
+                total = total + tarifas.valorMinuto;
+                console.log("7");
+            }
+            
+            
+            
+            
+            pago_mes = mes * tarifas.mensualidad;
+            pago_hora = hora * tarifas.valorHora;
+            pago_min = min * tarifas.valorMinuto;
+            pago_quin = dia * tarifas.quincena;
+            
+            
+            
+            $('#total').text(numeral(total).format('$0,0'));
+            $('#subtotal').val(total);
+            $('#valor').val(total);
+            $('#valorDescuento').val(0);
+            $('#iva').val(0);
+            $('#retencion').val(0);
+        }
+    });*/
+  }
+  </script>
+
+  <!--   Core JS Files   -->
+  <script src="./assets/jquery.min.js"></script>
+  <script src="./assets/popper.min.js"></script>
+  <script src="./assets/bootstrap-material-design.min.js"></script>
+  <script src="./assets/perfect-scrollbar.jquery.min.js"></script>
+  <!-- Plugin for the momentJs  -->
+
+  <!--  Plugin for Sweet Alert -->
+  <script src="./assets/sweetalert2.js"></script>
+  <!-- Forms Validations Plugin -->
+  <script src="./assets/jquery.validate.min.js"></script>
+  <!-- Plugin for the Wizard, full documentation here: https://github.com/VinceG/twitter-bootstrap-wizard -->
+  <script src="./assets/jquery.bootstrap-wizard.js"></script>
+  <!--	Plugin for Select, full documentation here: http://silviomoreto.github.io/bootstrap-select -->
+  <script src="./assets/bootstrap-selectpicker.js"></script>
+  <!--  Plugin for the DateTimePicker, full documentation here: https://eonasdan.github.io/bootstrap-datetimepicker/ -->
+  <script src="./assets/bootstrap-datetimepicker.min.js"></script>
+  <!--  DataTables.net Plugin, full documentation here: https://datatables.net/  -->
+  <script src="./assets/jquery.dataTables.min.js"></script>
+  <!--	Plugin for Tags, full documentation here: https://github.com/bootstrap-tagsinput/bootstrap-tagsinputs  -->
+  <script src="./assets/bootstrap-tagsinput.js"></script>
+  <!-- Plugin for Fileupload, full documentation here: http://www.jasny.net/bootstrap/javascript/#fileinput -->
+  <script src="./assets/jasny-bootstrap.min.js"></script>
+  <!--  Full Calendar Plugin, full documentation here: https://github.com/fullcalendar/fullcalendar    -->
+  <script src="./assets/fullcalendar.min.js"></script>
+  <!-- Vector Map plugin, full documentation here: http://jvectormap.com/documentation/ -->
+  <script src="./assets/jquery-jvectormap.js"></script>
+  <!--  Plugin for the Sliders, full documentation here: http://refreshless.com/nouislider/ -->
+  <script src="./assets/nouislider.min.js"></script>
+  <!-- Include a polyfill for ES6 Promises (optional) for IE11, UC Browser and Android browser support SweetAlert -->
+  <script src="./assets/core.js"></script>
+
+
+<script>
+  $(document).ready(function(){
+        //cantidadTiempo();
+        $('#btnRegistrar').show();
+        $('#pagar').hide();
+        $('#divtipopago').hide();
+        // NOTA: setupPaymentUI() se llama más abajo, en el bloque donde realmente
+        // está definida (ver DOMContentLoaded al final del archivo). Llamarla aquí
+        // fallaba con "setupPaymentUI is not defined" porque este bloque se ejecuta
+        // antes de que ese otro <script> se procese, dejando sin funcionar los
+        // botones de método de pago (Efectivo/Electrónico/Ambos).
+    });
+    function legacyUpdate(obj){
+        var data = JSON.parse(obj);
+        console.log(data);
+        $('#entradaFecha').val(data.entradaFecha);
+        $('#idCliente').val(data.idCliente);
+        $('#idTarifa').val(data.idTarifa[0].id);
+        $('#idParqueadero').val(data.idParqueadero);
+        $('#idUsuario').val(data.idUsuario);
+        $('#nota').val(data.nota);
+        $('#descripcion').val(data.descripcion);
+        $('#placa').val(data.placa);
+        $('#reciboNumero').val(data.reciboNumero);
+        $('#reciboPrefijo').val(data.reciboPrefijo);
+        if((data.salidaFecha !=  null)){
+            $('#salidaFecha').val( data.salidaFecha );
+        }
+        else{
+            //$('#salidaFecha').val( data.salidaFecha );
+        }
+        $('#salidaHora').val(data.salidaHora);
+        $('#idEntrada').val(data.id);
+        //bloquear los botones
+        $('#btnRegistrar').hide();
+        $('#pagar').show();
+        $('#idTipoPago').hide();
+
+        date = new Date(data.entradaFecha);
+        $('#impentrada').text(date.getDay() + "/" + date.getMonth() + "/" + date.getFullYear() + " Hora: " + date.getHours() + ":" + date.getMinutes() );
+
+        $('#impplaca').text(data.placa);
+        //$('#impentrada').text(data.entradaFecha);
+        $('#imprecibo').text(data.reciboNumero);
+
+        //saber la cantidad de tiempo
+        calcularTarifaServidor();
+    }
+</script>
+
+<script>
+function myFunction() {
+    var input, filter, table, tr, td, i, txtValue;
+    input = document.getElementById("placa");
+    filter = input.value.toUpperCase();
+    table = document.getElementById("myTable");
+    tr = table.getElementsByTagName("tr");
+    for (i = 0; i < tr.length; i++) {
+    td = tr[i].getElementsByTagName("td")[0];
+    if (td) {
+        txtValue = td.textContent || td.innerText;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+        tr[i].style.display = "";
+        } else {
+        tr[i].style.display = "none";
+        }
+    }       
+    }
+}
+
+
+
+
+function zfill(number, width) {
+    var numberOutput = Math.abs(number); /* Valor absoluto del número */
+    var length = number.toString().length; /* Largo del número */ 
+    var zero = "0"; /* String de cero */  
+    
+    if (width <= length) {
+        if (number < 0) {
+             return ("-" + numberOutput.toString()); 
+        } else {
+             return numberOutput.toString(); 
+        }
+    } else {
+        if (number < 0) {
+            return ("-" + (zero.repeat(width - length)) + numberOutput.toString()); 
+        } else {
+            return ((zero.repeat(width - length)) + numberOutput.toString()); 
+        }
+    }
+}
+</script>
+
+
+<script>
+
+function calcularTarifaServidor(){
+    if (window.calcularTarifaServidor && window.calcularTarifaServidor !== calcularTarifaServidor) {
+        return window.calcularTarifaServidor();
+    }
+    var id = $('#idTarifa').val();
+    if (id && window.FP && typeof window.FP.money === 'function') {
+        // La versión offline realiza el cálculo real en el script local inferior.
+        return;
+    }
+}
+
+</script>
+
+<script>
+/* ============================================================
+   NEXO.APP OFFLINE - v4
+   Mantiene la interfaz original y reemplaza las rutas de servidor.
+   ============================================================ */
+(function(){
+  'use strict';
+  const DB_KEY = 'fp_entries'; // V131: unificado (antes 'facaparking_offline_entries_v4', ver mvc/model.js)
+  const COUNTER_KEY = 'facaparking_offline_receipt_v4';
+  const SEEDED_KEY = 'facaparking_offline_seeded_v4';
+  const RESET_COUNTER_V38_KEY = 'facaparking_offline_receipt_reset_v38';
+  const CLEANUP_KEY = 'facaparking_offline_cleanup_v27';
+  const RESET_OPERATIONAL_V85_KEY = 'facaparking_offline_operational_reset_v85';
+  const REF_FULL12H = {'5':20000,'6':14000,'7':10000};
+  const FALLBACK_TARIFFS = {
+    '5': { nombre:'parqueadero Carro', valorHora:3300, valorMinuto:1800, fraction:1800, quincena:14000, mensualidad:130000, full12h:20000 },
+    '6': { nombre:'parqueadero Moto', valorHora:2200, valorMinuto:1500, fraction:1500, quincena:10000, mensualidad:80000, full12h:14000 },
+    '7': { nombre:'parqueadero cicla', valorHora:0, valorMinuto:0, fraction:0, quincena:0, mensualidad:0, full12h:10000 }
+  };
+  function getTariff(id){
+    const services = (()=>{ try{return JSON.parse(localStorage.getItem('fp_services')||'[]')}catch(e){return []} })();
+    const x=services.find(v=>String(v.id)===String(id));
+    const f=FALLBACK_TARIFFS[String(id)]||{};
+    const merged=Object.assign({},f,x||{});
+    merged.fraction=Number((x&&x.fraction)!=null?x.fraction:(x&&x.minute)!=null?x.minute:(f.fraction||f.valorMinuto||0));
+    merged.full12h=Number((x&&x.full12h)!=null?x.full12h:(REF_FULL12H[String(id)]||f.full12h||0));
+    merged.monthly=Number((x&&x.monthly)!=null?x.monthly:(f.monthly||0));
+    merged.valorHora=Number((x&&x.hour)!=null?x.hour:(f.valorHora||0));
+    return merged;
+  }
+  let selectedId = null;
+
+  function el(id){ return document.getElementById(id); }
+  function value(id){ const e=el(id); return e ? String(e.value ?? '') : ''; }
+  function setValue(id,v){ const e=el(id); if(e) e.value = v == null ? '' : v; }
+  function text(id,v){ const e=el(id); if(e) e.textContent = v == null ? '' : v; }
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function nowString(){ const d=new Date(); return `${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; }
+  function receiptDateTime(v){
+    const s=String(v||'').trim();
+    if(!s) return '';
+    const m=s.match(/^(\d{2})-(\d{2})-(\d{4})[\sT]+(\d{2}):(\d{2})(?::\d{2})?/);
+    if(m) return `${m[1]}-${m[2]}-${m[3]} ${m[4]}:${m[5]}`;
+    const iso=s.match(/^(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})(?::\d{2})?/);
+    if(iso) return `${iso[3]}-${iso[2]}-${iso[1]} ${iso[4]}:${iso[5]}`;
+    const d=new Date(s);
+    if(!isNaN(d.getTime())) {
+      const pad=n=>String(n).padStart(2,'0');
+      return `${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+    // Seguro final: si ninguno de los formatos anteriores hizo match (p.ej. una fecha
+    // guardada en un formato inesperado), igual se recortan los segundos antes de
+    // imprimir, para que nunca se cuelen "HH:MM:SS" en el recibo.
+    return s.replace(/(\d{1,2}:\d{2}):\d{2}(\b|$)/, '$1$2');
+  }
+  function receiptNumberFA(n){ return 'FA'+String(n??'').trim(); }
+  function parseDate(s){
+    if(!s) return new Date();
+    const m=String(s).match(/^(\d{2})-(\d{2})-(\d{4})\s+(\d{2}):(\d{2})(?::(\d{2}))?/);
+    if(m) return new Date(+m[3],+m[2]-1,+m[1],+m[4],+m[5],+(m[6]||0));
+    const d=new Date(s); return isNaN(d.getTime()) ? new Date() : d;
+  }
+  function formatMoney(n){
+    try { return new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(Math.round(n||0)); }
+    catch(e){ return '$'+Math.round(n||0).toLocaleString(); }
+  }
+  function receiptConfig(){
+    try { return JSON.parse(localStorage.getItem('fp_config')||'{}'); } catch(e){ return {}; }
+  }
+  function receiptCfgLabel(c,key,def){ return String(c[key]??def); }
+  function receiptCfgShow(c,key,def=true){ return c[key]===undefined?def:!!c[key]; }
+  function formatReceiptDuration(r){ const parts=[]; if(Number(r.mes||0)) parts.push(`${r.mes} ${Number(r.mes)===1?'MES':'MESES'}`); if(Number(r.dia||0)) parts.push(`${r.dia} ${Number(r.dia)===1?'DÍA':'DÍAS'}`); if(Number(r.hora||0)) parts.push(`${r.hora} ${Number(r.hora)===1?'HORA':'HORAS'}`); if(Number(r.min||0)) parts.push(`${r.min} MIN`); return parts.join(' ')||'0 MIN'; }
+  function applyReceiptConfig(isExit){
+    const c=receiptConfig();
+    const type=isExit?'exit':'entry';
+    const business=el('receiptBusinessBlock');
+    if(business) business.style.display=receiptCfgShow(c,type+'ShowBusiness',true)?'':'none';
+    const rows={plate:'receiptPlateRow',entry:'receiptEntryRow',exit:'impSalidaRow',service:'impServiceRow',time:'impTimeRow',total:'impTotalRow',payment:'receiptPaymentMethodRow'};
+    if(el(rows.plate))el(rows.plate).style.display=receiptCfgShow(c,type+'ShowPlate',true)?'':'none';
+    if(el(rows.entry))el(rows.entry).style.display=receiptCfgShow(c,type+'ShowEntry',true)?'':'none';
+    if(el(rows.exit))el(rows.exit).style.display=isExit&&receiptCfgShow(c,'exitShowExit',true)?'':'none';
+    if(el(rows.service))el(rows.service).style.display=isExit&&receiptCfgShow(c,'exitShowService',true)?'':'none';
+    if(el(rows.time))el(rows.time).style.display=isExit&&receiptCfgShow(c,'exitShowTime',true)?'':'none';
+    if(el(rows.total))el(rows.total).style.display=isExit&&receiptCfgShow(c,'exitShowTotal',true)?'':'none';
+    if(el(rows.payment))el(rows.payment).style.display=isExit&&receiptCfgShow(c,'exitShowPaymentMethod',true)?'':'none';
+    if(el('receiptHoursBlock'))el('receiptHoursBlock').style.display=receiptCfgShow(c,'entryShowHours',true)?'':'none';
+    if(el('receiptHoursDivider'))el('receiptHoursDivider').style.display=receiptCfgShow(c,'entryShowHours',true)?'':'none';
+    text('receiptHoursText',String(c.entryHoursText||'').replace(/^\s*Horario(?:s)? de atención:\s*/i,'')||'Lunes a Miércoles:\n06:30 a 21:30\nJueves a Sábado:\n06:30 a 23:00\nDomingos y Festivos:\n06:30 a 19:00');
+    const prefix=type==='exit'?'exit':'entry';
+    text('receiptNitLabel',receiptCfgLabel(c,prefix+'LabelNit','NIT.'));
+    text('receiptPhoneLabel',receiptCfgLabel(c,prefix+'LabelPhone','TEL.'));
+    text('receiptAddressLabel',receiptCfgLabel(c,prefix+'LabelAddress','DIR.'));
+    text('receiptPlateLabel',receiptCfgLabel(c,prefix+'LabelPlate','Placa'));
+    text('receiptEntryLabel',receiptCfgLabel(c,prefix+'LabelEntry','Entrada'));
+    text('receiptExitLabel',receiptCfgLabel(c,'exitLabelExit','Salida'));
+    text('receiptServiceLabel',receiptCfgLabel(c,'exitLabelService','Servicio'));
+    text('receiptTimeLabel',receiptCfgLabel(c,'exitLabelTime','Tiempo'));
+    text('receiptTotalLabel',receiptCfgLabel(c,'exitLabelTotal','Total'));
+    text('receiptPaymentMethodLabel',receiptCfgLabel(c,'exitLabelPaymentMethod','Forma de pago'));
+    const customMessage=String(c.customMessage||'').trim(), additionalInfo=String(c.additionalInfo||'').trim();
+    text('receiptCustomMessage',customMessage);
+    text('receiptAdditionalInfo',additionalInfo);
+    if(el('receiptCustomMessageRow'))el('receiptCustomMessageRow').style.display=customMessage?'':'none';
+    if(el('receiptAdditionalInfoRow'))el('receiptAdditionalInfoRow').style.display=additionalInfo?'':'none';
+  }
+  function applyBusinessInfo(){
+    const c=receiptConfig();
+    text('receiptBusinessName',c.razon_social||c.parkingName||'FACAPARKING');
+    text('receiptBusinessNit',c.receiptNit??c.nit??''); text('receiptBusinessPhone',c.receiptPhone??c.telefonos??c.phone??''); text('receiptBusinessAddress',c.receiptAddress??c.direccion1??c.address??'');
+  }
+  function readDB(){ try { return JSON.parse(localStorage.getItem(DB_KEY)||'[]'); } catch(e){ return []; } }
+  function writeDB(a){
+    // V131: una sola clave (antes se guardaba duplicado en DB_KEY y 'fp_entries',
+    // que ya son la misma clave ahora).
+    try{ localStorage.setItem(DB_KEY,JSON.stringify(a)); }
+    catch(e){ try{ fpAlert('No se pudo guardar: el almacenamiento del equipo está lleno o no responde. Avise al administrador antes de seguir operando.','error'); }catch(_){} throw e; }
+  }
+  function nextReceipt(){
+    let max=0;
+    const readArr=k=>{try{const a=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return []}};
+    readArr(DB_KEY).forEach(x=>{const n=parseInt(x?.reciboNumero??x?.receiptNumber,10);if(isFinite(n)&&n>max)max=n;});
+    const stored=parseInt(localStorage.getItem(COUNTER_KEY)||'0',10); if(isFinite(stored)&&stored>max)max=stored;
+    const cfg=(()=>{try{return JSON.parse(localStorage.getItem('fp_config')||'{}')}catch(e){return {}}})();
+    const configured=parseInt(cfg.nextReceiptNumber,10)-1; if(isFinite(configured)&&configured>max)max=configured;
+    const next=max+1; localStorage.setItem(COUNTER_KEY,String(next)); cfg.nextReceiptNumber=next+1; cfg.receiptPrefix=cfg.receiptPrefix||'FA'; localStorage.setItem('fp_config',JSON.stringify(cfg)); return next;
+  }
+  function resetReceiptCounterV38(){
+    if(localStorage.getItem(RESET_COUNTER_V38_KEY)==='1') return;
+    localStorage.setItem(COUNTER_KEY,'0');
+    try{
+      const c=JSON.parse(localStorage.getItem('fp_config')||'{}');
+      c.nextReceiptNumber=1;
+      c.receiptPrefix=c.receiptPrefix||'FA';
+      localStorage.setItem('fp_config',JSON.stringify(c));
+    }catch(e){}
+    localStorage.setItem(RESET_COUNTER_V38_KEY,'1');
+  }
+  function escapeHtml(v){ return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+
+  // Replica de la lógica de tarifa que estaba definida en el HTML original.
+  // Cobro basado en la lógica de la otra app: fracción 1-45 min,
+  // hora 46-60 min y tarifa plena de 12 h cuando conviene.
+  // Misma lógica de cobro de la otra aplicación de referencia:
+  // 1-45 min = fracción; 46-60 min = hora; cada bloque de 12 h
+  // usa la tarifa plena si la tarifa normal acumulada alcanza/supera la plena.
+  function calcNormal(minutes,t){
+    if(minutes<=0) return 0;
+    const fraction=Number(t.fraction??t.valorMinuto??0);
+    const hour=Number(t.valorHora||0);
+    const hours=Math.floor(minutes/60), rem=minutes%60;
+    return hours*hour+(rem===0?0:(rem<=45?fraction:hour));
+  }
+  function addMonthsClamped(date, months){
+    const d=new Date(date.getTime()), day=d.getDate();
+    d.setDate(1); d.setMonth(d.getMonth()+months);
+    const last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+    d.setDate(Math.min(day,last));
+    return d;
+  }
+  function calendarElapsed(start,end){
+    let months=Math.max(0,(end.getFullYear()-start.getFullYear())*12+(end.getMonth()-start.getMonth()));
+    let cursor=addMonthsClamped(start,months);
+    if(cursor>end){months=Math.max(0,months-1);cursor=addMonthsClamped(start,months);}
+    let ms=Math.max(0,end-cursor);
+    const dayMs=86400000,hourMs=3600000,minMs=60000;
+    const days=Math.floor(ms/dayMs); ms-=days*dayMs;
+    const hours=Math.floor(ms/hourMs); ms-=hours*hourMs;
+    const mins=Math.floor(ms/minMs);
+    return {months,days,hours,mins};
+  }
+  function calculateTariff(startString, tariffId){
+    const t=getTariff(tariffId);
+    const start=parseDate(startString), end=new Date();
+    const minutes=Math.max(0,Math.floor((end-start)/60000));
+    const hours=Math.floor(minutes/60), mins=minutes%60, days=Math.floor(minutes/1440), cal=calendarElapsed(start,end);
+    if(minutes<=0) return {total:0,mes:cal.months,dia:cal.days,hora:cal.hours,min:cal.mins,minutes,normalFare:0,tariffType:'normal',full12h:Number(t.full12h||0)};
+    const cap=Number(t.full12h||0);
+    let remaining=minutes,total=0,normalFare=0,usedFull=false;
+    while(remaining>0){
+      const block=Math.min(remaining,720);
+      const blockNormal=calcNormal(block,t);
+      normalFare+=blockNormal;
+      if(cap>0 && blockNormal>=cap){ total+=cap; usedFull=true; }
+      else total+=blockNormal;
+      remaining-=block;
+    }
+    return {total,mes:cal.months,dia:cal.days,hora:cal.hours,min:cal.mins,minutes,normalFare,tariffType:usedFull?'full12h':'normal',full12h:cap};
+  }
+
+  function showCalculation(startString){
+    const tariffId=value('idTarifa');
+    const r=calculateTariff(startString||value('entradaFecha'),tariffId);
+    text('resta',`${r.mes}Mes ${r.dia}Dia ${r.hora}hora ${r.min}min`);
+    // Mientras el usuario no haya escrito nada en "Valor a cobrar", el campo solo refleja
+    // el total calculado en vivo (sin descuento) para que sepa cuánto se cobraría de por sí.
+    if(!discountState.dirty && el('fpValorCobrado')) el('fpValorCobrado').value=String(Math.max(0,Math.round(r.total)));
+    const discountAmount=computeDiscountAmount(r.total);
+    const finalTotal=Math.max(0,Math.round(r.total-discountAmount));
+    text('total',formatMoney(finalTotal));
+    setValue('subtotal',r.total); setValue('valor',finalTotal); setValue('valorDescuento',discountAmount); setValue('iva',0); setValue('retencion',0);
+    const summary=el('fpDiscountSummary');
+    if(summary){
+      if(discountAmount>0){
+        summary.style.display='block';
+        text('fpDiscountOriginal',formatMoney(r.total));
+        text('fpDiscountApplied','-'+formatMoney(discountAmount));
+        text('fpDiscountFinal',formatMoney(finalTotal));
+      } else {
+        summary.style.display='none';
+      }
+    }
+    // El valor acaba de cambiar; refrescar el estado del método de pago evita que el botón
+    // de finalizar quede deshabilitado o conserve un estado de una venta anterior.
+    if(typeof updatePaymentAmounts==='function') updatePaymentAmounts();
+    return finalTotal;
+  }
+
+  function parseOriginalRows(){
+    const body=document.querySelector('#myTable tbody'); if(!body) return [];
+    const rows=[];
+    body.querySelectorAll('tr').forEach(tr=>{
+      const a=tr.querySelector('a[onclick*="update("]'); if(!a) return;
+      const raw=a.getAttribute('onclick')||'';
+      const start=raw.indexOf("update('"); if(start<0) return;
+      const payload=raw.slice(start+8,raw.lastIndexOf("')"));
+      try { const obj=JSON.parse(payload); if(obj && obj.id) rows.push(obj); } catch(e) {}
+    });
+    return rows;
+  }
+  function resetOperationalDataV85(){
+    if(localStorage.getItem(RESET_OPERATIONAL_V85_KEY)==='1') return;
+    // Limpieza de datos operativos: se conservan usuarios, contraseñas y configuración del local.
+    const operationalKeys=[
+      DB_KEY,
+      'fp_sales','fp_monthly','fp_monthalities','fp_monthly_payments',
+      'monthly','mensualidades','fp_expenses','fp_cash_register',
+      'fp_cash_closings','fp_closures','fp_registered'
+    ];
+    operationalKeys.forEach(k=>localStorage.removeItem(k));
+    localStorage.setItem(COUNTER_KEY,'0');
+    try{
+      const c=JSON.parse(localStorage.getItem('fp_config')||'{}');
+      c.receiptPrefix=c.receiptPrefix||'FA';
+      c.nextReceiptNumber=1;
+      localStorage.setItem('fp_config',JSON.stringify(c));
+    }catch(e){}
+    localStorage.setItem(SEEDED_KEY,'1');
+    localStorage.setItem(CLEANUP_KEY,'1');
+    localStorage.setItem(RESET_OPERATIONAL_V85_KEY,'1');
+  }
+  function seedDatabase(){
+    // Los registros históricos embebidos en la plantilla original NO se importan.
+    // La aplicación inicia sin ventas/entradas/mensualidades guardadas.
+    if(localStorage.getItem(SEEDED_KEY)==='1') return;
+    localStorage.setItem(SEEDED_KEY,'1');
+  }
+  function cleanupImportedOpenEntries(){
+    if(localStorage.getItem(CLEANUP_KEY)==='1') return;
+    const db=readDB();
+    const cleaned=db.filter(x=>x && (x.local===true || !!x.salidaFecha || x.local==null));
+    // Solo elimina entradas abiertas que fueron importadas del servidor original (local:false).
+    const changed=cleaned.length!==db.length;
+    if(changed) writeDB(cleaned);
+    localStorage.setItem(CLEANUP_KEY,'1');
+  }
+  function renderTable(){
+    const body=document.querySelector('#myTable tbody'); if(!body) return;
+    body.innerHTML='';
+    const db=readDB().filter(x=>!x.salidaFecha);
+    // Más reciente primero: se ordena por fecha/hora de entrada y, si dos quedan empatados
+    // o alguna fecha no se puede interpretar, se usa el id (marca de tiempo de creación) como desempate.
+    db.sort((a,b)=>{
+      const da=parseDate(a.entradaFecha).getTime(), db_=parseDate(b.entradaFecha).getTime();
+      const diff=(isFinite(db_)?db_:0)-(isFinite(da)?da:0);
+      if(diff!==0) return diff;
+      return (Number(b.id)||0)-(Number(a.id)||0);
+    });
+    db.forEach(e=>{
+      const tr=document.createElement('tr');
+      const d=parseDate(e.entradaFecha);
+      const tariff=getTariff(e.idTarifa).nombre||e.tarifaNombre||'Servicio';
+      tr.innerHTML=`<td>${escapeHtml(String(e.placa||'').trim().toUpperCase())}</td><td>${pad(d.getDate())}-${pad(d.getMonth()+1)}-${d.getFullYear()}</td><td>${pad(d.getHours())}:${pad(d.getMinutes())}</td><td>${escapeHtml(tariff)}</td><td>${escapeHtml(e.reciboPrefijo||'FA')}${escapeHtml(e.reciboNumero||'')}</td><td><a href="javascript:;" class="offline-select"><div class="btn btn-warning">&gt;</div></a></td>`;
+      tr.querySelector('.offline-select').addEventListener('click',function(ev){ev.preventDefault(); window.update(e);});
+      body.appendChild(tr);
+    });
+  }
+  function setMode(entryMode){
+    const reg=el('btnRegistrar'), pay=el('pagar'), div=el('divtipopago');
+    if(entryMode){ if(reg)reg.style.display='block'; if(pay)pay.style.display='none'; if(div)div.style.display='none'; }
+    else { if(reg)reg.style.display='none'; if(pay)pay.style.display='block'; if(div)div.style.display='block'; }
+  }
+  function clearForm(){
+    selectedId=null;
+    setValue('placa',''); setValue('descripcion',''); setValue('nota',''); setValue('idEntrada','0');
+    setValue('reciboNumero','0'); setValue('reciboPrefijo','FA'); setValue('entradaFecha',nowString());
+    setValue('subtotal','0'); setValue('valor','0'); setValue('valorDescuento','0'); setValue('iva','0'); setValue('retencion','0');
+    if(el('idTarifa')) el('idTarifa').value='';
+    paymentState.seleccion='cash';
+    paymentState.montos={cash:'',nequi:''};
+    setPaymentMethod('cash');
+    resetDiscount();
+    if(el('fpDiscountPanel')) el('fpDiscountPanel').style.display='block';
+    // Al iniciar una nueva entrada o regresar, los tipos de tarifa parten desmarcados.
+    text('total','0'); text('resta','0Mes 0Dia 0hora 0min'); text('impsalida',''); if(el('impSalidaRow')) el('impSalidaRow').style.display='none'; setMode(true); if(el('btnRegistrar')) el('btnRegistrar').style.pointerEvents=''; if(el('monthlyEntryNotice')) el('monthlyEntryNotice').style.display='none'; updateClock();
+  }
+  window.update=function(obj){
+    let data=obj;
+    if(typeof obj==='string'){ try{ data=JSON.parse(obj); }catch(e){ fpAlert('No se pudo abrir la entrada.'); return; } }
+    if(!data) return;
+    selectedId=data.id;
+    setValue('entradaFecha',data.entradaFecha||nowString());
+    setValue('idCliente',data.idCliente||'2'); setValue('idParqueadero',data.idParqueadero||'1'); setValue('idUsuario',data.idUsuario||'3');
+    const tid=Array.isArray(data.idTarifa)?(data.idTarifa[0]?.id||''):data.idTarifa;
+    setValue('idTarifa',tid||''); setValue('nota',data.nota||''); setValue('descripcion',data.descripcion||'');
+    setValue('placa',data.placa||''); setValue('reciboNumero',data.reciboNumero||'0'); setValue('reciboPrefijo',data.reciboPrefijo||'FA'); setValue('idEntrada',data.id||'0');
+    const savedMethod=data.salidaFecha ? normalizePaymentMethod(data.paymentMethod||data.idTipoPago||'cash') : 'cash';
+    paymentState.seleccion=savedMethod||'cash';
+    paymentState.montos={cash:paymentState.seleccion==='both' ? String(Number(data.cashAmount)||0) : (paymentState.seleccion==='cash' ? String(Number(data.total)||0) : ''),nequi:paymentState.seleccion==='both' ? String(Number(data.nequiAmount)||0) : (paymentState.seleccion==='nequi' ? String(Number(data.total)||0) : '')};
+    resetDiscount();
+    // Si el vehículo ya fue pagado, el descuento (si lo hubo) es histórico y no editable; se oculta el panel.
+    if(el('fpDiscountPanel')) el('fpDiscountPanel').style.display=data.salidaFecha?'none':'block';
+    renderPaymentUI();
+    setMode(false);
+    // Placa vinculada a una mensualidad (entrada fuera de su horario cubierto) que todavía no ha
+    // salido: al dar salida no se cobra aquí. Queda en Pendientes y el cobro (venta) se registra
+    // solo cuando alguien confirme el pago desde esa sección.
+    const pendingMonthlyExit=!!(data.linkedMonthlyId && !data.salidaFecha);
+    const paymentPanel=el('fpPaymentPanel'), notice=el('monthlyPendingExitNotice'), payBtn=el('pagar');
+    if(pendingMonthlyExit){
+      if(paymentPanel) paymentPanel.style.display='none';
+      if(notice){ notice.style.display='block'; notice.textContent='La placa '+String(data.placa||'').trim().toUpperCase()+' tiene mensualidad activa. Esta salida no se cobra aquí: quedará en Pendientes hasta que se confirme el pago.'; }
+      if(payBtn) payBtn.value='Dar salida (queda pendiente)';
+    } else {
+      if(paymentPanel) paymentPanel.style.display='';
+      if(notice) notice.style.display='none';
+      if(payBtn) payBtn.value='Finalizar venta';
+    } text('impplaca',String(data.placa||'').trim().toUpperCase()); text('imprecibo',receiptNumberFA(data.reciboNumero)); text('impentrada',receiptDateTime(data.entradaFecha)); text('impsalida',receiptDateTime(data.salidaFecha)); if(el('impTotalRow')) el('impTotalRow').style.display=data.salidaFecha?'':'none'; text('imptotal',data.total!=null ? formatMoney(data.total) : ''); text('impcash',data.cashAmount!=null?formatMoney(data.cashAmount):''); text('impnequi',data.nequiAmount!=null?formatMoney(data.nequiAmount):''); if(el('impCashRow')) el('impCashRow').style.display=data.paymentMethod==='both'?'':'none'; if(el('impNequiRow')) el('impNequiRow').style.display=data.paymentMethod==='both'?'':'none'; if(el('impSalidaRow')) el('impSalidaRow').style.display=data.salidaFecha?'':'none'; applyBusinessInfo(); applyReceiptConfig(!!data.salidaFecha);
+    if(Number(data.discountAmount)>0){
+      text('impsubtotal',formatMoney(data.subtotal)); if(el('impSubtotalRow')) el('impSubtotalRow').style.display='';
+      let discTxt2='-'+formatMoney(data.discountAmount); if(data.discountReason) discTxt2+=' ('+data.discountReason+')';
+      text('impdescuento',discTxt2); if(el('impDiscountRow')) el('impDiscountRow').style.display='';
+    } else {
+      if(el('impSubtotalRow')) el('impSubtotalRow').style.display='none';
+      if(el('impDiscountRow')) el('impDiscountRow').style.display='none';
+    }
+    showCalculation(data.entradaFecha); updateClock();
+  };
+  window.calcularTarifaServidor=function(){ if(value('idTarifa')) showCalculation(value('entradaFecha')); };
+  function findActiveMonthly(plate){
+    const normalizePlate=v=>String(v??'').trim().toUpperCase().replace(/[\s-]/g,'');
+    const wanted=normalizePlate(plate);
+    if(!wanted) return null;
+    // Si la mensualidad tenía el siguiente período pagado por adelantado y ya llegó su fecha,
+    // se renueva aquí mismo (sin cobro) para no depender de abrir la pantalla Mensualidades.
+    try{ if(window.FP && typeof window.FP.activateDueAdvancePeriods==='function') window.FP.activateDueAdvancePeriods(); }catch(e){}
+    let list=[];
+    const keys=['fp_monthly','fp_monthalities','monthly','mensualidades'];
+    keys.forEach(k=>{
+      try{
+        const extra=JSON.parse(localStorage.getItem(k)||'[]');
+        if(Array.isArray(extra)) list=list.concat(extra);
+        else if(extra && typeof extra==='object'){
+          if(Array.isArray(extra.data)) list=list.concat(extra.data);
+          else if(Array.isArray(extra.items)) list=list.concat(extra.items);
+          else list.push(extra);
+        }
+      }catch(e){}
+    });
+    function parseDateOnly(v,endOfDay){
+      if(v==null || v==='') return null;
+      if(v instanceof Date) return isNaN(v)?null:new Date(v.getTime());
+      const x=String(v).trim();
+      let m=x.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})/);
+      if(m){ const d=new Date(Number(m[3]),Number(m[2])-1,Number(m[1])); if(endOfDay)d.setHours(23,59,59,999); else d.setHours(0,0,0,0); return d; }
+      m=x.match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/);
+      if(m){ const d=new Date(Number(m[1]),Number(m[2])-1,Number(m[3])); if(endOfDay)d.setHours(23,59,59,999); else d.setHours(0,0,0,0); return d; }
+      const d=new Date(x); if(isNaN(d)) return null; if(endOfDay)d.setHours(23,59,59,999); else d.setHours(0,0,0,0); return d;
+    }
+    const today=new Date(); today.setHours(0,0,0,0);
+    return list.find(m=>{
+      if(!m || typeof m!=='object') return false;
+      const mp=normalizePlate(m.plate??m.placa??m.Placa??m.PLACA);
+      if(!mp || mp!==wanted) return false;
+      const activeRaw=m.active??m.activa??m.estado??m.status;
+      const state=String(activeRaw??'').trim().toLowerCase();
+      if(activeRaw===false || state==='false' || state==='0' || state==='inactivo' || state==='vencido' || state==='inactive' || state==='expired') return false;
+      const st=parseDateOnly(m.start??m.fechaInicio??m.inicio??m.desde,false);
+      const en=parseDateOnly(m.end??m.fechaFin??m.fin??m.hasta,true);
+      if(st && today<st) return false;
+      if(en){ const grace=new Date(en.getTime()); grace.setDate(grace.getDate()+3); if(today>grace) return false; }
+      return true;
+    }) || null;
+  }
+
+  // Determina si una mensualidad es "de noche" y si el momento indicado (por defecto ahora)
+  // cae dentro de la franja horaria cubierta por esa mensualidad (hora límite de entrada /
+  // hora límite de salida). Si es de noche pero no tiene horas configuradas, se trata igual
+  // que antes (siempre cubierta). Si el horario cruza la medianoche (ej. 20:00 a 08:00) se
+  // maneja correctamente como franja nocturna.
+  function monthlyNightWindowStatus(monthly,when){
+    when = when || new Date();
+    const scheduleType=String(monthly.schedule??monthly.horario??'day').trim().toLowerCase();
+    const isNight = scheduleType==='night' || scheduleType==='noche';
+    if(!isNight) return {isNight:false, insideWindow:true, entryLimit:null, exitLimit:null};
+    const parseHHMM=v=>{ if(v==null||v==='') return null; const m=String(v).trim().match(/^(\d{1,2}):(\d{2})/); if(!m) return null; const h=Math.min(23,Math.max(0,+m[1])), mi=Math.min(59,Math.max(0,+m[2])); return h*60+mi; };
+    const entryLimit=parseHHMM(monthly.nightEntryLimit??monthly.horaLimiteEntrada);
+    const exitLimit=parseHHMM(monthly.nightExitLimit??monthly.horaLimiteSalida);
+    if(entryLimit==null || exitLimit==null) return {isNight:true, insideWindow:true, entryLimit:null, exitLimit:null};
+    const nowMin=when.getHours()*60+when.getMinutes();
+    let inside;
+    if(entryLimit<=exitLimit) inside = nowMin>=entryLimit && nowMin<=exitLimit;
+    else inside = nowMin>=entryLimit || nowMin<=exitLimit;
+    return {isNight:true, insideWindow:inside, entryLimit, exitLimit};
+  }
+  // Evalúa si una placa con mensualidad activa debe bloquear el registro de entrada (mensualidad
+  // de día, o de noche dentro de su horario) o si, por ser de noche y estar fuera de su horario
+  // cubierto, se puede registrar una entrada normal que quedará asociada a esa mensualidad.
+  function evaluateMonthlyForPlate(placa){
+    const monthly=findActiveMonthly(placa);
+    if(!monthly) return {monthly:null, blocked:false, status:null};
+    const status=monthlyNightWindowStatus(monthly);
+    const blocked=!(status.isNight && !status.insideWindow);
+    return {monthly,blocked,status};
+  }
+  function checkMonthlyPlate(){
+    const placa=value('placa').trim().toUpperCase();
+    const info=evaluateMonthlyForPlate(placa);
+    const msg=el('monthlyEntryNotice');
+    const reg=el('btnRegistrar');
+    let text='', warn=true;
+    if(info.monthly){
+      if(info.blocked){
+        text='Esta placa tiene una mensualidad activa. No se puede registrar una entrada.';
+        warn=true;
+      } else {
+        const lim=(info.status.entryLimit!=null && info.status.exitLimit!=null)
+          ? (' ('+(info.monthly.nightEntryLimit||'')+' a '+(info.monthly.nightExitLimit||'')+')') : '';
+        text='La placa '+placa+' tiene mensualidad nocturna, pero está fuera del horario cubierto'+lim+'. Se puede registrar la entrada; el cobro se asociará a esa mensualidad.';
+        warn=false;
+      }
+    }
+    if(msg){
+      msg.textContent=text;
+      msg.style.display=text?'block':'none';
+      msg.style.background=warn?'#fff3cd':'#eaf5ff';
+      msg.style.color=warn?'#856404':'#0b2748';
+      msg.style.borderColor=warn?'#ffe69c':'#bcdcfb';
+    }
+    if(reg) reg.style.pointerEvents=info.blocked?'none':'';
+    return info.blocked?info.monthly:null;
+  }
+
+  let registering=false;
+  window.registrar=function(){
+    if(registering) return;
+    registering=true;
+    const regBtn=el('btnRegistrar');
+    if(regBtn){ regBtn.style.pointerEvents='none'; regBtn.setAttribute('aria-disabled','true'); }
+    try {
+    const placa=value('placa').trim().toUpperCase();
+    if(!placa){ fpAlert('Ingrese la placa.','error'); if(el('placa'))el('placa').focus(); return; }
+    const monthlyInfo=evaluateMonthlyForPlate(placa);
+    if(monthlyInfo.blocked){ fpAlert('No se puede registrar esta entrada: la placa '+placa+' tiene una mensualidad activa.','error'); checkMonthlyPlate(); return; }
+    const tarifaId=value('idTarifa'); if(!tarifaId){ fpAlert('Seleccione el servicio.','error'); return; }
+    const db=readDB();
+    if(db.some(x=>!x.salidaFecha && String(x.placa).toUpperCase()===placa)){ fpAlert('Esta placa ya tiene una entrada abierta.','error'); return; }
+    const recibo=nextReceipt(), fecha=nowString();
+    const entry={id:Date.now(),idParqueadero:value('idParqueadero')||'1',idCliente:value('idCliente')||'2',idTarifa:tarifaId,idUsuario:value('idUsuario')||'3',placa,descripcion:value('descripcion')||'NA',nota:value('nota')||'NA',entradaFecha:fecha,entradaHora:new Date().toTimeString().slice(0,8),reciboPrefijo:value('reciboPrefijo')||'FA',reciboNumero:recibo,salidaFecha:null,salidaHora:null,codigoBarras:value('codigoBarras')||'NA',local:true};
+    if(monthlyInfo.monthly && !monthlyInfo.blocked){
+      // Mensualidad nocturna fuera de su horario cubierto: se cobra como entrada normal y
+      // queda asociada a la mensualidad para que el cobro se sume a su historial.
+      entry.linkedMonthlyId=monthlyInfo.monthly.id||null;
+      entry.linkedMonthlyPlate=placa;
+    }
+    db.push(entry); writeDB(db); selectedId=entry.id;
+    setValue('reciboNumero',recibo); text('impplaca',placa); text('impentrada',receiptDateTime(fecha)); text('imptarifa',getTariff(tarifaId).nombre||''); text('imptiempo',''); text('impsalida',''); if(el('impSalidaRow')) el('impSalidaRow').style.display='none'; if(el('impTotalRow')) el('impTotalRow').style.display='none'; text('imptotal',''); text('imptarifa',''); text('imptiempo',''); text('impcash',''); text('impnequi',''); if(el('impCashRow'))el('impCashRow').style.display='none'; if(el('impNequiRow'))el('impNequiRow').style.display='none'; if(el('impSubtotalRow')) el('impSubtotalRow').style.display='none'; if(el('impDiscountRow')) el('impDiscountRow').style.display='none'; text('imprecibo',receiptNumberFA(recibo)); text('imppaymentmethod',''); if(el('imptarifa')) text('imptarifa',''); applyBusinessInfo(); applyReceiptConfig(false);
+    renderTable();
+    // Imprimir el recibo de entrada inmediatamente dentro de la acción del usuario.
+    // Esto evita que el navegador bloquee la ventana de impresión por pérdida del gesto.
+    try { printReceipt(); } catch(err) { console.error('No se pudo imprimir el recibo de entrada:',err); }
+    // Dejar Entradas lista para el siguiente registro: limpia la placa anterior
+    // y reconstruye las sugerencias con la base de datos ya actualizada.
+    clearForm();
+    hidePlateSuggestions();
+    renderTable();
+    if(el('placa')) el('placa').focus();
+    // El guardado y la actualización terminan primero. El recibo se abre en una tarea independiente;
+    // si Bootstrap/jQuery no está disponible, simplemente se deja el recibo listo para imprimir.
+    setTimeout(function(){
+      try {
+        const receipt=el('imprimir_recibo');
+        if(receipt) receipt.setAttribute('data-ready','1');
+      } catch(err) { console.error('No se pudo preparar el recibo de entrada:',err); }
+    }, 0);
+    } catch(err) {
+      console.error('Error registrando entrada:',err);
+      fpAlert('No se pudo registrar la entrada. Intente nuevamente.');
+    } finally {
+      registering=false;
+      if(regBtn){ regBtn.style.pointerEvents=''; regBtn.removeAttribute('aria-disabled'); }
+    }
+  };
+  // MÉTODO DE PAGO: una sola fuente de verdad.
+  // Efectivo/Electrónico no piden monto; Ambos solo pide efectivo y calcula electrónico.
+  const paymentState={seleccion:'cash',montos:{cash:'',nequi:''}};
+  // dirty=false mientras el usuario no toque el campo "Valor a cobrar": en ese estado el campo
+  // solo refleja el total calculado y no se aplica ningún descuento. En cuanto el usuario lo edita,
+  // ese valor se toma como lo que realmente cobrará y el descuento es la diferencia con el total.
+  const discountState={dirty:false,value:0,reason:''};
+  function resetDiscount(){
+    discountState.dirty=false; discountState.value=0; discountState.reason='';
+    if(el('fpValorCobrado')) el('fpValorCobrado').value='0';
+    if(el('fpDiscountReason')) el('fpDiscountReason').value='';
+    if(el('fpDiscountSummary')) el('fpDiscountSummary').style.display='none';
+  }
+  // El descuento es simplemente la diferencia entre el subtotal calculado y lo que el usuario
+  // decidió cobrar en la caja de texto (sin necesidad de elegir "porcentaje" o "valor cobrado").
+  function computeDiscountAmount(subtotal){
+    subtotal=Math.max(0,Math.round(Number(subtotal)||0));
+    if(!discountState.dirty) return 0;
+    const charged=Math.max(0,Math.round(Number(discountState.value)||0));
+    return Math.max(0,subtotal-Math.min(subtotal,charged));
+  }
+  function setupDiscountUI(){
+    const valInput=el('fpValorCobrado'), reasonInput=el('fpDiscountReason');
+    if(valInput && !valInput.dataset.fpBound){
+      valInput.addEventListener('input',function(){
+        discountState.dirty=true;
+        discountState.value=Number(this.value)||0;
+        if(el('idTarifa') && value('idTarifa')) showCalculation(value('entradaFecha'));
+      });
+      valInput.addEventListener('blur',function(){
+        let n=Math.max(0,Math.round(Number(this.value)||0));
+        this.value=String(n);
+        discountState.dirty=true;
+        discountState.value=n;
+        if(el('idTarifa') && value('idTarifa')) showCalculation(value('entradaFecha'));
+      });
+      valInput.dataset.fpBound='1';
+    }
+    if(reasonInput && !reasonInput.dataset.fpBound){
+      reasonInput.addEventListener('input',function(){ discountState.reason=this.value; });
+      reasonInput.dataset.fpBound='1';
+    }
+  }
+  function normalizePaymentMethod(method){
+    const p=String(method??'').trim().toLowerCase();
+    if(p==='cash'||p==='efectivo'||p==='2') return 'cash';
+    if(p==='nequi'||p==='electronico'||p==='electrónico'||p==='electronic'||p==='3') return 'nequi';
+    if(p==='both'||p==='ambos'||p==='mixto'||p==='mixed') return 'both';
+    return '';
+  }
+  function setPaymentMethod(method){
+    const sel=normalizePaymentMethod(method)||'cash';
+    const total=Math.round(Number(value('valor'))||0);
+    paymentState.seleccion=sel;
+    paymentState.montos={cash:'',nequi:''};
+    if(sel==='cash') paymentState.montos.cash=String(total);
+    if(sel==='nequi') paymentState.montos.nequi=String(total);
+    const panel=el('fpPaymentPanel');
+    if(panel) panel.setAttribute('data-payment-selected',sel);
+    renderPaymentUI();
+  }
+  function syncPaymentMethodButtons(){
+    const method=paymentState.seleccion;
+    document.querySelectorAll('.fp-payment-method').forEach(function(btn){
+      const active=normalizePaymentMethod(btn.getAttribute('data-payment-method'))===method;
+      btn.classList.toggle('active',active);
+      btn.setAttribute('aria-pressed',active?'true':'false');
+      btn.style.setProperty('background-color',active?'#0b2748':'#fff','important');
+      btn.style.setProperty('color',active?'#fff':'#30343b','important');
+      btn.style.setProperty('border-color',active?'#0b2748':'#d5d9de','important');
+    });
+  }
+  function renderPaymentUI(){
+    syncPaymentMethodButtons();
+    const amounts=el('fpPaymentAmounts');
+    if(!amounts) return;
+    amounts.style.display='block';
+    const cash=el('fpCashAmount'), nequi=el('fpNequiAmount');
+    const both=paymentState.seleccion==='both';
+    if(cash){
+      cash.parentElement.style.display=both?'grid':'none';
+      cash.value=both?(paymentState.montos.cash||''):'';
+      cash.readOnly=false;
+      cash.placeholder=both?'Digite el efectivo':'';
+    }
+    if(nequi){
+      // El electrónico es calculado por el sistema y nunca se digita.
+      nequi.parentElement.style.display=both?'grid':'none';
+      nequi.value=both?(paymentState.montos.nequi||'0'):'';
+      nequi.readOnly=true;
+      nequi.setAttribute('aria-readonly','true');
+    }
+    const cashLabel=cash?.parentElement?.querySelector('label');
+    const nequiLabel=nequi?.parentElement?.querySelector('label');
+    if(cashLabel) cashLabel.textContent='Efectivo';
+    if(nequiLabel) nequiLabel.textContent='Electrónico (calculado)';
+    updatePaymentAmounts();
+  }
+  function setupPaymentUI(){
+    // Los botones tienen handler directo y además exponemos una función global para
+    // evitar cualquier dependencia de jQuery/delegación de eventos.
+    window.fpSeleccionarMetodoPago=function(method){
+      setPaymentMethod(method);
+      return false;
+    };
+    const cash=el('fpCashAmount');
+    if(cash && !cash.dataset.fpBound){
+      cash.addEventListener('input',function(){
+        let n=String(this.value||'').replace(/[^0-9]/g,'');
+        this.value=n;
+        paymentState.montos.cash=n;
+        updatePaymentAmounts();
+      });
+      cash.dataset.fpBound='1';
+    }
+    setPaymentMethod(paymentState.seleccion);
+  }
+  function updatePaymentAmounts(){
+    const method=paymentState.seleccion;
+    const total=Math.round(Number(value('valor'))||0);
+    let cash=0, nequi=0;
+    if(method==='cash'){
+      cash=total; nequi=0;
+      paymentState.montos.cash=String(total);
+      paymentState.montos.nequi='';
+    }else if(method==='nequi'){
+      cash=0; nequi=total;
+      paymentState.montos.cash='';
+      paymentState.montos.nequi=String(total);
+    }else if(method==='both'){
+      cash=Math.round(Number(paymentState.montos.cash)||0);
+      nequi=Math.max(0,total-cash);
+      paymentState.montos.cash=String(cash);
+      paymentState.montos.nequi=String(nequi);
+    }
+    if(el('fpCashAmount') && method==='both') el('fpCashAmount').value=cash?String(cash):'';
+    if(el('fpNequiAmount') && method==='both') el('fpNequiAmount').value=String(nequi);
+    const paid=(method==='cash'||method==='nequi')?total:(cash+nequi);
+    if(el('fpTotalPaid')) el('fpTotalPaid').textContent=formatMoney(paid);
+    if(el('fpPaymentBalance')) el('fpPaymentBalance').textContent=formatMoney(Math.max(0,total-paid));
+    if(method==='both'){
+      const cashInput=el('fpCashAmount');
+      if(cashInput) cashInput.style.borderColor=(cash>0 && cash<total)?'#d9dde2':'#d9534f';
+    }else if(el('fpCashAmount')) el('fpCashAmount').style.borderColor='#d9dde2';
+    const payBtn=el('pagar');
+    // total===0 se permite (ej. descuento del 100%): se cobra como Efectivo/Electrónico por $0.
+    if(payBtn) payBtn.disabled=!(total===0 ? (method==='cash'||method==='nequi') : (total>0 && (method==='cash'||method==='nequi'||(method==='both'&&cash>0&&cash<total))));
+  }
+  let paying=false;
+  // Placa con mensualidad, fuera del horario cubierto: dar salida NO cobra aquí. Se registra
+  // como pendiente (fp_monthly_extra_charges, confirmed:false) y el cobro/venta se registra
+  // solo cuando se confirme el pago desde la sección Pendientes.
+  function payMonthlyLinkedExit(entry,db){
+    if(paying) return;
+    paying=true;
+    try {
+      const total=Math.round(showCalculation(entry.entradaFecha)||Number(value('valor'))||0), now=new Date();
+      const calc=calculateTariff(entry.entradaFecha,entry.idTarifa);
+      const subtotalBruto=Math.round(Number(value('subtotal'))||total);
+      const discountAmount=Math.max(0,subtotalBruto-total);
+      entry.salidaFecha=nowString(); entry.salidaHora=now.toTimeString().slice(0,8); entry.total=total;
+      entry.subtotal=subtotalBruto; entry.discountType=discountAmount>0?'charged':'none'; entry.discountValue=discountAmount>0?discountState.value:0; entry.discountAmount=discountAmount; entry.discountReason=discountAmount>0?discountState.reason:'';
+      entry.normalFare=calc.normalFare; entry.tariffType=calc.tariffType; entry.full12h=calc.full12h;
+      entry.pendingMonthlyConfirmation=true;
+      writeDB(db);
+      try{
+        const pend=JSON.parse(localStorage.getItem('fp_monthly_extra_charges')||'[]');
+        pend.push({id:'MX'+Date.now(),monthlyId:entry.linkedMonthlyId,plate:entry.placa,entryId:entry.id,amount:total,dateTime:new Date().toISOString(),receiptPrefix:entry.reciboPrefijo,receiptNumber:entry.reciboNumero,confirmed:false});
+        localStorage.setItem('fp_monthly_extra_charges',JSON.stringify(pend));
+      }catch(err){ console.error('No se pudo guardar el pendiente de mensualidad:',err); }
+      fpAlert('Salida registrada. Como la placa '+String(entry.placa||'').trim().toUpperCase()+' tiene mensualidad, el cobro queda en Pendientes hasta que se confirme el pago.');
+      clearForm();
+      hidePlateSuggestions();
+      renderTable();
+      if(el('placa')) el('placa').focus();
+    } catch(err) {
+      console.error('Error registrando salida pendiente de mensualidad:',err);
+      fpAlert('No se pudo registrar la salida. Intente nuevamente.');
+    } finally {
+      paying=false;
+    }
+  }
+  // Botón "Pendiente" junto a Método de pago: registra la salida SIN cobrar ahora;
+  // el cobro queda en Pendientes (fp_monthly_extra_charges, confirmed:false) hasta
+  // que alguien lo confirme desde esa sección. A diferencia de payMonthlyLinkedExit,
+  // esto lo decide el usuario a mano para cualquier vehículo (no solo mensualidades).
+  function payAsPending(){
+    if(paying) return;
+    if(selectedId==null){ fpAlert('Seleccione una entrada.','error'); return; }
+    const db=readDB(); const entry=db.find(x=>String(x.id)===String(selectedId));
+    if(!entry){ fpAlert('No se encontró la entrada.','error'); return; }
+    paying=true;
+    try {
+      const total=Math.round(showCalculation(entry.entradaFecha)||Number(value('valor'))||0), now=new Date();
+      const calc=calculateTariff(entry.entradaFecha,entry.idTarifa);
+      const subtotalBruto=Math.round(Number(value('subtotal'))||total);
+      const discountAmount=Math.max(0,subtotalBruto-total);
+      entry.salidaFecha=nowString(); entry.salidaHora=now.toTimeString().slice(0,8); entry.total=total;
+      entry.subtotal=subtotalBruto; entry.discountType=discountAmount>0?'charged':'none'; entry.discountValue=discountAmount>0?discountState.value:0; entry.discountAmount=discountAmount; entry.discountReason=discountAmount>0?discountState.reason:'';
+      entry.normalFare=calc.normalFare; entry.tariffType=calc.tariffType; entry.full12h=calc.full12h;
+      entry.pendingMonthlyConfirmation=true;
+      writeDB(db);
+      try{
+        const pend=JSON.parse(localStorage.getItem('fp_monthly_extra_charges')||'[]');
+        pend.push({id:'MX'+Date.now(),monthlyId:entry.linkedMonthlyId||null,plate:entry.placa,entryId:entry.id,amount:total,dateTime:new Date().toISOString(),receiptPrefix:entry.reciboPrefijo,receiptNumber:entry.reciboNumero,confirmed:false,manual:true});
+        localStorage.setItem('fp_monthly_extra_charges',JSON.stringify(pend));
+      }catch(err){ console.error('No se pudo guardar el pendiente:',err); }
+      fpAlert('Salida registrada sin cobrar. El cobro de '+String(entry.placa||'').trim().toUpperCase()+' por '+formatMoney(total)+' queda en Pendientes.');
+      clearForm();
+      hidePlateSuggestions();
+      renderTable();
+      if(el('placa')) el('placa').focus();
+    } catch(err) {
+      console.error('Error registrando salida pendiente:',err);
+      fpAlert('No se pudo registrar la salida. Intente nuevamente.');
+    } finally {
+      paying=false;
+    }
+  }
+  function pay(){
+    if(paying) return;
+    if(selectedId==null){ fpAlert('Seleccione una entrada.','error'); return; }
+    const db=readDB(); const entry=db.find(x=>String(x.id)===String(selectedId));
+    if(!entry){ fpAlert('No se encontró la entrada.','error'); return; }
+    if(entry.linkedMonthlyId){ payMonthlyLinkedExit(entry,db); return; }
+    paying=true;
+    try {
+      const total=Math.round(showCalculation(entry.entradaFecha)||Number(value('valor'))||0), now=new Date();
+      const calc=calculateTariff(entry.entradaFecha,entry.idTarifa);
+      // La fuente de verdad es la selección actual del panel, nunca el antiguo select oculto.
+      const panel=el('fpPaymentPanel');
+      const method=normalizePaymentMethod(panel?.getAttribute('data-payment-selected')||paymentState.seleccion)||'cash';
+      paymentState.seleccion=method;
+      const reg=(()=>{try{return JSON.parse(localStorage.getItem('fp_cash_register')||'null')}catch(e){return null}})();
+      if(!reg){fpAlert('Debe abrir la caja antes de registrar el pago.');return;}
+      let cashAmount=0, nequiAmount=0;
+      if(method==='cash') cashAmount=total;
+      else if(method==='nequi') nequiAmount=total;
+      else if(method==='both'){
+        cashAmount=Math.round(Number(paymentState.montos.cash)||0);
+        if(cashAmount<=0||cashAmount>=total){
+          fpAlert('En la opción Ambos debe indicar un valor de Efectivo mayor que $0 y menor que el total.');
+          return;
+        }
+        nequiAmount=total-cashAmount;
+      }
+      const subtotalBruto=Math.round(Number(value('subtotal'))||total);
+      const discountAmount=Math.max(0,subtotalBruto-total);
+      entry.salidaFecha=nowString(); entry.salidaHora=now.toTimeString().slice(0,8); entry.total=total;
+      entry.subtotal=subtotalBruto; entry.discountType=discountAmount>0?'charged':'none'; entry.discountValue=discountAmount>0?discountState.value:0; entry.discountAmount=discountAmount; entry.discountReason=discountAmount>0?discountState.reason:'';
+      entry.normalFare=calc.normalFare; entry.tariffType=calc.tariffType; entry.full12h=calc.full12h;
+      entry.paymentMethod=method; entry.idTipoPago=method;
+      entry.cashAmount=cashAmount; entry.nequiAmount=nequiAmount; entry.registerId=reg.id;
+      writeDB(db);
+      // Nota: las salidas con entry.linkedMonthlyId nunca llegan aquí — se resuelven antes,
+      // en payMonthlyLinkedExit() (ver el return de la línea de arriba: "if(entry.linkedMonthlyId){...}").
+      // Ese cobro queda en Pendientes hasta confirmarse; no se registra fp_monthly_extra_charges en pay().
+      const saved=readDB().find(x=>String(x.id)===String(entry.id))||entry;
+      paymentState.seleccion=normalizePaymentMethod(saved.paymentMethod)||method;
+      paymentState.montos={cash:String(Number(saved.cashAmount)||0),nequi:String(Number(saved.nequiAmount)||0)};
+      const savedMethod=paymentState.seleccion;
+      // El recibo se alimenta del registro recién guardado, no de la interfaz.
+      text('impplaca',String(saved.placa||'').trim().toUpperCase()); text('impentrada',receiptDateTime(saved.entradaFecha)); text('impsalida',receiptDateTime(saved.salidaFecha));
+      if(el('impSalidaRow')) el('impSalidaRow').style.display='';
+      if(el('impTotalRow')) el('impTotalRow').style.display='';
+      text('imptotal',formatMoney(saved.total)); text('imptarifa',getTariff(saved.idTarifa).nombre||saved.tariffType||''); text('imptiempo',formatReceiptDuration(calculateTariff(saved.entradaFecha,saved.idTarifa))); if(el('impServiceRow'))el('impServiceRow').style.display=''; if(el('impTimeRow'))el('impTimeRow').style.display=''; text('impcash',formatMoney(saved.cashAmount)); text('impnequi',formatMoney(saved.nequiAmount));
+      if(Number(saved.discountAmount)>0){
+        text('impsubtotal',formatMoney(saved.subtotal)); if(el('impSubtotalRow')) el('impSubtotalRow').style.display='';
+        let discTxt='-'+formatMoney(saved.discountAmount); if(saved.discountReason) discTxt+=' ('+saved.discountReason+')';
+        text('impdescuento',discTxt); if(el('impDiscountRow')) el('impDiscountRow').style.display='';
+      } else {
+        if(el('impSubtotalRow')) el('impSubtotalRow').style.display='none';
+        if(el('impDiscountRow')) el('impDiscountRow').style.display='none';
+      }
+      if(el('impCashRow'))el('impCashRow').style.display=method==='both'?'':'none';
+      if(el('impNequiRow'))el('impNequiRow').style.display=method==='both'?'':'none';
+      text('imprecibo',receiptNumberFA(saved.reciboNumero));
+      text('imppaymentmethod',savedMethod==='cash'?'Efectivo':savedMethod==='nequi'?'Electrónico':'Efectivo + Electrónico');
+      applyBusinessInfo(); applyReceiptConfig(true);
+      renderTable(); openReceipt();
+    } finally { paying=false; }
+  }
+  window.nuevaEntrada=function(){ clearForm(); renderTable(); if(el('placa'))el('placa').focus(); window.scrollTo(0,0); };
+  window.regresarLocal=function(){ window.location.href='index.html'; };
+  window.imprimir=function(){ printReceipt(); };
+  function openReceipt(){
+    // Nunca bloquea el flujo de registro: solo muestra el modal si existe y deja la impresión como acción aparte.
+    const modal=el('myModal');
+    if(modal && window.jQuery && typeof jQuery.fn.modal==='function') {
+      jQuery(modal).modal('show');
+      return;
+    }
+    // Sin Bootstrap, no abrimos una ventana emergente automáticamente; el recibo queda preparado en pantalla.
+    const receipt=el('imprimir_recibo');
+    if(receipt) receipt.setAttribute('data-ready','1');
+  }
+  function printReceipt(){
+    const div=el('imprimir_recibo'); if(!div){ fpAlert('No se encontró el recibo.','error'); return; }
+    const w=window.open('','Print-Window','width=420,height=700');
+    if(!w){ fpAlert('El navegador bloqueó la ventana de impresión.','error'); return; }
+    const clone=div.cloneNode(true);
+
+    // Recibo térmico de 50 mm basado en el formato de referencia:
+    // separador + negocio + separador + datos del servicio + separador + horarios.
+    const receiptHtml=clone.outerHTML;
+    const css=`
+      @page{size:50mm auto;margin:0}
+      *{box-sizing:border-box}
+      html,body{margin:0!important;padding:0!important;width:50mm;max-width:50mm;background:#fff;color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      body{font-family:"Times New Roman",Times,serif;font-size:10.5px;line-height:1.18;font-weight:600;text-rendering:geometricPrecision}
+      #imprimir_recibo{width:48mm;max-width:48mm;margin:0 auto;padding:1mm 1.5mm;background:#fff;font-family:"Times New Roman",Times,serif;font-size:10.5px;line-height:1.18;font-weight:600;overflow:visible}
+      #receiptBusinessBlock{font-family:"Times New Roman",Times,serif!important;text-align:center!important;font-size:10.5px!important;font-weight:600!important;line-height:1.3!important;margin:0 0 4px!important;overflow:visible!important;word-break:normal!important;overflow-wrap:break-word!important}
+      #receiptBusinessName{display:block!important;font-size:14px!important;font-weight:700!important;letter-spacing:.3px!important;margin-bottom:3px!important}
+      #receiptBusinessBlock strong{font-family:"Times New Roman",Times,serif!important;font-weight:700!important}
+      #receiptBusinessBlock .bizinfo{display:block!important;font-size:12.5px!important;font-weight:700!important;line-height:1.25!important}
+      #receiptBusinessBlock .bizinfo strong{font-weight:600!important}
+      .receipt-divider{width:100%!important;border:0!important;border-top:1px dashed #000!important;height:0!important;margin:5px 0!important;padding:0!important}
+      #receiptMainBlock{font-family:"Times New Roman",Times,serif!important;font-size:14px!important;font-weight:600!important;line-height:1.3!important;text-align:left!important;margin:0!important;padding:0!important;overflow:visible!important}
+      .receipt-row{display:flex;flex-wrap:wrap!important;justify-content:space-between!important;align-items:baseline!important;width:100%!important;margin:0 0 2px!important;padding:0!important;gap:1px 4px!important;white-space:normal!important;overflow:visible!important}
+      .receipt-row strong{font-weight:600!important;white-space:nowrap!important;flex:0 0 auto!important}
+      .receipt-row>span{margin-left:auto!important;text-align:right!important;white-space:normal!important;overflow-wrap:break-word!important;word-break:break-word!important;flex:1 1 auto!important;min-width:0!important}
+      .receipt-row.total{margin-top:3px!important;padding-top:3px!important;border-top:1px dashed #000!important;font-size:12.5px!important}
+      .receipt-row.total strong,.receipt-row.total>span{font-weight:700!important}
+      .receipt-row.receiptno{margin-top:3px!important;padding-top:3px!important;border-top:0!important}
+      .receipt-row.receiptno>span{margin-left:auto!important;flex:1 1 auto!important;text-align:right!important}
+      #receiptHoursDivider{margin:0 0 3px!important}
+      #receiptHoursBlock{font-family:"Times New Roman",Times,serif!important;font-size:13px!important;font-weight:600!important;line-height:1.3!important;text-align:center!important;white-space:pre-line!important;margin:0!important;padding:0!important;overflow:visible!important}
+      #receiptHoursBlock strong{display:block!important;font-size:13px!important;font-weight:700!important;margin-bottom:3px!important}
+      #receiptHoursText{white-space:pre-line!important;font-size:13px!important}
+      #receiptCustomMessageRow,#receiptAdditionalInfoRow{display:block!important;text-align:center!important}
+      #receiptCustomMessageRow>span,#receiptAdditionalInfoRow>span{margin:0!important;white-space:pre-line!important;text-align:center!important}
+    `;
+    w.document.open();
+    w.document.write('<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Nexo.app</title><style>'+css+'</style></head><body>'+receiptHtml+'</body></html>');
+    w.document.close(); w.focus();
+    let printed=false;
+    try{ w.addEventListener('afterprint',function(){try{w.close()}catch(e){}}); }catch(e){}
+    setTimeout(function(){try{w.print();printed=true}catch(e){} if(!printed)setTimeout(function(){try{w.close()}catch(e){}},10000)},300);
+  }
+
+  const fpParseCache={};
+  function fpCachedList(key){
+    let raw=null; try{ raw=localStorage.getItem(key); }catch(e){ return []; }
+    const c=fpParseCache[key]; if(c && c.raw===raw) return c.val;
+    let val=[]; try{ const a=JSON.parse(raw||'[]'); if(Array.isArray(a)) val=a; }catch(e){}
+    fpParseCache[key]={raw:raw,val:val}; return val;
+  }
+  // Una placa deja de aparecer en las sugerencias si no ha tenido actividad
+  // (entrada/salida, o actualización de su mensualidad) en los últimos
+  // PLATE_SUGGESTION_STALE_DAYS días. Vuelve a aparecer en cuanto se
+  // registra de nuevo. Excepción: un vehículo actualmente parqueado (sin
+  // salida) nunca se oculta, sin importar cuántos días lleve adentro —
+  // sigue físicamente ahí y el operador necesita poder encontrarlo.
+  const PLATE_SUGGESTION_STALE_DAYS=15;
+  function isStalePlateSource(x){
+    if(!x || x._monthly !== true){
+      // Entrada real todavía abierta (sin salida): nunca se considera vieja.
+      if(x && !x.salidaFecha) return false;
+    }
+    const raw=x.salidaFecha||x.entradaFecha||x.updatedAt||x.createdAt||x.start;
+    const d=parseDate(raw);
+    if(!d) return false; // sin fecha reconocible: no ocultar por seguridad
+    const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-PLATE_SUGGESTION_STALE_DAYS);
+    return d<cutoff;
+  }
+  function allPlateSuggestions(query){
+    const q=String(query||'').trim().toUpperCase().replace(/[\s-]/g,'');
+    const seen=new Map();
+    const sources=[];
+    // Entradas locales actuales + historial anterior de la app.
+    // Se usa una copia ya interpretada (fpCachedList): esta función corre en cada tecla y antes
+    // volvía a leer y parsear TODO el historial 3 veces por pulsación (la placa DB_KEY se leía dos veces).
+    (function(){
+      const a=fpCachedList(DB_KEY); for(let i=0;i<a.length;i++) sources.push(a[i]);
+    })();
+    // También se incluyen placas que tienen mensualidad registrada, para que
+    // al digitarlas el usuario pueda encontrarlas aunque no tengan una entrada abierta.
+    ['fp_monthly','fp_monthalities','monthly','mensualidades'].forEach(function(k){
+      try{
+        const a=(k==='fp_monthly')?fpCachedList(k):JSON.parse(localStorage.getItem(k)||'[]');
+        if(Array.isArray(a)) a.forEach(function(m){ sources.push({placa:m.placa??m.plate,entradaFecha:m.updatedAt||m.createdAt||m.start,salidaFecha:null,idTarifa:m.vehicle||'',_monthly:true}); });
+        else if(a && typeof a==='object'){
+          const arr=Array.isArray(a.data)?a.data:(Array.isArray(a.items)?a.items:[a]);
+          arr.forEach(function(m){ sources.push({placa:m.placa??m.plate,entradaFecha:m.updatedAt||m.createdAt||m.start,salidaFecha:null,idTarifa:m.vehicle||'',_monthly:true}); });
+        }
+      }catch(e){}
+    });
+    sources.forEach(function(x){
+      if(!x) return;
+      if(isStalePlateSource(x)) return;
+      const plate=String(x.placa??x.plate??x.Placa??x.PLACA??'').trim().toUpperCase();
+      const norm=plate.replace(/[\s-]/g,'');
+      if(!norm || (q && norm.indexOf(q)!==0)) return;
+      const prev=seen.get(norm);
+      const xd=parseDate(x.entradaFecha||x.updatedAt||x.createdAt||x.start);
+      const pd=prev?parseDate(prev.entradaFecha||prev.updatedAt||prev.createdAt||prev.start):null;
+      if(!prev || (xd && (!pd || xd>pd))) seen.set(norm,Object.assign({},x,{placa:plate}));
+    });
+    return Array.from(seen.values()).sort(function(a,b){
+      const pa=String(a.placa||'').toUpperCase(), pb=String(b.placa||'').toUpperCase();
+      const aOpen=!a.salidaFecha, bOpen=!b.salidaFecha;
+      if(aOpen!==bOpen) return aOpen ? -1 : 1;
+      return pa.localeCompare(pb);
+    }).slice(0,10);
+  }
+  function hidePlateSuggestions(){
+    const box=el('placaSuggestions');
+    if(box){ box.style.display='none'; box.innerHTML=''; }
+  }
+  function showPlateSuggestions(){
+    const input=el('placa'), box=el('placaSuggestions');
+    if(!input || !box) return;
+    const q=String(input.value||'').trim().toUpperCase();
+    // No mostrar todas las placas al enfocar el campo: las sugerencias aparecen
+    // solamente cuando el usuario ya escribió al menos un carácter.
+    if(q.length===0){ hidePlateSuggestions(); return; }
+    const matches=allPlateSuggestions(q);
+    if(!matches.length){ hidePlateSuggestions(); return; }
+    box.innerHTML='';
+    matches.forEach(function(entry,idx){
+      const plate=String(entry.placa||'').trim().toUpperCase();
+      const item=document.createElement('div');
+      item.className='offline-plate-suggestion';
+      item.setAttribute('role','option');
+      item.dataset.index=String(idx);
+      item.style.cssText='padding:10px 12px;cursor:pointer;border-bottom:1px solid #eee;background:#fff;text-align:left;';
+      item.innerHTML='<div style="font-weight:700;font-size:16px;">'+escapeHtml(plate)+'</div>';
+      item.addEventListener('mouseenter',function(){ box.querySelectorAll('.offline-plate-suggestion').forEach(function(x){x.style.background='#fff';}); item.style.background='#f5f5f5'; });
+      item.addEventListener('mousedown',function(ev){ ev.preventDefault(); selectPlateSuggestion(entry); });
+      box.appendChild(item);
+    });
+    box.style.display='block'; box.style.visibility='visible';
+  }
+  function selectPlateSuggestion(entry){
+    if(!entry) return;
+    const plate=String(entry.placa||'').trim().toUpperCase();
+    // If it is still inside, open that active entry for payment. If it already
+    // left, start a brand-new entry using only its plate.
+    if(!entry.salidaFecha){
+      setValue('placa',plate);
+      window.update(entry);
+    }else{
+      clearForm();
+      setValue('placa',plate);
+      text('impplaca',plate);
+      text('imprecibo','');
+      text('impentrada','');
+      text('impsalida','');
+      if(el('impSalidaRow')) el('impSalidaRow').style.display='none';
+      if(el('impTotalRow')) el('impTotalRow').style.display='none';
+      if(el('impcash')) text('impcash','');
+      if(el('impnequi')) text('impnequi','');
+      applyBusinessInfo(); applyReceiptConfig(false);
+      if(el('placa')) el('placa').focus();
+    }
+    hidePlateSuggestions();
+  }
+  function movePlateSuggestion(delta){
+    const box=el('placaSuggestions'); if(!box || box.style.display==='none') return;
+    const items=Array.from(box.querySelectorAll('.offline-plate-suggestion')); if(!items.length) return;
+    let active=items.findIndex(x=>x.style.backgroundColor==='rgb(245, 245, 245)');
+    if(active<0) active=delta>0?-1:items.length;
+    active=(active+delta+items.length)%items.length;
+    items.forEach(function(x){x.style.background='#fff';});
+    items[active].style.background='#f5f5f5';
+    items[active].scrollIntoView({block:'nearest'});
+  }
+  function chooseActivePlateSuggestion(){
+    const box=el('placaSuggestions'); if(!box || box.style.display==='none') return false;
+    const items=Array.from(box.querySelectorAll('.offline-plate-suggestion')); if(!items.length) return false;
+    let active=items.find(x=>x.style.backgroundColor==='rgb(245, 245, 245)') || items[0];
+    const idx=Number(active.dataset.index||0), matches=allPlateSuggestions(value('placa'));
+    if(matches[idx]){ selectPlateSuggestion(matches[idx]); return true; }
+    return false;
+  }
+  window.myFunction=function(){
+    const filter=value('placa').trim().toUpperCase();
+    document.querySelectorAll('#myTable tbody tr').forEach(tr=>{const cell=tr.cells[0];tr.style.display=(!filter || ((cell?.textContent||'').toUpperCase().includes(filter)))?'':'none';});
+    if(filter.length>0) showPlateSuggestions(); else hidePlateSuggestions();
+  };
+  function updateClock(){
+    const e=el('salidaFecha'); if(e){ const d=new Date(); e.textContent=` Hora: ${d.getHours()} : ${pad(d.getMinutes())} : ${pad(d.getSeconds())}`; }
+  }
+  let clockTimer=null;
+  let fpTariffTick=0;
+  window.mueveReloj=function(){
+    try {
+      updateClock();
+      // El reloj visual se refresca cada segundo (es barato), pero recalcular la
+      // tarifa relee y parsea TODO el historial de vehículos (readDB). Eso, cada
+      // segundo y para siempre mientras esta pantalla esté abierta, se vuelve
+      // costoso a medida que crece el historial. Se recalcula cada 5s en su
+      // lugar; el monto que se ve en pantalla no cambia de forma perceptible
+      // segundo a segundo, así que no se nota la diferencia.
+      fpTariffTick++;
+      if(selectedId!==null && fpTariffTick%5===0){
+        const db=readDB();
+        const entry=db.find(x=>String(x.id)===String(selectedId));
+        if(entry && !entry.salidaFecha){ showCalculation(entry.entradaFecha); }
+      }
+    } catch(err) {
+      console.error('Reloj/cálculo offline:',err);
+    } finally {
+      clearTimeout(clockTimer);
+      clockTimer=setTimeout(window.mueveReloj,1000);
+    }
+  };
+
+  document.addEventListener('DOMContentLoaded',function(){
+    document.querySelectorAll('input[name*=\"placa\" i],input[id*=\"placa\" i],input[name*=\"plate\" i],input[id*=\"plate\" i]').forEach(function(inp){
+      inp.style.textTransform='uppercase';
+      inp.addEventListener('input',function(){ this.value=String(this.value||'').toUpperCase(); });
+      inp.value=String(inp.value||'').toUpperCase();
+    });
+    const form=document.querySelector('form[action="#"]');
+    if(form) form.addEventListener('submit',function(ev){ ev.preventDefault(); ev.stopPropagation(); });
+    const registerBtn=el('btnRegistrar');
+    if(registerBtn) registerBtn.addEventListener('click',function(ev){ ev.preventDefault(); ev.stopPropagation(); const placaNow=value('placa').trim().toUpperCase(); const infoNow=evaluateMonthlyForPlate(placaNow); if(infoNow.blocked){ checkMonthlyPlate(); fpAlert('No se puede registrar esta entrada: la placa '+placaNow+' tiene una mensualidad activa.','error'); return; } if(typeof window.registrar==='function') window.registrar(); });
+    resetOperationalDataV85();
+    seedDatabase();
+    cleanupImportedOpenEntries();
+    resetReceiptCounterV38();
+    renderTable();
+    clearForm();
+    if(el('idTarifa')) el('idTarifa').addEventListener('change',function(){ if(value('idTarifa')) showCalculation(value('entradaFecha')); });
+    if(el('plena')) el('plena').addEventListener('change',function(){
+      if(this.checked && el('mensualidad')) el('mensualidad').checked=false;
+      if(value('idTarifa')) showCalculation(value('entradaFecha'));
+    });
+    if(el('mensualidad')) el('mensualidad').addEventListener('change',function(){
+      if(this.checked && el('plena')) el('plena').checked=false;
+      if(value('idTarifa')) showCalculation(value('entradaFecha'));
+    });
+    if(el('placa')) {
+      el('placa').addEventListener('input',function(){this.value=this.value.toUpperCase(); window.myFunction(); checkMonthlyPlate();});
+      el('placa').addEventListener('focus',function(){ showPlateSuggestions(); });
+      el('placa').addEventListener('keydown',function(ev){
+        if(ev.key==='ArrowDown'){ ev.preventDefault(); showPlateSuggestions(); movePlateSuggestion(1); }
+        else if(ev.key==='ArrowUp'){ ev.preventDefault(); movePlateSuggestion(-1); }
+        else if(ev.key==='Enter' && chooseActivePlateSuggestion()){ ev.preventDefault(); ev.stopPropagation(); }
+        else if(ev.key==='Escape'){ hidePlateSuggestions(); }
+      });
+      document.addEventListener('click',function(ev){
+        const wrap=el('placaSuggestWrap');
+        if(wrap && !wrap.contains(ev.target)) hidePlateSuggestions();
+      });
+      const notice=document.createElement('div');
+      notice.id='monthlyEntryNotice';
+      notice.style.cssText='display:none;margin-top:8px;padding:9px 12px;border-radius:4px;background:#fff3cd;color:#856404;border:1px solid #ffe69c;font-weight:600;';
+      el('placa').parentNode.appendChild(notice);
+      checkMonthlyPlate();
+    }
+    if(el('pagar')) el('pagar').addEventListener('click',function(ev){ev.preventDefault();ev.stopPropagation();pay();});
+    if(el('pagar')) el('pagar').disabled=false;
+    if(el('btnPendiente')) el('btnPendiente').addEventListener('click',function(ev){ev.preventDefault();ev.stopPropagation();payAsPending();});
+    if(window.jQuery){
+      jQuery('#myModal').on('hidden.bs.modal',function(){ clearForm(); });
+    }
+    // Se inicializa aquí (y no en el primer <script> de arriba) porque en este punto
+    // la función setupPaymentUI ya está definida en este mismo bloque. Esto deja
+    // funcionando los botones Efectivo / Electrónico / Ambos.
+    setupPaymentUI();
+    setupDiscountUI();
+    // Los botones son manejados de forma explícita para evitar recargas de la página al pagar.
+    window.mueveReloj();
+  });
+})();
+</script>
+<script src="mvc/model.js"></script><script src="mvc/view.js"></script><script src="mvc/app-controller.js"></script>
+</body></html>

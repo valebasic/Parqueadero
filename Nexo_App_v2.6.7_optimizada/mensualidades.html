@@ -1,0 +1,125 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><link rel="icon" type="image/png" href="./icon.png"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Nexo.app</title><link href="./assets/material-dashboard.css" rel="stylesheet"><link rel="stylesheet" href="./assets/font-awesome.min.css">
+
+
+
+<style id="fp-v61-ui">
+:root{--fp-nav-blue:#0b2748;--fp-nav-blue-2:#071a33;--fp-nav-hover:#123b68}
+/* Botones principales: mismo azul del panel de navegación */
+.btn-primary,.btn-success,.btn-warning,.fp-new-payment{background:var(--fp-nav-blue)!important;background-image:none!important;border-color:var(--fp-nav-blue)!important;color:#fff!important;box-shadow:none!important}
+.btn-primary:hover,.btn-success:hover,.btn-warning:hover,.fp-new-payment:hover{background:var(--fp-nav-hover)!important;border-color:var(--fp-nav-hover)!important;color:#fff!important}
+/* Acciones con flecha/cuadro: azul */
+.btn-arrow,.offline-select .btn,.editConfigUser,.editMonthly,.renewMonthly,.delMonthly{background:var(--fp-nav-blue)!important;color:#fff!important;border-color:var(--fp-nav-blue)!important}
+/* Impresión: solo icono, cuadro blanco y pequeño */
+.printSale,.printMonthlyPayment{width:42px!important;height:38px!important;padding:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;background:#fff!important;color:#0b2748!important;border:1px solid #d5dbe2!important;border-radius:7px!important;box-shadow:none!important}
+.printSale i,.printMonthlyPayment i{margin:0!important;font-size:16px!important;color:#0b2748!important}
+/* Paginación / cuadros de navegación */
+.fp-pager button,.fp-pager button.active,#salesPager button{background:var(--fp-nav-blue)!important;border-color:var(--fp-nav-blue)!important;color:#fff!important}
+.fp-pager button:disabled,#salesPager button:disabled{background:#eef1f4!important;border-color:#d7dce2!important;color:#8a929c!important}
+/* Selectores: caja limpia y flecha azul */
+select.form-control{color:#30343b!important}
+/* Íconos de navegación pequeños y uniformes */
+.sidebar .nav li>a i{width:24px!important;min-width:24px!important;font-size:17px!important}
+/* No usar íconos grandes decorativos en acciones */
+.btn i:only-child{margin-right:0!important}
+</style></head><style id="fp-monthly-v60">html,body{background:#f7f8fa!important;color:#30343b!important}.wrapper,.main-panel{background:#f7f8fa!important}.main-panel{min-height:100vh}.navbar .navbar-brand{color:#30343b!important}.content{padding-top:76px!important}.fp-page-head{display:flex;justify-content:space-between;align-items:center;gap:20px;background:#fff;border:1px solid #e1e5ea;border-radius:14px;padding:22px 24px;margin-bottom:16px;box-shadow:0 8px 24px rgba(20,30,40,.06)}.fp-page-head h2{margin:0 0 6px;color:#172033!important;font-weight:700}.fp-page-head p{margin:0;color:#697382;font-size:14px}.fp-new-payment{background:#0b2748!important;color:#fff!important;border:0!important;border-radius:8px!important;font-weight:700;padding:13px 22px!important;white-space:nowrap;box-shadow:0 7px 16px rgba(255,122,0,.18)}.fp-new-payment i{margin-right:7px}.fp-card{background:#fff!important;border:1px solid #e1e5ea!important;border-radius:12px!important;box-shadow:0 8px 24px rgba(20,30,40,.06)!important}.fp-filters{margin-bottom:4px}.fp-filters .form-group{margin-bottom:12px}.fp-filters label{color:#30343b!important;font-weight:600}.fp-filters .form-control{height:46px;background:#fff!important;color:#30343b!important;border:1px solid #d4d9df!important}.fp-table-wrap{overflow-x:auto;border:1px solid #e1e5e9;border-radius:8px}.fp-payments-table{margin:0!important;min-width:1120px!important;table-layout:fixed}.fp-payments-table th{background:#ff8a00!important;color:#fff!important;border-color:#ff8a00!important;text-align:center!important;font-weight:700!important;white-space:nowrap;padding:12px 9px!important}.fp-payments-table td{color:#30343b!important;background:#fff!important;border-color:#e1e5e9!important;text-align:center!important;vertical-align:middle!important;padding:12px 8px!important;white-space:nowrap}.fp-payments-table th:nth-child(1){width:80px}.fp-payments-table th:nth-child(2){width:90px}.fp-payments-table th:nth-child(3),.fp-payments-table th:nth-child(4){width:105px}.fp-payments-table th:nth-child(5){width:105px}.fp-payments-table th:nth-child(6){width:135px}.fp-payments-table th:nth-child(7),.fp-payments-table th:nth-child(8){width:105px}.fp-payments-table th:nth-child(9){width:150px}.fp-payments-table th:nth-child(10){width:90px}.fp-payments-table th:nth-child(11){width:90px}.fp-payments-table .btn{margin:0!important;padding:7px 10px!important;background:#fff!important;border:1px solid #d3d9e0!important;color:#172033!important;border-radius:7px!important}.fp-pager{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:16px;flex-wrap:wrap}.fp-pager button{min-width:38px;height:36px;border:1px solid #d7dce2;background:#fff;color:#30343b;border-radius:7px}.fp-pager button.active{background:#ff8a00;color:#fff;border-color:#ff8a00}.fp-pager button:disabled{opacity:.45}.fp-page-count{margin-left:12px;color:#737b84;font-size:13px}.fp-page-note{text-align:center;color:#737b84;font-size:12px;margin-top:10px}.fp-file-label{margin-bottom:0!important;cursor:pointer}.fp-migration-preview{margin-top:16px}.fp-migration-stat{border-radius:10px;padding:10px 14px;text-align:center}.fp-migration-stat strong{display:block;font-size:22px}.fp-migration-stat span{font-size:12px}.fp-migration-ok{background:#e7f5ec;color:#1f7a4d}.fp-migration-ok strong{color:#1f7a4d}.fp-migration-err{background:#fbeaea;color:#b93a3a}.fp-migration-err strong{color:#b93a3a}.fp-migration-error-row{border:1px solid #f0d3d3;background:#fff7f7;border-radius:8px;padding:8px 12px;margin-top:6px;font-size:12px;color:#8a3030}.fp-monthly-admin{margin-top:16px}.fp-monthly-admin .card-header-primary{background:linear-gradient(90deg,#ff6b00,#ffb300)!important}.fp-monthly-admin .card-title,.fp-monthly-admin .card-category{color:#fff!important}.fp-monthly-admin .table th{color:#e97800!important;background:#f3f5f7!important}.sidebar{background:linear-gradient(180deg,#071a33 0%,#0b2748 55%,#06162c 100%)!important}@media(max-width:900px){.fp-page-head{align-items:flex-start;flex-direction:column}.fp-new-payment{width:100%}}
+.fp-modal-overlay{position:fixed;inset:0;background:rgba(10,20,35,.55);display:none;align-items:center;justify-content:center;z-index:3000;padding:20px}
+.fp-modal-box{background:#fff;border-radius:16px;padding:26px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.35);position:relative}
+.fp-modal-box h4{margin:0 0 4px;color:#172033;font-weight:700}
+.fp-modal-sub{color:#697382;font-size:14px;margin-bottom:16px}
+.fp-modal-close{position:absolute;top:14px;right:16px;background:none;border:0;font-size:22px;line-height:1;color:#8a929c;cursor:pointer}
+.fp-modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+.fp-payment-panel{margin-top:4px}
+.fp-payment-title{font-weight:700;font-size:14px;margin:0 0 8px;color:#30343b}
+.fp-payment-methods{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.fp-payment-method{min-height:54px;border:1px solid #d5d9de;border-radius:12px;background:#fff;color:#30343b;font-weight:700;font-size:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;transition:.15s}
+.fp-payment-method.active{background:#0b2748;color:#fff;border-color:#0b2748}
+.fp-payment-method:hover:not(.active){background:#f4f6f8}
+.fp-pay-icon{font-size:15px;line-height:1}
+.fp-payment-amounts{margin-top:10px}
+.fp-payment-row{display:grid;grid-template-columns:96px 1fr;align-items:center;gap:8px;margin-bottom:6px}
+.fp-payment-row label{margin:0!important;color:#666!important;font-size:12px!important}
+.fp-payment-row input{height:38px;border:1px solid #d9dde2;border-radius:11px;padding:7px 12px;background:#fff;color:#30343b;font-weight:600;width:100%;box-sizing:border-box}
+.fp-payment-summary{margin-top:8px;border:1px solid #c9d8ea;background:#eef4fb;border-radius:11px;padding:8px 12px}
+.fp-payment-summary>div{display:flex;justify-content:space-between;align-items:center;font-size:12px}
+.fp-payment-summary strong{font-size:14px;color:#222}
+.fp-payment-summary .fp-balance{margin-top:2px}
+.fp-payment-summary .fp-balance span,.fp-payment-summary .fp-balance strong{color:#0b2748;font-weight:700}
+</style></head><body data-module="monthly"><div class="wrapper"><div class="sidebar" data-color="purple" data-background-color="white"><div class="logo"><a href="index.html" class="simple-text logo-normal">NEXO.APP</a></div><div class="sidebar-wrapper"><ul class="nav"></ul></div></div><div class="main-panel"><nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top"><div class="container-fluid"><div class="navbar-wrapper"><a class="navbar-brand" href="index.html">Mensualidades</a></div></div></nav><div class="content"><div class="container-fluid">
+<div class="fp-page-head"><div><h2>Mensualidades</h2></div></div>
+<div class="card fp-card fp-monthly-admin"><div class="card-header card-header-primary"><h4 class="card-title">Mensualidades</h4></div><div class="card-body"><div class="row">
+<div class="col-md-3"><div class="form-group"><label>Buscar</label><input id="monthlySearchLegacy" class="form-control" placeholder="Nombre, documento o placa"></div></div>
+<div class="col-md-3"><div class="form-group"><label>Estado</label><select id="monthlyStatusFilter" class="form-control"><option value="">Todas</option><option value="active">Activas</option><option value="pending">Pendientes de pago</option><option value="expiring">Por vencer</option><option value="expired">Vencidas</option></select></div></div>
+</div><div class="table-responsive"><table class="table" id="monthlyTable"><thead><tr><th>Documento</th><th>Cliente</th><th>Placa</th><th>Vehículo</th><th>Inicio</th><th>Fin</th><th>Valor</th><th>Horario</th><th>Cargos fuera de horario</th><th>Estado</th><th>Acciones</th></tr></thead><tbody></tbody></table></div></div></div>
+<div class="card fp-card fp-monthly-admin" id="monthlyCreateCard"><div class="card-header card-header-primary"><h4 class="card-title">Registrar mensualidad</h4></div><div class="card-body"><form id="monthlyForm"><div class="row"><div class="col-md-3"><div class="form-group"><label>Documento</label><input class="form-control" name="document"></div></div><div class="col-md-3"><div class="form-group"><label>Nombre</label><input class="form-control" name="name" required></div></div><div class="col-md-2"><div class="form-group"><label>Placa</label><input class="form-control" name="plate" maxlength="6" required></div></div><div class="col-md-2"><div class="form-group"><label>Vehículo</label><select class="form-control" name="vehicle"><option>Carro</option><option>Moto</option><option>Cicla</option></select></div></div><div class="col-md-2"><div class="form-group"><label>Valor</label><input type="number" class="form-control" name="value" min="0"></div></div></div><div class="row"><div class="col-md-3"><div class="form-group"><label>Fecha inicio</label><input type="date" class="form-control" name="start" required></div></div><div class="col-md-3"><div class="form-group"><label id="monthlyEndLabel">Fecha fin (automática)</label><input type="date" class="form-control" name="end"></div></div><div class="col-md-3"><div class="form-group"><label>Horario</label><select class="form-control" name="schedule"><option value="day">Día</option><option value="night">Noche</option></select></div></div></div><div class="row" id="monthlyNightFields" style="display:none"><div class="col-md-3"><div class="form-group"><label>Hora límite de entrada</label><input type="time" class="form-control" name="nightEntryLimit"></div></div><div class="col-md-3"><div class="form-group"><label>Hora límite de salida</label><input type="time" class="form-control" name="nightExitLimit"></div></div><div class="col-md-6"><p class="text-muted" style="font-size:12px;margin-top:32px">El horario controla únicamente el acceso. Si la mensualidad está activa y se encuentra dentro del horario permitido, la entrada y salida no generan ningún cobro ni venta.</p></div></div><div class="form-check"><label class="form-check-label"><input class="form-check-input" type="checkbox" name="active" checked> Mensualidad activa<span class="form-check-sign"><span class="check"></span></span></label></div><div class="form-check" id="monthlyBiweeklyRow"><label class="form-check-label"><input class="form-check-input" type="checkbox" name="biweekly"> Pago quincenal (permite dividir cada período en 2 abonos)<span class="form-check-sign"><span class="check"></span></span></label></div><button class="btn btn-primary" type="submit">Guardar mensualidad</button><button class="btn btn-default" type="button" id="newMonthly">Nuevo</button></form></div></div>
+<div class="card fp-card fp-monthly-admin" id="monthlyMigrateCard"><div class="card-header card-header-primary"><h4 class="card-title">Migrar mensualidades existentes</h4></div><div class="card-body">
+<div class="row"><div class="col-md-12">
+<button type="button" class="btn btn-default" id="monthlyMigrationTemplate"><i class="fa fa-download"></i> Descargar plantilla CSV</button>
+<label class="btn btn-default fp-file-label" for="monthlyMigrationFile"><i class="fa fa-upload"></i> Elegir archivo CSV</label>
+<input type="file" id="monthlyMigrationFile" accept=".csv,text/csv" style="display:none">
+<span id="monthlyMigrationFileName" class="text-muted" style="font-size:12px;margin-left:8px"></span>
+</div></div>
+<div id="monthlyMigrationPreview" class="fp-migration-preview" style="display:none">
+  <div class="row">
+    <div class="col-md-3"><div class="fp-migration-stat fp-migration-ok"><strong id="monthlyMigrationValidCount">0</strong><span>filas válidas</span></div></div>
+    <div class="col-md-3"><div class="fp-migration-stat fp-migration-err"><strong id="monthlyMigrationErrorCount">0</strong><span>con error</span></div></div>
+  </div>
+  <div id="monthlyMigrationErrors"></div>
+  <button type="button" class="btn btn-primary" id="monthlyMigrationImportBtn">Importar mensualidades</button>
+  <span class="text-muted" style="font-size:12px;margin-left:8px">Solo se importan las filas válidas. Las filas con error no se importan hasta que corrija el archivo.</span>
+</div>
+</div></div>
+<div class="card fp-card"><div class="card-body">
+<div class="row fp-filters"><div class="col-md-3"><div class="form-group"><label>Fecha inicio</label><input type="date" id="monthlyFrom" class="form-control"></div></div><div class="col-md-3"><div class="form-group"><label>Fecha fin</label><input type="date" id="monthlyTo" class="form-control"></div></div><div class="col-md-3"><div class="form-group"><label>Buscar placa</label><input id="monthlySearch" class="form-control" placeholder="Buscar placa..."></div></div><div class="col-md-3"><div class="form-group"><label>Forma de pago</label><select id="monthlyPaymentFilter" class="form-control"><option value="">Todas</option><option value="cash">Efectivo</option><option value="nequi">Nequi</option><option value="both">Efectivo + Nequi</option></select></div></div></div><div class="row" style="margin-bottom:10px"><div class="col-md-12"><button type="button" id="monthlyReportBtn" class="btn btn-primary"><i class="fa fa-file-text-o"></i> Reporte de mensualidades</button> <span class="text-muted" style="font-size:12px">Genera el reporte solo de los pagos de mensualidades que cumplen los filtros de arriba (si no filtra fechas, incluye todos).</span></div></div>
+<div class="table-responsive fp-table-wrap"><table class="table fp-payments-table" id="monthlyPaymentsTable"><thead><tr><th>Recibo</th><th>Placa</th><th>Inicio</th><th>Fin</th><th>Valor</th><th>Forma de pago</th><th>Efectivo</th><th>Nequi</th><th>Fecha</th><th>Usuario</th><th>Imprimir</th></tr></thead><tbody></tbody></table></div><div id="monthlyPaymentsPager" class="fp-pager"></div><div class="fp-page-note">Se muestran 10 pagos por página. Los pagos que aparecen aquí son ingresos reales y también se reflejan en Ventas y Caja.</div>
+</div>
+<div class="fp-modal-overlay" id="bwOverlay">
+  <div class="fp-modal-box">
+    <button type="button" class="fp-modal-close" id="bwCloseBtn" aria-label="Cerrar">&times;</button>
+    <h4 id="bwModalLabel">Pago quincenal</h4>
+    <div class="fp-modal-sub" id="bwModalHint"></div>
+    <div class="fp-payment-panel">
+      <div class="fp-payment-row"><label for="bwAmountInput">Monto a abonar</label><input type="number" id="bwAmountInput" min="0" step="1" value="0"></div>
+    </div>
+    <div class="fp-modal-footer">
+      <button type="button" class="btn btn-default" id="bwCancelBtn">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="bwConfirmBtn">Continuar</button>
+    </div>
+  </div>
+</div>
+<div class="fp-modal-overlay" id="mpOverlay">
+  <div class="fp-modal-box">
+    <button type="button" class="fp-modal-close" id="mpCloseBtn" aria-label="Cerrar">&times;</button>
+    <h4>Confirmar pago de mensualidad</h4>
+    <div class="fp-modal-sub"><span id="mpModalLabel"></span> — Valor de la mensualidad: <strong id="mpModalValue"></strong></div>
+    <div class="fp-payment-panel">
+      <div class="fp-payment-title">Descuento</div>
+      <div class="fp-payment-row"><label for="mpChargeAmount">Valor a cobrar</label><input type="number" id="mpChargeAmount" min="0" step="1" value="0"></div>
+      <div class="fp-payment-summary" id="mpDiscountSummary" style="display:none">
+        <div><span>Valor original</span><strong id="mpDiscountOriginal">$0</strong></div>
+        <div><span>Descuento aplicado</span><strong id="mpDiscountApplied">-$0</strong></div>
+        <div class="fp-balance"><span>Total a cobrar</span><strong id="mpDiscountFinal">$0</strong></div>
+      </div>
+    </div>
+    <div class="fp-payment-panel">
+      <div class="fp-payment-title">Método de pago</div>
+      <div class="fp-payment-methods">
+        <button type="button" class="fp-payment-method active" data-payment-method="cash"><span class="fp-pay-icon">▣</span><span>Efectivo</span></button>
+        <button type="button" class="fp-payment-method" data-payment-method="nequi"><span class="fp-pay-icon">▯</span><span>Electrónico</span></button>
+        <button type="button" class="fp-payment-method" data-payment-method="both"><span class="fp-pay-icon">⇄</span><span>Ambos</span></button>
+      </div>
+      <div class="fp-payment-amounts" id="mpPaymentAmounts">
+        <div class="fp-payment-row"><label for="mpCashAmount">Efectivo</label><input type="number" id="mpCashAmount" min="0" step="1" value="0"></div>
+        <div class="fp-payment-row"><label for="mpNequiAmount">Electrónico (calculado)</label><input type="number" id="mpNequiAmount" min="0" step="1" value="0" readonly></div>
+        <div class="fp-payment-summary">
+          <div><span>Total pagado</span><strong id="mpTotalPaid">$0</strong></div>
+          <div class="fp-balance"><span>Saldo</span><strong id="mpPaymentBalance">$0</strong></div>
+        </div>
+      </div>
+    </div>
+    <div class="fp-modal-footer">
+      <button type="button" class="btn btn-default" id="mpCancelBtn">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="mpConfirmBtn">Confirmar pago</button>
+    </div>
+  </div>
+</div>
+</div></div></div></div><script src="mvc/model.js"></script><script src="mvc/view.js"></script><script src="mvc/app-controller.js"></script></body></html>

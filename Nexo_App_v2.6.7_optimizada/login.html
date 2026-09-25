@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><link rel="icon" type="image/png" href="./icon.png">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nexo.app</title>
+<link rel="stylesheet" href="./assets/font-awesome.min.css">
+<style>
+:root{--navy:#031a35;--navy2:#06284d;--orange:#ff6b00;--orange2:#ffb300;--text:#30343b;--muted:#727982;--line:#dfe3e8}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;font-family:Arial,Roboto,sans-serif}
+body{background:linear-gradient(135deg,var(--navy),var(--navy2));color:var(--text);display:flex;align-items:center;justify-content:center;overflow:auto}
+.login-page{width:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:30px;background:radial-gradient(circle at 18% 12%,rgba(255,179,0,.14),transparent 28%),linear-gradient(135deg,#031a35 0%,#06284d 100%)}
+.card{width:min(500px,100%);border:1px solid rgba(255,255,255,.22);border-radius:24px;background:rgba(255,255,255,.98);box-shadow:0 24px 65px rgba(0,0,0,.32);padding:48px 46px}
+.brand{text-align:center;font-size:32px;font-weight:800;letter-spacing:.2px;margin-bottom:8px;color:#031a35}.brand span{color:var(--orange)}
+.brand-rule{width:64px;height:4px;border-radius:4px;background:linear-gradient(90deg,var(--orange),var(--orange2));margin:0 auto 28px}
+h1{font-size:32px;text-align:center;margin:0 0 10px}.sub{text-align:center;color:var(--muted);font-size:17px;margin-bottom:32px}
+.field{position:relative;margin-bottom:20px}.field .icon{position:absolute;left:18px;top:17px;width:22px;height:22px;color:var(--orange);z-index:2}.field input{width:100%;height:58px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--text);font-size:17px;padding:0 52px 0 54px;outline:none}.field input:focus{border-color:#17466f;box-shadow:0 0 0 2px rgba(23,70,111,.13)}.field input::placeholder{color:#9aa1a9}
+.eye{position:absolute;right:10px;top:10px;width:38px;height:38px;border:0;border-radius:9px;background:#fff7ed;color:var(--orange);display:flex;align-items:center;justify-content:center;cursor:pointer}.eye svg{width:20px;height:20px}.eye:focus{outline:2px solid rgba(23,70,111,.2)}
+.login-options{display:flex;justify-content:space-between;align-items:center;margin:4px 0 22px;font-size:14px}.remember{display:flex;align-items:center;gap:8px}.remember input{width:18px;height:18px;accent-color:var(--orange)}.forgot{color:var(--orange);text-decoration:none;font-weight:600}
+.msg{display:none;color:#9b4d00;background:#fff5e8;border:1px solid #ffd09a;border-radius:10px;padding:11px 13px;margin:-4px 0 17px}
+.btn{width:100%;height:58px;border:0;border-radius:12px;background:linear-gradient(90deg,var(--orange),var(--orange2));color:#fff;font-size:19px;font-weight:700;cursor:pointer;box-shadow:0 10px 24px rgba(3,26,53,.22)}.btn:active{transform:translateY(1px)}
+.helper{text-align:center;color:#8b9299;font-size:12px;margin-top:20px}
+.user-picker{margin-bottom:20px}
+.user-picker-label{font-size:13px;color:var(--muted);margin-bottom:10px;font-weight:600}
+.user-picker-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.user-chip{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:12px;padding:11px 12px;cursor:pointer;background:#fff;transition:border-color .15s}
+.user-chip:hover{border-color:var(--orange)}
+.user-chip:focus{outline:2px solid var(--orange);outline-offset:2px}
+.user-chip .name{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--text);font-weight:600}
+.user-chip .avatar{width:34px;height:34px;flex:none;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.user-chip .forget{background:none;border:0;color:#b6bcc2;font-size:20px;line-height:1;cursor:pointer;padding:4px 8px;border-radius:6px}
+.user-chip .forget:hover{color:#c0392b;background:#fff0ee}
+.use-other{width:100%;background:none;border:1px dashed var(--line);border-radius:12px;height:46px;color:var(--muted);font-size:14px;cursor:pointer}
+.use-other:hover{border-color:var(--orange);color:var(--orange)}
+.selected-user{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:20px;background:#fff}
+.selected-user .name{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:700;color:var(--text)}
+.selected-user .change{background:none;border:0;color:var(--orange);font-weight:600;font-size:13px;cursor:pointer}
+@media(max-width:520px){.login-page{padding:16px}.card{padding:36px 22px;border-radius:20px}h1{font-size:28px}.brand{font-size:28px}.sub{font-size:15px}.login-options{font-size:13px}}
+</style>
+</head>
+<body data-module="login">
+<div class="login-page">
+  <section class="card">
+    <div class="brand">Nexo<span>.app</span></div>
+    <div class="brand-rule"></div>
+    <h1>Iniciar sesión</h1>
+    <div class="sub">Ingresa tus credenciales para continuar</div>
+    <form id="loginForm">
+      <div id="userPicker" class="user-picker" style="display:none">
+        <div class="user-picker-label">Selecciona tu usuario</div>
+        <div id="userPickerList" class="user-picker-list"></div>
+        <button type="button" id="useOtherUser" class="use-other">+ Usar otro usuario</button>
+      </div>
+      <div id="selectedUser" class="selected-user" style="display:none">
+        <span class="name"><span class="avatar" id="selectedUserAvatar"></span><span id="selectedUserName"></span></span>
+        <button type="button" class="change" id="changeUser">Cambiar</button>
+      </div>
+      <div class="field" id="userFieldWrap">
+        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.7-4 4.3-6 8-6s6.3 2 8 6"/></svg></span>
+        <input name="username" id="username" placeholder="Usuario" autocomplete="username" required>
+      </div>
+      <div class="field">
+        <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span>
+        <input type="password" name="password" id="password" placeholder="Contraseña" autocomplete="current-password" required>
+        <button type="button" class="eye" id="togglePassword" title="Mostrar contraseña" aria-label="Mostrar contraseña"><svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.5"/></svg></button>
+      </div>
+      <div class="login-options">
+        <label class="remember"><input type="checkbox" id="remember"><span>Recordarme</span></label>
+        <a class="forgot" href="#" id="forgotPassword">¿Olvidaste tu contraseña?</a>
+      </div>
+      <div id="loginMsg" class="msg"></div>
+      <button class="btn" type="submit">Iniciar sesión</button>
+    </form>
+    <div class="helper">Nexo.app · Acceso al sistema</div>
+  </section>
+</div>
+<script src="mvc/model.js"></script><script src="mvc/view.js"></script><script src="mvc/app-controller.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+  var p=document.getElementById('password'),eye=document.getElementById('togglePassword');
+  if(eye&&p)eye.onclick=function(){p.type=p.type==='password'?'text':'password';eye.setAttribute('title',p.type==='password'?'Mostrar contraseña':'Ocultar contraseña');eye.setAttribute('aria-label',p.type==='password'?'Mostrar contraseña':'Ocultar contraseña')};
+});
+</script>
+</body>
+</html>

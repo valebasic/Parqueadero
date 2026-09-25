@@ -1,0 +1,101 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><link rel="icon" type="image/png" href="./icon.png"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Nexo.app</title><link href="./assets/material-dashboard.css" rel="stylesheet"><link rel="stylesheet" href="./assets/font-awesome.min.css">
+
+
+
+<style id="fp-v61-ui">
+:root{--fp-nav-blue:#0b2748;--fp-nav-blue-2:#071a33;--fp-nav-hover:#123b68}
+/* Botones principales: mismo azul del panel de navegación */
+.btn-primary,.btn-success,.btn-warning,.fp-new-payment{background:var(--fp-nav-blue)!important;background-image:none!important;border-color:var(--fp-nav-blue)!important;color:#fff!important;box-shadow:none!important}
+.btn-primary:hover,.btn-success:hover,.btn-warning:hover,.fp-new-payment:hover{background:var(--fp-nav-hover)!important;border-color:var(--fp-nav-hover)!important;color:#fff!important}
+/* Paginación / cuadros de navegación */
+.fp-pager button,.fp-pager button.active{background:var(--fp-nav-blue)!important;border-color:var(--fp-nav-blue)!important;color:#fff!important}
+.fp-pager button:disabled{background:#eef1f4!important;border-color:#d7dce2!important;color:#8a929c!important}
+/* Selectores: caja limpia y flecha azul */
+select.form-control{color:#30343b!important}
+/* Íconos de navegación pequeños y uniformes */
+.sidebar .nav li>a i{width:24px!important;min-width:24px!important;font-size:17px!important}
+/* Modal de confirmación de pago (Efectivo/Electrónico/Ambos) - igual que en Mensualidades */
+.fp-modal-overlay{position:fixed;inset:0;background:rgba(10,20,35,.55);display:none;align-items:center;justify-content:center;z-index:3000;padding:20px}
+.fp-modal-box{background:#fff;border-radius:16px;padding:26px;max-width:420px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.35);position:relative}
+.fp-modal-box h4{margin:0 0 4px;color:#172033;font-weight:700}
+.fp-modal-sub{color:#697382;font-size:14px;margin-bottom:16px}
+.fp-modal-close{position:absolute;top:14px;right:16px;background:none;border:0;font-size:22px;line-height:1;color:#8a929c;cursor:pointer}
+.fp-modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+.fp-payment-panel{margin-top:4px}
+.fp-payment-title{font-weight:700;font-size:14px;margin:0 0 8px;color:#30343b}
+.fp-payment-methods{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.fp-payment-method{min-height:54px;border:1px solid #d5d9de;border-radius:12px;background:#fff;color:#30343b;font-weight:700;font-size:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;transition:.15s}
+.fp-payment-method.active{background:#0b2748;color:#fff;border-color:#0b2748}
+.fp-payment-method:hover:not(.active){background:#f4f6f8}
+.fp-pay-icon{font-size:15px;line-height:1}
+.fp-payment-amounts{margin-top:10px}
+.fp-payment-row{display:grid;grid-template-columns:96px 1fr;align-items:center;gap:8px;margin-bottom:6px}
+.fp-payment-row label{margin:0!important;color:#666!important;font-size:12px!important}
+.fp-payment-row input{height:38px;border:1px solid #d9dde2;border-radius:11px;padding:7px 12px;background:#fff;color:#30343b;font-weight:600;width:100%;box-sizing:border-box}
+.fp-payment-summary{margin-top:8px;border:1px solid #c9d8ea;background:#eef4fb;border-radius:11px;padding:8px 12px}
+.fp-payment-summary>div{display:flex;justify-content:space-between;align-items:center;font-size:12px}
+.fp-payment-summary strong{font-size:14px;color:#222}
+.fp-payment-summary .fp-balance{margin-top:2px}
+.fp-payment-summary .fp-balance span,.fp-payment-summary .fp-balance strong{color:#0b2748;font-weight:700}
+</style></head><style id="fp-pending-v1">html,body{background:#f7f8fa!important;color:#30343b!important}.wrapper,.main-panel{background:#f7f8fa!important}.main-panel{min-height:100vh}.navbar .navbar-brand{color:#30343b!important}.content{padding-top:76px!important}.fp-page-head{display:flex;justify-content:space-between;align-items:center;gap:20px;background:#fff;border:1px solid #e1e5ea;border-radius:14px;padding:22px 24px;margin-bottom:16px;box-shadow:0 8px 24px rgba(20,30,40,.06)}.fp-page-head h2{margin:0 0 6px;color:#172033!important;font-weight:700}.fp-page-head p{margin:0;color:#697382;font-size:14px}.fp-card{background:#fff!important;border:1px solid #e1e5ea!important;border-radius:12px!important;box-shadow:0 8px 24px rgba(20,30,40,.06)!important}.fp-filters{margin-bottom:4px}.fp-filters .form-group{margin-bottom:12px}.fp-filters label{color:#30343b!important;font-weight:600}.fp-filters .form-control{height:46px;background:#fff!important;color:#30343b!important;border:1px solid #d4d9df!important}.fp-table-wrap{overflow-x:auto;border:1px solid #e1e5e9;border-radius:8px}.fp-pending-table{margin:0!important;min-width:900px!important;table-layout:fixed}.fp-pending-table th{background:#ff8a00!important;color:#fff!important;border-color:#ff8a00!important;text-align:center!important;font-weight:700!important;white-space:nowrap;padding:12px 9px!important}.fp-pending-table td{color:#30343b!important;background:#fff!important;border-color:#e1e5e9!important;text-align:center!important;vertical-align:middle!important;padding:12px 8px!important;white-space:nowrap}.fp-pager{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:16px;flex-wrap:wrap}.fp-pager button{min-width:38px;height:36px;border:1px solid #d7dce2;background:#fff;color:#30343b;border-radius:7px}.fp-pager button.active{background:#ff8a00;color:#fff;border-color:#ff8a00}.fp-pager button:disabled{opacity:.45}.fp-page-count{margin-left:12px;color:#737b84;font-size:13px}.fp-page-note{text-align:center;color:#737b84;font-size:12px;margin-top:10px}.fp-pending-total{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:16px}.fp-pending-total .fp-stat{background:#fff;border:1px solid #e1e5ea;border-radius:12px;padding:14px 20px;box-shadow:0 8px 24px rgba(20,30,40,.06)}.fp-pending-total .fp-stat strong{display:block;font-size:22px;color:#0b2748}.fp-pending-total .fp-stat span{font-size:12px;color:#697382}.sidebar{background:linear-gradient(180deg,#071a33 0%,#0b2748 55%,#06162c 100%)!important}@media(max-width:900px){.fp-page-head{align-items:flex-start;flex-direction:column}}
+</style><body data-module="pending"><div class="wrapper"><div class="sidebar" data-color="purple" data-background-color="white"><div class="logo"><a href="index.html" class="simple-text logo-normal">NEXO.APP</a></div><div class="sidebar-wrapper"><ul class="nav"></ul></div></div><div class="main-panel"><nav class="navbar navbar-expand-lg navbar-transparent navbar-absolute fixed-top"><div class="container-fluid"><div class="navbar-wrapper"><a class="navbar-brand" href="index.html">Pendientes</a></div></div></nav><div class="content"><div class="container-fluid">
+<div class="fp-page-head"><div><h2>Pendientes</h2></div></div>
+<div class="fp-pending-total"><div class="fp-stat"><strong id="pendingTotalAmount">$0</strong><span>Total pendiente</span></div><div class="fp-stat"><strong id="pendingTotalCount">0</strong><span>Cobros pendientes</span></div></div>
+<div class="card fp-card"><div class="card-body">
+<div class="row fp-filters"><div class="col-md-3"><div class="form-group"><label>Fecha inicio</label><input type="date" id="pendingFrom" class="form-control"></div></div><div class="col-md-3"><div class="form-group"><label>Fecha fin</label><input type="date" id="pendingTo" class="form-control"></div></div><div class="col-md-6"><div class="form-group"><label>Buscar (placa o cliente)</label><input id="pendingSearch" class="form-control" placeholder="Buscar..."></div></div></div>
+<div class="table-responsive fp-table-wrap"><table class="table fp-pending-table" id="pendingTable"><thead><tr><th>Recibo</th><th>Placa</th><th>Cliente</th><th>Fecha de salida</th><th>Monto</th><th>Mensualidad vence</th><th>Acción</th></tr></thead><tbody></tbody></table></div><div id="pendingPager" class="fp-pager"></div><div class="fp-page-note">Estos montos todavía NO se han cobrado ni aparecen en Ventas o Caja. Use "Confirmar pago" cuando el cliente efectivamente pague: ahí se pide la forma de pago (requiere caja abierta) y recién entonces se registra la venta.</div>
+</div></div>
+</div></div></div></div>
+<div class="fp-modal-overlay" id="mpOverlay">
+  <div class="fp-modal-box">
+    <button type="button" class="fp-modal-close" id="mpCloseBtn" aria-label="Cerrar">&times;</button>
+    <h4>Confirmar pago pendiente</h4>
+    <div class="fp-modal-sub"><span id="mpModalLabel"></span> — Valor a cobrar: <strong id="mpModalValue"></strong></div>
+    <div class="fp-payment-panel">
+      <div class="fp-payment-title">Descuento</div>
+      <div class="fp-payment-row"><label for="mpChargeAmount">Valor a cobrar</label><input type="number" id="mpChargeAmount" min="0" step="1" value="0"></div>
+      <div class="fp-payment-summary" id="mpDiscountSummary" style="display:none">
+        <div><span>Valor original</span><strong id="mpDiscountOriginal">$0</strong></div>
+        <div><span>Descuento aplicado</span><strong id="mpDiscountApplied">-$0</strong></div>
+        <div class="fp-balance"><span>Total a cobrar</span><strong id="mpDiscountFinal">$0</strong></div>
+      </div>
+    </div>
+    <div class="fp-payment-panel">
+      <div class="fp-payment-title">Método de pago</div>
+      <div class="fp-payment-methods">
+        <button type="button" class="fp-payment-method active" data-payment-method="cash"><span class="fp-pay-icon">▣</span><span>Efectivo</span></button>
+        <button type="button" class="fp-payment-method" data-payment-method="nequi"><span class="fp-pay-icon">▯</span><span>Electrónico</span></button>
+        <button type="button" class="fp-payment-method" data-payment-method="both"><span class="fp-pay-icon">⇄</span><span>Ambos</span></button>
+      </div>
+      <div class="fp-payment-amounts" id="mpPaymentAmounts">
+        <div class="fp-payment-row"><label for="mpCashAmount">Efectivo</label><input type="number" id="mpCashAmount" min="0" step="1" value="0"></div>
+        <div class="fp-payment-row"><label for="mpNequiAmount">Electrónico (calculado)</label><input type="number" id="mpNequiAmount" min="0" step="1" value="0" readonly></div>
+        <div class="fp-payment-summary">
+          <div><span>Total pagado</span><strong id="mpTotalPaid">$0</strong></div>
+          <div class="fp-balance"><span>Saldo</span><strong id="mpPaymentBalance">$0</strong></div>
+        </div>
+      </div>
+    </div>
+    <div class="fp-modal-footer">
+      <button type="button" class="btn btn-default" id="mpCancelBtn">Cancelar</button>
+      <button type="button" class="btn btn-primary" id="mpConfirmBtn">Confirmar pago</button>
+    </div>
+  </div>
+</div>
+<div class="fp-modal-overlay" id="historyOverlay">
+  <div class="fp-modal-box" style="max-width:640px">
+    <button type="button" class="fp-modal-close" id="historyCloseBtn" aria-label="Cerrar">&times;</button>
+    <h4>Historial de <span id="historyPlateLabel"></span></h4>
+    <div class="fp-modal-sub">Todos los registros de esta placa: días, hora de entrada, hora de salida y valor a cobrar.</div>
+    <div class="table-responsive fp-table-wrap" style="max-height:420px;overflow-y:auto">
+      <table class="table fp-pending-table" id="historyTable" style="min-width:0">
+        <thead><tr><th>Entrada</th><th>Salida</th><th>Valor</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="fp-modal-footer">
+      <button type="button" class="btn btn-default" id="historyCancelBtn">Cerrar</button>
+    </div>
+  </div>
+</div>
+<script src="mvc/model.js"></script><script src="mvc/view.js"></script><script src="mvc/app-controller.js"></script></body></html>
