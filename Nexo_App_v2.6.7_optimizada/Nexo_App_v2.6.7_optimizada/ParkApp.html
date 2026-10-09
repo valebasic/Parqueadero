@@ -1363,8 +1363,8 @@ a[href="index.html"] > div{background:var(--fp-nav-blue)!important;color:#fff!im
                                 <label style="background:white;padding:5%;font-size:30px;width: 100%;" id="resta">
                                     0Mes 0Dia 0Hora 0min</label>
                             </div>
-                            <label class="col-md-2">Servicio</label>
-                            <div class="col-md-10">
+                            <label class="col-md-2" id="fpServicioLabel" style="display:none;">Servicio</label>
+                            <div class="col-md-10" id="fpServicioWrap" style="display:none;">
                                 <select id="idTarifa" name="idTarifa" class="form-control" onchange="calcularTarifaServidor()" required="">
                                     <option value="">Seleccione Servicio</option>
                                                                         <option value="5">parqueadero Carro</option>
@@ -2133,7 +2133,7 @@ function calcularTarifaServidor(){
     setValue('placa',''); setValue('descripcion',''); setValue('nota',''); setValue('idEntrada','0');
     setValue('reciboNumero','0'); setValue('reciboPrefijo','FA'); setValue('entradaFecha',nowString());
     setValue('subtotal','0'); setValue('valor','0'); setValue('valorDescuento','0'); setValue('iva','0'); setValue('retencion','0');
-    if(el('idTarifa')) el('idTarifa').value='';
+    if(el('idTarifa')) el('idTarifa').value=''; showServiceSelector(false);
     paymentState.seleccion='cash';
     paymentState.montos={cash:'',nequi:''};
     setPaymentMethod('cash');
@@ -2352,7 +2352,7 @@ function calcularTarifaServidor(){
       fpAlert((monthlyInfo.status&&monthlyInfo.status.missingHours)?missingHoursMessage(placa):('No se puede registrar esta entrada: la placa '+placa+' tiene una mensualidad activa.'),'error');
       checkMonthlyPlate(); return;
     }
-    const tarifaId=value('idTarifa'); if(!tarifaId){ fpAlert('Seleccione el servicio.','error'); return; }
+    const tarifaId=value('idTarifa'); if(!tarifaId){ showServiceSelector(true); fpAlert('No se reconoció el tipo de vehículo por la placa. Seleccione el servicio.','error'); return; }
     const db=readDB();
     const recibo=nextReceipt(), fecha=nowString();
     const entry={id:Date.now(),idParqueadero:value('idParqueadero')||'1',idCliente:value('idCliente')||'2',idTarifa:tarifaId,idUsuario:value('idUsuario')||'3',placa,descripcion:value('descripcion')||'NA',nota:value('nota')||'NA',entradaFecha:fecha,entradaHora:new Date().toTimeString().slice(0,8),reciboPrefijo:value('reciboPrefijo')||'FA',reciboNumero:recibo,salidaFecha:null,salidaHora:null,codigoBarras:value('codigoBarras')||'NA',local:true};
@@ -2696,7 +2696,7 @@ function calcularTarifaServidor(){
     // separador + negocio + separador + datos del servicio + separador + horarios.
     const receiptHtml=clone.outerHTML;
     const css=`
-      @page{size:50mm auto;margin:0}
+      @page{margin:0}
       *{box-sizing:border-box}
       html,body{margin:0!important;padding:0!important;width:50mm;max-width:50mm;background:#fff;color:#000;-webkit-print-color-adjust:exact;print-color-adjust:exact}
       body{font-family:"Times New Roman",Times,serif;font-size:10.5px;line-height:1.18;font-weight:600;text-rendering:geometricPrecision}
@@ -2854,6 +2854,26 @@ function calcularTarifaServidor(){
     if(matches[idx]){ selectPlateSuggestion(matches[idx]); return true; }
     return false;
   }
+  /* Reconoce el tipo de vehiculo a partir del texto de la placa (max. 6 caracteres).
+     Devuelve el id del servicio: '5' = Carro, '6' = Moto, '7' = Cicla/Patineta; '' si no coincide. */
+  function detectVehicleServiceId(raw){
+    const p=String(raw||'').toUpperCase().replace(/[\s-]/g,'');
+    if(!p) return '';
+    if(/^(BICI|CICLA|PATIN)[01]?$/.test(p) || /^PTELE[C01]$/.test(p)) return '7'; /* bici, cicla, patin (+0/1) y patineta electrica: ptelec, ptele1, ptele0 */
+    if(/^[A-Z]{3}\d{2}[A-Z]$/.test(p) || /^MTELE[C01]$/.test(p)) return '6';      /* moto: ABC12D, moto electrica */
+    if(/^[A-Z]{3}\d{3}$/.test(p) || /^\d{3}[A-Z]{3}$/.test(p)) return '5';        /* carro: ABC123, 123ABC */
+    return '';
+  }
+  function showServiceSelector(v){ ['fpServicioLabel','fpServicioWrap'].forEach(function(i){ const n=el(i); if(n) n.style.display=v?'':'none'; }); }
+  function applyVehicleFromPlate(){
+    if(selectedId!=null) return; /* una entrada abierta conserva su servicio original */
+    const sel=el('idTarifa'); if(!sel) return;
+    const id=detectVehicleServiceId(value('placa'));
+    if(!id || sel.value===id) return;
+    if(!Array.from(sel.options).some(o=>o.value===id)) return;
+    sel.value=id; showServiceSelector(false);
+    if(value('idTarifa')) showCalculation(value('entradaFecha'));
+  }
   window.myFunction=function(){
     const filter=value('placa').trim().toUpperCase();
     document.querySelectorAll('#myTable tbody tr').forEach(tr=>{const cell=tr.cells[0];tr.style.display=(!filter || ((cell?.textContent||'').toUpperCase().includes(filter)))?'':'none';});
@@ -2914,7 +2934,7 @@ function calcularTarifaServidor(){
       if(value('idTarifa')) showCalculation(value('entradaFecha'));
     });
     if(el('placa')) {
-      el('placa').addEventListener('input',function(){this.value=this.value.toUpperCase(); window.myFunction(); checkMonthlyPlate();});
+      el('placa').addEventListener('input',function(){this.value=this.value.toUpperCase(); window.myFunction(); applyVehicleFromPlate(); checkMonthlyPlate();});
       el('placa').addEventListener('focus',function(){ showPlateSuggestions(); });
       el('placa').addEventListener('keydown',function(ev){
         if(ev.key==='ArrowDown'){ ev.preventDefault(); showPlateSuggestions(); movePlateSuggestion(1); }
