@@ -1,6 +1,6 @@
 # Nexo.app (antes FacaParking) — Sistema de parqueadero offline
 
-**Versión actual: 2.6.49** (la fuente de verdad es `"version"` en `package.json`;
+**Versión actual: 2.6.51** (la fuente de verdad es `"version"` en `package.json`;
 `APP_VERSION` en `mvc/app-controller.js` y `package-lock.json` deben coincidir).
 
 Aplicación de escritorio (Electron) para gestionar un parqueadero: entradas y
@@ -32,10 +32,10 @@ npm run dist    # genera el instalador .exe en la carpeta dist/
   por un `.ico` de 256x256 y volver a correr `npm run dist`.
 
 > **Dos bases de datos distintas.** La app instalada (`.exe`) y la que se abre
-> en un navegador tienen cada una su propio `localStorage`. El archivo
-> `Iniciar FacaParking Offline.bat` abre `login.html` **en el navegador
-> predeterminado**, no en Electron; los datos que se registren ahí no aparecen
-> en el `.exe` (y viceversa). Para operar usar siempre el `.exe` (o `npm
+> en un navegador (abriendo `login.html` a mano) tienen cada una su propio
+> `localStorage`; los datos que se registren en el navegador no aparecen en el
+> `.exe` (y viceversa). El antiguo `Iniciar FacaParking Offline.bat` se quitó del
+> paquete (daba falso positivo de antivirus). Para operar usar siempre el `.exe` (o `npm
 > start`). Si hay datos reales en el navegador, hay que exportarlos/importarlos
 > antes de pasar a producción con el `.exe`.
 
@@ -56,7 +56,7 @@ npm run dist    # genera el instalador .exe en la carpeta dist/
   normalización de método de pago y migración de la clave de entradas.
 - `mvc/view.js`: helpers mínimos de presentación.
 - `mvc/app-controller.js`: controladores, validaciones y flujo de cada
-  pantalla (archivo grande, ~2.470 líneas — ver "Deuda técnica").
+  pantalla (archivo grande, ~3.040 líneas — ver "Deuda técnica").
 - `*.html`: una vista por pantalla: `login`, `index` (Inicio / dashboard),
   `ParkApp` (Entradas), `mensualidades`, `pendientes`, `caja`, `pagos`
   (Ventas), `egresos` (Transacciones: ingresos y egresos), `reportes`,
@@ -343,7 +343,7 @@ Jerarquía: **Superadmin > Administrador > Empleado**.
   aviso "almacenamiento casi lleno" (`fpCheckStorage()`, al 80 %, con
   `FP_STORAGE_LIMIT_CHARS` = 52.428.800) usan ahora ese mismo límite. Al llegar
   a él, `setItem` lanza `QuotaExceededError` y la app deja de guardar. El tope
-  es **por instalación**: un navegador abierto con el `.bat` tiene el suyo
+  es **por instalación**: un navegador abierto a mano tiene el suyo
   (normalmente ~5–10 MB). Si se cambia de versión mayor de Electron conviene
   repetir la medición.
 - **Purga automática de más de 12 meses**: entradas/salidas, ventas, ingresos,
@@ -362,13 +362,13 @@ Jerarquía: **Superadmin > Administrador > Empleado**.
   operativas; **no** borra `fp_incomes` ni `fp_monthly_extra_charges`, por lo
   que deja datos huérfanos. Es una limpieza de una sola vez que ya cumplió su
   función, pero sigue en el código.
-- **Dos bases de datos posibles** (`.exe` vs. navegador con el `.bat`): ver la
+- **Dos bases de datos posibles** (`.exe` vs. navegador): ver la
   nota al inicio.
 - **Reglas de permisos duplicadas** (menú vs. `auth()`): ver "Roles y permisos".
 
 ## Deuda técnica
 
-- **`mvc/app-controller.js` es un archivo único de ~2.470 líneas** que mezcla
+- **`mvc/app-controller.js` es un archivo único de ~3.040 líneas** que mezcla
   routing, validaciones, renderizado y lógica de negocio de las pantallas.
   Separarlo por módulo reduciría el riesgo de romper una pantalla al tocar
   otra.
@@ -379,7 +379,7 @@ Jerarquía: **Superadmin > Administrador > Empleado**.
   faltaran los overlays de edición, que hoy existen). El changelog de V129 dice
   que se reemplazaron todos: quedan estos respaldos sin uso.
 - **Marca mezclada:** conviven "Nexo.app", "Nexo.App" (menú lateral) y
-  "FacaParking" (nombre del `.bat`, el negocio por defecto en recibos, el
+  "FacaParking" (el negocio por defecto en recibos, el
   archivo `reporte_facaparking_*.xls` y algunos mensajes). Los avisos de "el
   navegador bloqueó la ventana…" no aplican en Electron.
 - **`lang="en"`** en varias páginas cuyo contenido está en español.
@@ -545,3 +545,5 @@ histórica.
 - **2.6.47**: Reportes › Fidelidad de clientes — ya no depende de los botones Hoy/Semana/Mes/Año/Total: siempre se calcula con todas las entradas, desde el día uno hasta hoy. La tabla tiene un selector "Ver" (Todos, Fiel, Frecuente, Ocasional, Nuevo); con un nivel elegido se listan todos los clientes de ese nivel, con "Todos" solo los 20 de mayor puntaje (`LOYALTY_TABLE_LIMIT`).
 - **2.6.48**: Reportes › gráfica de Ingresos y egresos — se resaltan con un marcador y una etiqueta la venta mayor (verde, "Mayor: $X") y la venta menor (naranja, "Menor: $X") del período graficado (hora, día, semana o mes). La menor se toma entre los períodos con ventas (> $0). Se activa con `highlight:true` en la serie de `drawLineChart` (mvc/app-controller.js).
 - **2.6.49**: Reportes › Fidelidad de clientes — con "Todos" la tabla muestra los 40 clientes con mayor puntaje (antes 20), paginados de a 10 con el paginador único (`#loyaltyPager`, `LOYALTY_TABLE_LIMIT`/`LOYALTY_PAGE_SIZE` en mvc/app-controller.js). Con un nivel elegido se siguen listando todos los clientes de ese nivel, también de a 10 por página. Al cambiar el selector "Ver" vuelve a la página 1.
+- **2.6.50**: Limpieza del paquete — se quitó `Iniciar FacaParking Offline.bat` (falso positivo de antivirus; abría la app en el navegador con otra base de datos), se eliminó `jquery.dataTables.min.js` (~2 MB, cargado en Entradas y Ventas pero sin uso: las tablas usan el paginador propio `fpPager`) y se actualizaron las cifras del README. Sin cambios de lógica ni de diseño.
+- **2.6.51**: Diseño — más acentos naranja en toda la app (solo `assets/nexo-theme.css`, sin cambios de estructura ni lógica): línea naranja bajo el logo y marca al pasar el mouse en el menú, barrita junto al título de pantalla, subrayado en los títulos de tarjeta, borde superior en tarjetas de cifras y modales, línea naranja bajo el encabezado de las tablas con fila resaltada al pasar el mouse, botones `btn-warning`/pagar/hover en naranja, casillas y radios naranja. El rojo de ventas con descuento y el azul de los paginadores se mantienen.

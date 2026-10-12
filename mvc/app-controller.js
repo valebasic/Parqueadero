@@ -5,7 +5,7 @@
 'use strict';
 const {KEY,defaults,get,set,entries,paymentLabel,cashPart,plateUpper,hashPassword,verifyPassword,needsRehash}=window.FPModel;
 /* Mantener igual a "version" de package.json (y a package-lock.json). */
-const APP_VERSION='2.6.49';
+const APP_VERSION='2.6.51';
 /* Paginador único de toda la app: "Anterior · Página X de Y · N registros · Siguiente",
  * botones azules (grises si están deshabilitados). Todas las listas lo usan para verse igual.
  * nouns = 'singular|plural' (ej. 'venta|ventas'); go(n) recibe la página a la que se va. */
@@ -1756,7 +1756,7 @@ function printMonthlyReceipt(m,pay){
   const discountRows=discountAmount>0?(row('Valor original',money(pay.originalValue||m.value||0),'arial')+row('Descuento','-'+money(discountAmount),'arial')):'';
   const businessBlock=showBusiness?`<div class="business"><b>${escP(business)}</b>${nit?`<span class="bizinfo">${escP(L('monthlyLabelNit','NIT.'))} ${escP(nit)}</span>`:''}${phone?`<span class="bizinfo">${escP(L('monthlyLabelPhone','TEL.'))} ${escP(phone)}</span>`:''}${address?`<span class="bizinfo">${escP(L('monthlyLabelAddress','DIR.'))} ${escP(address)}</span>`:''}</div><div class="divider"></div>`:'';
   const mainRows=`<div class="receipt-type">MENSUALIDAD</div>${row(L('monthlyLabelReceipt','Recibo'),receipt,'arial')}${row(L('monthlyLabelClient','Cliente'),client,'arial')}${showDocument?row(L('monthlyLabelDocument','Teléfono'),document,'arial'):''}${row(L('monthlyLabelVehicle','Vehículo'),vehicle,'arial')}${row(L('monthlyLabelPlate','Placa'),plate,'arial')}${row(L('monthlyLabelPaymentDate','Fecha de pago'),fmt24(pay.dateTime),'arial')}${row(L('monthlyLabelStart','Inicio'),fmtDateEs(m.start||m.periodStart),'arial')}${row(L('monthlyLabelEnd','Vence'),fmtDateEs(m.end||m.periodEnd),'arial')}${discountRows}${row(L('monthlyLabelValue','Valor'),total,'total arial')}${row(L('monthlyLabelPaymentMethod','Forma de pago'),method,'arial')}`;
-  const html=`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>${escP(receipt)}</title><style>${MONTHLY_RECEIPT_CSS}</style></head><body><div class="receipt">${businessBlock}<div class="main">${mainRows}</div><div class="divider hours-divider"></div><div class="hours"><div class="hours-title">HORARIOS DE ATENCIÓN</div>${escP(hours)}</div></div><script>window.onload=function(){window.print();setTimeout(function(){window.close()},300)};<\/script></body></html>`;
+  const html=`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>${escP(receipt)}</title><style>${MONTHLY_RECEIPT_CSS}</style></head><body><div class="receipt">${businessBlock}<div class="main">${mainRows}</div><div class="divider hours-divider"></div><div class="hours"><div class="hours-title">HORARIOS DE ATENCIÓN</div>${escP(hours)}</div></div><script>window.addEventListener('afterprint',function(){window.close()},{once:true});window.addEventListener('load',function(){window.focus();window.print()},{once:true});<\/script></body></html>`;
   const w=window.open('','_blank','width=420,height=700');
   if(!w){fpAlert('El navegador bloqueó la ventana de impresión. Permita ventanas emergentes para FacaParking.','error');return;}
   w.document.open();w.document.write(html);w.document.close();
@@ -1784,7 +1784,7 @@ function printMonthlyPendingReceipt(m){
   const businessBlock=showBusiness?`<div class="business"><b>${escP(business)}</b>${nit?`<span class="bizinfo">${escP(L('monthlyLabelNit','NIT.'))} ${escP(nit)}</span>`:''}${phone?`<span class="bizinfo">${escP(L('monthlyLabelPhone','TEL.'))} ${escP(phone)}</span>`:''}${address?`<span class="bizinfo">${escP(L('monthlyLabelAddress','DIR.'))} ${escP(address)}</span>`:''}</div><div class="divider"></div>`:'';
   const installRows=m.installment?(row('Valor total',money(m.installment.total||fullValue),'arial')+row('Abonado',money(paid),'arial')):'';
   const mainRows=`<div class="receipt-type">MENSUALIDAD</div><div class="receipt-type">PAGO PENDIENTE</div>${row('Fecha',fmt24(new Date()),'arial')}${row(L('monthlyLabelClient','Cliente'),m.name||m.client||m.clientName||'','arial')}${row(L('monthlyLabelVehicle','Vehículo'),m.vehicle||'','arial')}${row(L('monthlyLabelPlate','Placa'),plate,'arial')}${row(L('monthlyLabelStart','Inicio'),fmtDateEs(d.start),'arial')}${row(L('monthlyLabelEnd','Vence'),fmtDateEs(d.end),'arial')}${installRows}${extra>0?row('Cargos fuera de horario',money(extra),'arial'):''}${row(m.installment?'Saldo a pagar':'Valor a pagar',money(due),'total arial')}`;
-  const html=`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Pago pendiente ${escP(plate)}</title><style>${MONTHLY_RECEIPT_CSS}</style></head><body><div class="receipt">${businessBlock}<div class="main">${mainRows}</div></div><script>window.onload=function(){window.print();setTimeout(function(){window.close()},300)};<\/script></body></html>`;
+  const html=`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Pago pendiente ${escP(plate)}</title><style>${MONTHLY_RECEIPT_CSS}</style></head><body><div class="receipt">${businessBlock}<div class="main">${mainRows}</div></div><script>window.addEventListener('afterprint',function(){window.close()},{once:true});window.addEventListener('load',function(){window.focus();window.print()},{once:true});<\/script></body></html>`;
   const w=window.open('','_blank','width=420,height=700');
   if(!w){fpAlert('El navegador bloqueó la ventana de impresión. Permita ventanas emergentes para FacaParking.','error');return;}
   w.document.open();w.document.write(html);w.document.close();
@@ -2023,9 +2023,15 @@ function initMonthly(){
   function showMonthlyForm(on,editing){
     if(!createCardEl||!isAdmin)return;
     createCardEl.style.display=on?'':'none';
+    document.body.classList.toggle('fp-monthly-modal-open',!!on);
     const t=createCardEl.querySelector('.card-title'); if(t)t.textContent=editing?'Editar mensualidad':'Registrar mensualidad';
-    if(on)window.scrollTo({top:createCardEl.getBoundingClientRect().top+window.scrollY-80,behavior:'smooth'});
+    if(on)createCardEl.scrollTop=0;
   }
+  const closeMonthlyFormBtn=document.getElementById('closeMonthlyForm');
+  if(closeMonthlyFormBtn)closeMonthlyFormBtn.onclick=()=>showMonthlyForm(false);
+  document.addEventListener('keydown',ev=>{
+    if(ev.key==='Escape'&&document.body.classList.contains('fp-monthly-modal-open'))showMonthlyForm(false);
+  });
   function syncExpired(){
     // Se relee del almacenamiento antes de calcular: si esta pantalla llevaba mucho tiempo abierta (o hubo
     // cambios desde otra ventana) ya no se sobrescribe lo guardado con una copia vieja. Solo se escribe si algo cambió.
@@ -3014,7 +3020,7 @@ function initWipeSection(){
 }
 // Límite de localStorage MEDIDO en el .exe (Electron 31.7.7): ~99,98 MB = ~52,4 millones de
 // caracteres (UTF-16, 2 bytes por carácter). Debe coincidir con ESTIMATED_LIMIT_MB (100)
-// del diagnóstico en configuracion.html. Solo aplica al .exe: un navegador (.bat) tiene su propio tope.
+// del diagnóstico en configuracion.html. Solo aplica al .exe: un navegador abierto a mano tiene su propio tope.
 const FP_STORAGE_LIMIT_CHARS=52428800;
 const FP_STORAGE_WARN_RATIO=0.8;
 function fpCheckStorage(){

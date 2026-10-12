@@ -1253,18 +1253,9 @@ a[href="index.html"] > div{background:var(--fp-nav-blue)!important;color:#fff!im
         <div class="container-fluid">
            <form action="#" method="POST">
             <input type="hidden" name="_token" value="hLkWIYGXCJyMhMF8POCZNXcLGhq6niAwgnr5OCsd">
-               <div class="fp-entry-toolbar"><a href="index.html" onclick="window.location.href='index.html'; return false;"><div class="fp-entry-top-btn" style="background: rgba(73,155,234,1);border-radius: 0px 0px 57px 57px;
-               -moz-border-radius: 0px 0px 57px 57px;
-               -webkit-border-radius: 0px 0px 57px 57px;
-               border: 0px solid #000000;width: 100px;text-aling:center;position:absolute;color:white;z-index:1000;"><center><strong>Regresar</strong></center></div></a>
-               <a href="#" onclick="nuevaEntrada(); return false;"><div class="fp-entry-top-btn" style="background: #0b2748;border-radius: 0px 0px 57px 57px;
-                -moz-border-radius: 0px 0px 57px 57px;
-                -webkit-border-radius: 0px 0px 57px 57px;
-                border: 0px solid #000000;width: 100px;text-aling:center;position:absolute;color:white;z-index:1000;left:90%;"><center><strong>Nueva</strong></center></div></a>
-               <a href="#" data-toggle="modal" data-target="#myModal" id="imprimir"><div class="fp-entry-top-btn" style="background: #0b2748;border-radius: 0px 0px 57px 57px;
-                -moz-border-radius: 0px 0px 57px 57px;
-                -webkit-border-radius: 0px 0px 57px 57px;
-                border: 0px solid #000000;width: 100px;text-aling:center;position:absolute;color:white;z-index:1000;left:80%;"><center><strong><i class="fa fa-print"></i> Imprimir</strong></center></div></a></div>
+               <div class="fp-entry-toolbar"><a href="index.html" onclick="window.location.href='index.html'; return false;"><div class="fp-entry-top-btn" style="background: rgba(73,155,234,1);border-radius: 0px 0px 16px 16px;border: 0px solid #000000;width: auto;min-width: 110px;text-align:center;color:white;z-index:1000;"><center><strong>Regresar</strong></center></div></a>
+               <a href="#" onclick="nuevaEntrada(); return false;"><div class="fp-entry-top-btn" style="background: #0b2748;border-radius: 0px 0px 16px 16px;border: 0px solid #000000;width: auto;min-width: 110px;text-align:center;color:white;z-index:1000;"><center><strong>Nueva</strong></center></div></a>
+               <a href="#" data-toggle="modal" data-target="#myModal" id="imprimir"><div class="fp-entry-top-btn" style="background: #0b2748;border-radius: 0px 0px 16px 16px;border: 0px solid #000000;width: auto;min-width: 110px;text-align:center;color:white;z-index:1000;"><center><strong><i class="fa fa-print"></i> Imprimir</strong></center></div></a></div>
                
                
                <!-- Modal -->
@@ -1317,22 +1308,20 @@ a[href="index.html"] > div{background:var(--fp-nav-blue)!important;color:#fff!im
   </div>
 
 
-               <div class="row">
-                    <div class="col-md-7">    
-                        <center><label>PLACA</label></center>
+               <div class="row fp-entry-summary-row">
+                    <div class="col-md-6">
                         <div id="placaSuggestWrap" style="position:relative;">
                             <input type="placa" maxlength="7" id="placa" name="placa" autocomplete="off" onkeyup="myFunction()" required="">
                             <div id="placaSuggestions" role="listbox" style="display:none;position:absolute;left:0;right:0;top:100%;z-index:9999;background:#fff;border:1px solid #ddd;border-radius:0 0 5px 5px;box-shadow:0 4px 12px rgba(0,0,0,.18);max-height:230px;overflow-y:auto;text-align:left;"></div>
                         </div>
                     </div>
-                    <div class="col-md-5">
-                        <center><label>Valor A Pagar</label></center><br>
-                        <h1 style="font-size: 100px; font-weight: 900 !important;"><span id="total" style="font-weight: 900 !important;">0</span></h1>
+                    <div class="col-md-6">
+                        <h1 class="fp-entry-total"><span id="total" style="font-weight: 900 !important;">0</span></h1>
                     </div>
                </div>
-               <div class="row">
-                    <div class="col-md-7">
-                        <div class="card" style="height: 300px;overflow-y:scroll;">
+               <div class="row fp-entry-main-row">
+                    <div class="col-md-6">
+                        <div class="card fp-entry-list-card" style="height: 440px;overflow-y:scroll;">
                             <div class="card-header card-header-primary">
                                 <h4 class="card-title ">Entradas</h4>
                             </div>
@@ -1357,7 +1346,7 @@ a[href="index.html"] > div{background:var(--fp-nav-blue)!important;color:#fff!im
                         </div>
                     </div>
 
-                    <div class="col-md-5">
+                    <div class="col-md-6">
                         <div class="row">
                             <div class="col-md-12">
                                 <label style="background:white;padding:5%;font-size:30px;width: 100%;" id="resta">
@@ -1404,12 +1393,12 @@ a[href="index.html"] > div{background:var(--fp-nav-blue)!important;color:#fff!im
                                 <div class="fp-payment-panel" id="fpPaymentPanel" data-payment-selected="cash">
                                   <div class="fp-payment-title" style="display:flex;align-items:center;justify-content:space-between;">
                                     <span>Método de pago</span>
-                                    <button type="button" id="btnPendiente" title="Registrar la salida sin cobrar ahora; el cobro queda en Pendientes." style="background:#0b2748;color:#fff;border:0;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;">Pendiente</button>
                                   </div>
                                   <div class="fp-payment-methods">
                                     <button type="button" class="fp-payment-method active" data-payment-method="cash" onclick="return window.fpSeleccionarMetodoPago('cash')"><span class="fp-pay-icon">▣</span><span>Efectivo</span></button>
                                     <button type="button" class="fp-payment-method" data-payment-method="nequi" onclick="return window.fpSeleccionarMetodoPago('nequi')"><span class="fp-pay-icon">▯</span><span>Electrónico</span></button>
                                     <button type="button" class="fp-payment-method" data-payment-method="both" onclick="return window.fpSeleccionarMetodoPago('both')"><span class="fp-pay-icon">⇄</span><span>Ambos</span></button>
+                                    <button type="button" id="btnPendiente" title="Registrar la salida sin cobrar ahora; el cobro queda en Pendientes." style="background:#0b2748;color:#fff;border:0;border-radius:10px;padding:6px 8px;font-size:11px;font-weight:700;cursor:pointer;">Pendiente</button>
                                   </div>
                                   <div class="fp-payment-amounts" id="fpPaymentAmounts" style="display:block;">
                                     <div class="fp-payment-row"><label for="fpCashAmount">Efectivo</label><input type="number" id="fpCashAmount" min="0" step="1" value="0"></div>
@@ -1689,8 +1678,6 @@ a[href="index.html"] > div{background:var(--fp-nav-blue)!important;color:#fff!im
   <script src="./assets/bootstrap-selectpicker.js"></script>
   <!--  Plugin for the DateTimePicker, full documentation here: https://eonasdan.github.io/bootstrap-datetimepicker/ -->
   <script src="./assets/bootstrap-datetimepicker.min.js"></script>
-  <!--  DataTables.net Plugin, full documentation here: https://datatables.net/  -->
-  <script src="./assets/jquery.dataTables.min.js"></script>
   <!--	Plugin for Tags, full documentation here: https://github.com/bootstrap-tagsinput/bootstrap-tagsinputs  -->
   <script src="./assets/bootstrap-tagsinput.js"></script>
   <!-- Plugin for Fileupload, full documentation here: http://www.jasny.net/bootstrap/javascript/#fileinput -->
@@ -2487,7 +2474,7 @@ function calcularTarifaServidor(){
     const cashLabel=cash?.parentElement?.querySelector('label');
     const nequiLabel=nequi?.parentElement?.querySelector('label');
     if(cashLabel) cashLabel.textContent='Efectivo';
-    if(nequiLabel) nequiLabel.textContent='Electrónico (calculado)';
+    if(nequiLabel) nequiLabel.textContent='Electrónico';
     updatePaymentAmounts();
   }
   function setupPaymentUI(){

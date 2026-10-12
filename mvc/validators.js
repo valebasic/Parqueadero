@@ -89,10 +89,18 @@
   }
 
   function sanitizePlate(raw){
-    var s=String(raw).toUpperCase().replace(/[^A-Z0-9-]/g,'');
-    var hy=s.indexOf('-');
-    if(hy>=0) s=s.slice(0,hy+1)+s.slice(hy+1).replace(/-/g,'');
-    return s.slice(0,PLATE_MAXLEN);
+    var rawPlate=String(raw).toUpperCase().replace(/[^A-Z0-9-]/g,'');
+    var clean='', characters=0, hasHyphen=false;
+    for(var i=0;i<rawPlate.length;i++){
+      var character=rawPlate.charAt(i);
+      if(character==='-'){
+        if(!hasHyphen && characters>0 && characters<6){ clean+='-'; hasHyphen=true; }
+      }else if(characters<6){
+        clean+=character;
+        characters++;
+      }
+    }
+    return clean;
   }
   function hintFor(el){
     var id='fpPlateHint_'+(el.id||el.name||'x'), h=document.getElementById(id);

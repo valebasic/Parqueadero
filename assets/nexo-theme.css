@@ -137,27 +137,54 @@ label{font-size:13px!important;font-weight:600!important;color:var(--nx-muted)!i
 .swal2-popup{border-radius:var(--nx-radius)!important;font-family:var(--nx-font)!important}
 
 /* ---------- Registro de entradas (ParkApp) ---------- */
-body[data-module="entries"] .content{padding:56px 28px 32px!important}
+body[data-module="entries"] .content{padding:20px 28px 20px!important}
 body[data-module="entries"] .fp-entry-top-btn,
 body[data-module="entries"] a[href="index.html"]>div{
   width:auto!important;padding:8px 22px!important;border-radius:0 0 16px 16px!important;
   font-size:13px;box-shadow:0 4px 12px rgba(11,39,72,.2)}
-body[data-module="entries"] label[for],body[data-module="entries"] center>label{
+body[data-module="entries"] label[for],body[data-module="entries"] center>label,
+body[data-module="entries"] .fp-entry-panel-label{
   font-size:12px!important;letter-spacing:.08em;text-transform:uppercase}
+body[data-module="entries"] .fp-entry-summary-row{margin-bottom:2px!important;align-items:stretch}
+body[data-module="entries"] .fp-entry-summary-row > [class*="col-md-"]{display:flex;flex-direction:column;justify-content:center}
+body[data-module="entries"] .fp-entry-panel-label{margin-bottom:6px!important}
 body[data-module="entries"] input[type="placa"]{
-  font-size:clamp(48px,7vw,84px)!important;font-weight:800;text-align:center;letter-spacing:.08em;
-  padding:18px 12px!important;background:#fff;border:2px solid var(--nx-gray-300);
-  border-radius:var(--nx-radius);box-shadow:var(--nx-shadow);color:var(--nx-primary);transition:border-color .15s,box-shadow .15s}
+  font-size:clamp(64px,7.5vw,104px)!important;font-weight:800;text-align:center;letter-spacing:.08em;
+  padding:22px 14px!important;background:#fff;border:2px solid var(--nx-gray-300);
+  border-radius:var(--nx-radius);box-shadow:var(--nx-shadow);color:var(--nx-primary);transition:border-color .15s,box-shadow .15s;
+  width:100%!important;height:132px!important;min-height:132px!important;box-sizing:border-box!important}
 body[data-module="entries"] input[type="placa"]:focus{outline:0;border-color:var(--nx-accent);box-shadow:var(--nx-ring)}
-body[data-module="entries"] h1{
-  font-size:clamp(48px,7vw,84px)!important;font-weight:800!important;text-align:center;margin:0!important;
-  padding:12px;color:var(--nx-primary)!important;background:#fff;border:1px solid var(--nx-border);
-  border-radius:var(--nx-radius);box-shadow:var(--nx-shadow)}
+body[data-module="entries"] .fp-entry-total{
+  font-size:clamp(72px,8.5vw,116px)!important;font-weight:800!important;text-align:center;margin:0!important;
+  padding:22px 14px;color:var(--nx-primary)!important;background:#fff;border:1px solid var(--nx-border);
+  border-radius:var(--nx-radius);box-shadow:var(--nx-shadow);width:100%!important;height:132px!important;
+  min-height:132px!important;box-sizing:border-box!important;display:flex;align-items:center;justify-content:center}
 body[data-module="entries"] #resta{
   background:#fff!important;border:1px solid var(--nx-border);border-radius:var(--nx-radius);
-  box-shadow:var(--nx-shadow);font-size:22px!important;font-weight:700;color:var(--nx-primary)!important;
-  text-align:center;padding:16px!important;margin-bottom:14px;text-transform:none}
+  box-shadow:var(--nx-shadow);font-size:18px!important;font-weight:700;color:var(--nx-primary)!important;
+  text-align:center;padding:12px!important;margin-bottom:12px;text-transform:none}
+body[data-module="entries"] .fp-entry-list-card{height:440px!important}
+body[data-module="entries"] .fp-entry-list-card .card-header{padding:12px 16px!important}
+body[data-module="entries"] .fp-entry-list-card .card-header h4{font-size:16px!important}
+body[data-module="entries"] .fp-entry-list-card .card-body{padding:10px 14px 12px!important}
+body[data-module="entries"] .fp-entry-main-row{margin-top:0!important;align-items:flex-start}
 #placaSuggestions{border-radius:0 0 var(--nx-radius-sm) var(--nx-radius-sm)!important;border-color:var(--nx-border)!important;box-shadow:var(--nx-shadow-lg)!important}
+
+body[data-module="entries"] .fp-entry-toolbar{display:flex;justify-content:flex-start;align-items:center;gap:10px;margin:0 0 12px;padding:0;position:relative;z-index:5;width:100%}
+body[data-module="entries"] .fp-entry-toolbar>a{display:block;margin:0}
+body[data-module="entries"] .fp-entry-toolbar>a:nth-child(2){margin-left:0}
+body[data-module="entries"] .fp-entry-toolbar>a>div{position:static!important;left:auto!important;width:auto!important;min-width:110px!important;padding:8px 18px!important;border-radius:0 0 16px 16px!important;color:#fff!important;background:var(--nx-primary)!important;text-align:center;white-space:nowrap;font-size:13px;box-shadow:0 4px 12px rgba(11,39,72,.2)!important}
+body[data-module="entries"] .fp-entry-toolbar>a>div:hover{background:var(--nx-primary-hover)!important}
+body[data-module="entries"] .fp-entry-toolbar>a>div i{margin-right:6px}
+body[data-module="entries"] .fp-payment-methods{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;align-items:stretch;width:100%}
+body[data-module="entries"] .fp-payment-method,
+body[data-module="entries"] #btnPendiente{min-height:42px!important;height:42px!important;padding:6px 8px!important;border-radius:10px!important;font-size:11px!important;font-weight:700!important;line-height:1.1!important;display:flex;align-items:center;justify-content:center;gap:4px;border:1px solid #d5d9de;background:#fff;color:#30343b;cursor:pointer;width:100%}
+body[data-module="entries"] .fp-payment-method.active,
+body[data-module="entries"] #btnPendiente.active{background:#0b2748!important;border-color:#0b2748!important;color:#fff!important}
+body[data-module="entries"] .fp-payment-method:hover:not(.active),
+body[data-module="entries"] #btnPendiente:hover{background:#f4f6f8!important;color:#30343b!important}
+body[data-module="entries"] .fp-payment-method .fp-pay-icon{font-size:14px;line-height:1}
+@media(max-width:600px){body[data-module="entries"] .fp-entry-toolbar{flex-wrap:nowrap;justify-content:flex-start} body[data-module="entries"] .fp-payment-methods{grid-template-columns:repeat(4,minmax(0,1fr))}}
 
 /* ---------- Panel de pago ---------- */
 .fp-payment-panel{background:#fff;border:1px solid var(--nx-border);border-radius:var(--nx-radius);padding:16px;box-shadow:var(--nx-shadow)}
@@ -271,3 +298,554 @@ body[data-module="entries"] .fp-entry-toolbar>a>div{position:static!important;le
 body[data-module="entries"] .fp-entry-toolbar>a>div:hover{background:var(--nx-primary-hover)!important}
 body[data-module="entries"] .fp-entry-toolbar>a>div i{margin-right:6px}
 @media(max-width:600px){body[data-module="entries"] .fp-entry-toolbar{flex-wrap:wrap}}
+
+/* ==========================================================================
+   Acentos naranja v3 — solo presentación (sin tocar estructura ni lógica).
+   Va al final para ganar a los estilos previos. El rojo de las ventas con
+   descuento (.fp-disc-row / .fp-cj-desc) y el azul de los paginadores NO se tocan.
+   ========================================================================== */
+:root{--nx-orange-50:#fff6ec;--nx-orange-100:#ffe6cc;
+  --nx-orange-grad:linear-gradient(90deg,var(--nx-orange-600),var(--nx-orange-400));
+  --nx-orange-grad-v:linear-gradient(180deg,var(--nx-orange-600),var(--nx-orange-400))}
+::selection{background:rgba(255,107,0,.25)}
+input[type="checkbox"],input[type="radio"]{accent-color:var(--nx-orange-600)}
+
+/* Barra lateral: línea naranja bajo el logo y marca al pasar el mouse */
+.sidebar .logo{border-bottom:2px solid var(--nx-orange-600)!important}
+.sidebar .nav li>a:hover{box-shadow:inset 3px 0 0 var(--nx-orange-600)!important}
+.sidebar .nav li>a:hover i{color:var(--nx-orange-400)!important}
+
+/* Título de pantalla con barrita naranja */
+.navbar .navbar-brand{position:relative;padding-left:16px!important}
+.navbar .navbar-brand::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:5px;height:62%;border-radius:4px;background:var(--nx-orange-grad-v)}
+
+/* Tarjetas: subrayado naranja corto bajo el título; tarjetas de cifras con borde superior naranja */
+.card .card-header .card-title::after,.card .card-header h4::after{content:"";display:block;width:38px;height:3px;
+  border-radius:3px;margin-top:8px;background:var(--nx-orange-grad)}
+.card-stats{border-top:3px solid var(--nx-orange-600)!important}
+.card-stats .card-category{color:var(--nx-orange-600)!important}
+.card-stats .card-icon i,.card-stats .card-header i{color:var(--nx-orange-600)!important}
+body .fp-page-head{border-left:5px solid var(--nx-orange-600)!important}
+
+/* Tablas: línea naranja bajo el encabezado y fila resaltada al pasar el mouse */
+body .table thead th{border-bottom:2px solid var(--nx-orange-600)!important}
+body .table tbody tr:not(.fp-disc-row):hover{background:var(--nx-orange-50)}
+
+/* Botones */
+.btn-warning{background:var(--nx-orange-grad)!important;color:#fff!important;box-shadow:0 4px 12px rgba(255,107,0,.28)!important}
+.btn-warning:hover{filter:brightness(1.06);background:var(--nx-orange-grad)!important;box-shadow:0 8px 18px rgba(255,107,0,.32)!important}
+.btn-default:hover,.btn-secondary:hover{border-color:var(--nx-orange-600)!important;color:var(--nx-orange-600)!important;background:var(--nx-orange-50)!important}
+body .fp-icon-btn:hover:not(.fp-ic-del):not(.fp-ic-ok){background:var(--nx-orange-600);border-color:var(--nx-orange-600);color:#fff}
+body .fp-icon-btn.fp-ic-pay{background:var(--nx-orange-600);border-color:var(--nx-orange-600)}
+body .fp-icon-btn.fp-ic-pay:hover{background:var(--nx-orange-400);border-color:var(--nx-orange-400)}
+
+/* Modales y avisos con filo naranja */
+.modal-content,.swal2-popup{border-top:4px solid var(--nx-orange-600)!important}
+.modal-header .close:hover{color:var(--nx-orange-600)!important}
+
+/* Panel de pago y Entradas */
+.fp-payment-method:hover,.fp-payment-method.active{border-color:var(--nx-orange-600)!important}
+.fp-payment-summary{border-left:4px solid var(--nx-orange-600)!important}
+body[data-module="entries"] h1{border-bottom:4px solid var(--nx-orange-600)}
+body[data-module="entries"] #resta{border-left:5px solid var(--nx-orange-600)}
+
+/* Ajustes finales de Entradas: esta barra debe prevalecer sobre reglas anteriores. */
+body[data-module="entries"] .content > .container-fluid{
+  width:100%!important;
+  max-width:none!important;
+  margin-left:0!important;
+  margin-right:0!important;
+}
+body[data-module="entries"] .fp-entry-toolbar{
+  position:fixed!important;
+  top:0!important;
+  left:0!important;
+  right:0!important;
+  z-index:1050!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:flex-start!important;
+  gap:8px!important;
+  margin:0!important;
+  padding:0 8px!important;
+  pointer-events:none;
+}
+body[data-module="entries"] .fp-entry-toolbar > a{
+  display:block!important;
+  margin:0!important;
+  pointer-events:auto;
+}
+body[data-module="entries"] .fp-entry-toolbar > a:nth-child(2){
+  margin-left:auto!important;
+}
+body[data-module="entries"] .fp-entry-toolbar > a > div{
+  position:static!important;
+  left:auto!important;
+  width:auto!important;
+  min-width:0!important;
+  padding:7px 14px!important;
+  border-radius:0 0 12px 12px!important;
+  font-size:12px!important;
+  white-space:nowrap!important;
+}
+body[data-module="entries"] .fp-payment-panel .fp-payment-methods{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  align-items:stretch!important;
+  gap:6px!important;
+  width:100%!important;
+}
+body[data-module="entries"] .fp-payment-panel .fp-payment-methods > button{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:38px!important;
+  height:38px!important;
+  padding:4px 5px!important;
+  border-radius:8px!important;
+  font-size:10px!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+}
+body[data-module="entries"] .fp-payment-panel .fp-payment-methods .fp-pay-icon{
+  display:none!important;
+}
+body[data-module="entries"] input[type="placa"],
+body[data-module="entries"] .fp-entry-total{
+  height:150px!important;
+  min-height:150px!important;
+}
+body[data-module="entries"] .fp-entry-summary-row{
+  align-items:stretch!important;
+}
+body[data-module="entries"] .fp-entry-summary-row > [class*="col-md-"]{
+  align-self:stretch!important;
+}
+body[data-module="entries"] #placaSuggestWrap,
+body[data-module="entries"] input[type="placa"],
+body[data-module="entries"] .fp-entry-total{
+  box-sizing:border-box!important;
+}
+body[data-module="entries"] #placaSuggestWrap{
+  width:100%!important;
+  height:150px!important;
+}
+body[data-module="entries"] input[type="placa"],
+body[data-module="entries"] .fp-entry-total{
+  margin:0!important;
+  vertical-align:top!important;
+}
+body[data-module="entries"] #fpDiscountPanel{
+  padding:8px 10px!important;
+  margin-top:2px!important;
+  margin-bottom:6px!important;
+  border-radius:10px!important;
+}
+body[data-module="entries"] #fpDiscountPanel .fp-payment-title{
+  margin-bottom:5px!important;
+  font-size:11px!important;
+}
+body[data-module="entries"] #fpDiscountPanel .row{
+  margin:0!important;
+}
+body[data-module="entries"] #fpDiscountPanel .form-control{
+  min-height:34px!important;
+  padding:6px 9px!important;
+  font-size:12px!important;
+}
+body[data-module="entries"] #fpDiscountSummary{
+  margin-top:6px!important;
+  padding:5px 8px!important;
+}
+body[data-module="entries"] #fpDiscountSummary > div{
+  font-size:11px!important;
+}
+body[data-module="entries"] #fpDiscountSummary strong{
+  font-size:12px!important;
+}
+body[data-module="payments"] .table-responsive{
+  overflow-x:hidden!important;
+}
+body[data-module="payments"] #paymentsTable{
+  width:100%!important;
+  min-width:0!important;
+  table-layout:fixed!important;
+}
+body[data-module="payments"] #paymentsTable th,
+body[data-module="payments"] #paymentsTable td{
+  padding:7px 4px!important;
+  font-size:11px!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere;
+  word-break:normal;
+  text-align:center!important;
+}
+body[data-module="payments"] #paymentsTable th{
+  line-height:1.2;
+}
+body[data-module="payments"] #paymentsTable th:nth-child(1){width:8%}
+body[data-module="payments"] #paymentsTable th:nth-child(2){width:8%}
+body[data-module="payments"] #paymentsTable th:nth-child(3){width:13%}
+body[data-module="payments"] #paymentsTable th:nth-child(4){width:13%}
+body[data-module="payments"] #paymentsTable th:nth-child(5){width:10%}
+body[data-module="payments"] #paymentsTable th:nth-child(6){width:10%}
+body[data-module="payments"] #paymentsTable th:nth-child(7){width:10%}
+body[data-module="payments"] #paymentsTable th:nth-child(8){width:10%}
+body[data-module="payments"] #paymentsTable th:nth-child(9){width:18%}
+body[data-module="payments"] #paymentsTable td:last-child{
+  white-space:nowrap!important;
+}
+body[data-module="payments"] #paymentsTable .btn{
+  width:30px!important;
+  min-width:30px!important;
+  height:30px!important;
+  margin:2px!important;
+  padding:0!important;
+}
+body[data-module="payments"] #paymentsTable .btn i{
+  margin:0!important;
+}
+body[data-module="reports"] #loyaltyTable{
+  table-layout:fixed!important;
+}
+body[data-module="reports"] #loyaltyTable th,
+body[data-module="reports"] #loyaltyTable td{
+  padding:10px 8px!important;
+  font-size:12px!important;
+  line-height:1.35!important;
+  vertical-align:middle!important;
+  overflow-wrap:normal!important;
+  word-break:normal!important;
+}
+body[data-module="reports"] #loyaltyTable th{
+  white-space:normal!important;
+  text-align:center!important;
+}
+body[data-module="reports"] #loyaltyTable th:nth-child(1){width:12%}
+body[data-module="reports"] #loyaltyTable th:nth-child(2){width:11%}
+body[data-module="reports"] #loyaltyTable th:nth-child(3){width:9%}
+body[data-module="reports"] #loyaltyTable th:nth-child(4){width:8%}
+body[data-module="reports"] #loyaltyTable th:nth-child(5){width:13%}
+body[data-module="reports"] #loyaltyTable th:nth-child(6){width:12%}
+body[data-module="reports"] #loyaltyTable th:nth-child(7){width:16%}
+body[data-module="reports"] #loyaltyTable th:nth-child(8){width:19%}
+body[data-module="reports"] #loyaltyTable td:nth-child(1){
+  font-weight:700;
+  text-align:left!important;
+}
+body[data-module="reports"] #loyaltyTable td:nth-child(2),
+body[data-module="reports"] #loyaltyTable td:nth-child(3),
+body[data-module="reports"] #loyaltyTable td:nth-child(4){
+  text-align:center!important;
+}
+body[data-module="reports"] #loyaltyTable td:nth-child(5),
+body[data-module="reports"] #loyaltyTable td:nth-child(6),
+body[data-module="reports"] #loyaltyTable td:nth-child(7),
+body[data-module="reports"] #loyaltyTable td:nth-child(8){
+  text-align:right!important;
+  font-variant-numeric:tabular-nums;
+}
+body[data-module="reports"] #loyaltyTable td:nth-child(2) span{
+  display:inline-block;
+  padding:3px 8px;
+  border-radius:999px;
+  background:#f1f5f9;
+  white-space:normal!important;
+}
+body[data-module="reports"] #loyaltyTable td:nth-child(3) b{
+  color:var(--nx-primary);
+}
+body[data-module="reports"] #loyaltyTable td:nth-child(3) small,
+body[data-module="reports"] #loyaltyTable td:nth-child(8) small{
+  display:inline-block;
+  margin-left:3px;
+  white-space:normal!important;
+}
+body[data-module] .fp-page-note,
+body[data-module] .fp-block-hint,
+body[data-module] .fp-field-desc,
+body[data-module] #loyaltyNote,
+body[data-module="monthly"] #monthlyNightFields p.text-muted,
+body[data-module="monthly"] #monthlyMigrationPreview > span.text-muted,
+body[data-module="monthly"] #monthlyReportBtn + span.text-muted,
+body[data-module="reports"] h4 + p.text-muted,
+body[data-module="reports"] #loyaltyLevels + p.text-muted,
+body[data-module="monthlyreport"] .fp-page-head p.text-muted,
+body[data-module="config"] #ratesForm > .col-md-3 > p,
+body[data-module="config"] #fpStorageDiagSection p.text-muted,
+body[data-module="registro"] .hint{
+  display:none!important;
+}
+body[data-module="entries"] #fpPaymentAmounts .fp-payment-row{
+  grid-template-columns:76px minmax(0,1fr)!important;
+  gap:6px!important;
+  margin-bottom:4px!important;
+}
+body[data-module="entries"] #fpPaymentAmounts .fp-payment-row label{
+  font-size:10px!important;
+  line-height:1.1!important;
+  white-space:nowrap!important;
+}
+body[data-module="entries"] #fpPaymentAmounts .fp-payment-row input{
+  height:30px!important;
+  min-height:30px!important;
+  padding:4px 8px!important;
+  font-size:12px!important;
+  border-radius:8px!important;
+}
+body[data-module="dashboard"] .main-panel > .content{
+  padding-top:40px!important;
+}
+body[data-module="dashboard"] .main-panel > .content > .container-fluid > .row > .col-md-12:first-child > .card{
+  margin-top:0!important;
+}
+@media(min-width:1200px){
+  body[data-module="monthly"] .fp-monthly-list-wrap{
+    overflow-x:hidden!important;
+  }
+  body[data-module="monthly"] #monthlyTable{
+    width:100%!important;
+    min-width:0!important;
+    table-layout:fixed!important;
+  }
+  body[data-module="monthly"] #monthlyTable th,
+  body[data-module="monthly"] #monthlyTable td{
+    padding:8px 5px!important;
+    font-size:11px!important;
+    white-space:normal!important;
+    overflow-wrap:anywhere;
+    word-break:normal;
+    text-align:center!important;
+  }
+  body[data-module="monthly"] #monthlyTable th{
+    line-height:1.2;
+  }
+  body[data-module="monthly"] #monthlyTable th:nth-child(1){width:9%}
+  body[data-module="monthly"] #monthlyTable th:nth-child(2){width:10%}
+  body[data-module="monthly"] #monthlyTable th:nth-child(3){width:7%}
+  body[data-module="monthly"] #monthlyTable th:nth-child(4){width:6%}
+  body[data-module="monthly"] #monthlyTable th:nth-child(5){width:7%}
+  body[data-module="monthly"] #monthlyTable th:nth-child(6){width:8%}
+  body[data-module="monthly"] #monthlyTable th:nth-child(7){width:7%}
+  body[data-module="monthly"] #monthlyTable th:nth-child(8){width:8%}
+  body[data-module="monthly"] #monthlyTable th:nth-child(9){width:7%}
+  body[data-module="monthly"] #monthlyTable th:nth-child(10){width:17%}
+  body[data-module="monthly"] #monthlyTable th:nth-child(11){width:14%}
+  body[data-module="monthly"] #monthlyTable .fp-badges{
+    justify-content:center;
+  }
+  body[data-module="monthly"] #monthlyTable .fp-badge{
+    white-space:normal!important;
+    overflow-wrap:anywhere;
+    padding:3px 6px;
+    font-size:10px;
+  }
+  body[data-module="monthly"] #monthlyTable .fp-actions{
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:4px;
+  }
+  body[data-module="monthly"] #monthlyTable .fp-icon-btn{
+    width:28px;
+    height:28px;
+    flex:0 0 28px;
+  }
+}
+  body[data-module] .main-panel > .content{
+    padding-top:20px!important;
+  }
+  body[data-module]:not([data-module="entries"]):not([data-module="login"]):not([data-module="registro"]) .navbar .navbar-brand{
+    display:none!important;
+  }
+  body[data-module="monthly"] .fp-monthly-admin:not(#monthlyCreateCard):not(#monthlyMigrateCard) > .card-header{
+    display:none!important;
+  }
+  body[data-module="monthly"] .fp-monthly-new-action{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+  }
+  body[data-module="monthly"] .fp-monthly-new-action > label{
+    min-height:18px;
+    margin-bottom:6px;
+  }
+  body[data-module="monthly"] .fp-monthly-new-action .fp-new-payment{
+    width:100%;
+    min-height:46px;
+    margin:0!important;
+    padding:10px 12px!important;
+  }
+  body[data-module="monthly"].fp-monthly-modal-open{
+    overflow:hidden;
+  }
+  body[data-module="monthly"].fp-monthly-modal-open::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:1999;
+    background:rgba(7,26,51,.58);
+    backdrop-filter:blur(2px);
+  }
+  body[data-module="monthly"] #monthlyCreateCard{
+    display:none;
+  }
+  body[data-module="monthly"].fp-monthly-modal-open #monthlyCreateCard{
+    display:block!important;
+    position:fixed!important;
+    z-index:2000!important;
+    top:50%!important;
+    left:50%!important;
+    transform:translate(-50%,-50%)!important;
+    width:min(960px,calc(100vw - 32px))!important;
+    max-height:calc(100vh - 40px)!important;
+    margin:0!important;
+    overflow-y:auto!important;
+    border:0!important;
+    box-shadow:0 24px 70px rgba(0,0,0,.3)!important;
+  }
+  body[data-module="monthly"] #monthlyCreateCard .card-header{
+    position:sticky;
+    top:0;
+    z-index:2;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  body[data-module="monthly"] #monthlyCreateCard .card-title{
+    margin:0!important;
+  }
+  body[data-module="monthly"] .fp-monthly-modal-close{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:32px;
+    height:32px;
+    padding:0;
+    border:0;
+    border-radius:8px;
+    background:transparent;
+    color:var(--nx-primary);
+    font-size:25px;
+    line-height:1;
+    cursor:pointer;
+  }
+  body[data-module="monthly"] .fp-monthly-modal-close:hover{
+    background:var(--nx-gray-100);
+  }
+  body[data-module="dashboard"] .main-panel > .content::before,
+  body[data-module="cash"] .main-panel > .content::before,
+  body[data-module="payments"] .main-panel > .content::before,
+  body[data-module="transactions"] .main-panel > .content::before,
+  body[data-module="config"] .main-panel > .content::before,
+  body[data-module="reports"] .main-panel > .content::before{
+    display:block;
+    padding:14px 20px;
+    margin:0 0 12px;
+    background:#fff;
+    border:1px solid var(--nx-border);
+    border-left:5px solid var(--nx-orange-600);
+    border-radius:var(--nx-radius);
+    box-shadow:var(--nx-shadow);
+    color:var(--nx-primary);
+    font-size:22px;
+    font-weight:700;
+    line-height:1.25;
+  }
+  body[data-module="dashboard"] .main-panel > .content::before{content:"Inicio"}
+  body[data-module="cash"] .main-panel > .content::before{content:"Caja"}
+  body[data-module="payments"] .main-panel > .content::before{content:"Ventas"}
+  body[data-module="transactions"] .main-panel > .content::before{content:"Transacciones"}
+  body[data-module="config"] .main-panel > .content::before{content:"Configuración"}
+  body[data-module="reports"] .main-panel > .content::before{content:"Reportes"}
+  body[data-module]:not([data-module="entries"]):not([data-module="login"]):not([data-module="registro"]) .fp-page-head h2,
+  body[data-module="dashboard"] .main-panel > .content::before,
+  body[data-module="cash"] .main-panel > .content::before,
+  body[data-module="payments"] .main-panel > .content::before,
+  body[data-module="transactions"] .main-panel > .content::before,
+  body[data-module="config"] .main-panel > .content::before,
+  body[data-module="reports"] .main-panel > .content::before{
+    font-size:17px!important;
+  }
+  body[data-module="cash"] .main-panel > .content > .container-fluid > .row > .col-md-12:first-child > .card > .card-header,
+  body[data-module="payments"] .main-panel > .content > .container-fluid > .row > .col-md-12:first-child > .card > .card-header,
+  body[data-module="reports"] .main-panel > .content > .container-fluid > .row > .col-md-12:first-child > .card > .card-header,
+  body[data-module="config"] .main-panel > .content > .container-fluid > .row > .col-md-12:first-child > .card > .card-header{
+    display:none!important;
+  }
+  body[data-module="dashboard"] .main-panel > .content > .container-fluid > .row > .col-md-12:first-child > .card{
+    margin-top:0!important;
+  }
+  @media(min-width:768px){
+  body[data-module="entries"] .fp-entry-summary-row > .col-md-6:first-child{
+    flex:0 0 58.333333%!important;
+    max-width:58.333333%!important;
+  }
+  body[data-module="entries"] .fp-entry-summary-row > .col-md-6:last-child{
+    flex:0 0 41.666667%!important;
+    max-width:41.666667%!important;
+  }
+  body[data-module="entries"] .fp-entry-main-row > .col-md-6:first-child{
+    flex:0 0 58.333333%!important;
+    max-width:58.333333%!important;
+  }
+  body[data-module="entries"] .fp-entry-main-row > .col-md-6:last-child{
+    flex:0 0 41.666667%!important;
+    max-width:41.666667%!important;
+  }
+}
+
+/* Enlaces y scrollbar */
+.content a:not(.btn):not(.nav-link):hover{color:var(--nx-orange-600)!important}
+::-webkit-scrollbar-thumb:hover{background:var(--nx-orange-400);background-clip:content-box}
+
+/* Las tablas de la aplicación se ajustan al contenedor en vez de desplazarse en horizontal. */
+body[data-module] .table-responsive,
+body[data-module] .fp-table-wrap{
+  width:100%!important;
+  max-width:100%!important;
+  overflow-x:hidden!important;
+}
+body[data-module] .table-responsive > table,
+body[data-module] .fp-table-wrap > table,
+body[data-module] table.table{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  table-layout:fixed!important;
+}
+body[data-module] .table-responsive th,
+body[data-module] .table-responsive td,
+body[data-module] .fp-table-wrap th,
+body[data-module] .fp-table-wrap td,
+body[data-module] table.table th,
+body[data-module] table.table td{
+  min-width:0!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+}
+body[data-module] .table-responsive .fp-badge,
+body[data-module] .fp-table-wrap .fp-badge,
+body[data-module] table.table .fp-badge{
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+}
+body[data-module] .table-responsive .fp-actions,
+body[data-module] .fp-table-wrap .fp-actions,
+body[data-module] table.table .fp-actions{
+  max-width:100%;
+  flex-wrap:wrap!important;
+  justify-content:center;
+  gap:3px;
+}
+body[data-module] .table-responsive .fp-actions .fp-icon-btn,
+body[data-module] .fp-table-wrap .fp-actions .fp-icon-btn,
+body[data-module] table.table .fp-actions .fp-icon-btn{
+  flex:0 1 28px;
+  width:28px;
+  height:28px;
+}
