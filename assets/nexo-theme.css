@@ -1,0 +1,273 @@
+/* ==========================================================================
+   Nexo.app — Tema visual unificado (limpio y profesional)
+   Se carga AL FINAL de cada página para unificar los estilos previos.
+   Solo presentación: no cambia estructura ni lógica.
+   ========================================================================== */
+
+:root{
+  /* Primitivos */
+  --nx-navy-900:#071a33;
+  --nx-navy-800:#0b2748;
+  --nx-navy-700:#123b68;
+  --nx-orange-600:#ff6b00;
+  --nx-orange-400:#ffb300;
+  --nx-gray-50:#f5f7fa;
+  --nx-gray-100:#eef1f5;
+  --nx-gray-200:#e3e8ee;
+  --nx-gray-300:#d0d7e0;
+  --nx-gray-500:#6b7686;
+  --nx-gray-900:#1c2430;
+  /* Semánticos */
+  --nx-bg:var(--nx-gray-50);
+  --nx-surface:#fff;
+  --nx-text:var(--nx-gray-900);
+  --nx-muted:var(--nx-gray-500);
+  --nx-border:var(--nx-gray-200);
+  --nx-primary:var(--nx-navy-800);
+  --nx-primary-hover:var(--nx-navy-700);
+  --nx-accent:var(--nx-orange-600);
+  --nx-radius:14px;
+  --nx-radius-sm:10px;
+  --nx-shadow:0 1px 2px rgba(16,30,54,.05),0 6px 20px rgba(16,30,54,.06);
+  --nx-shadow-lg:0 12px 36px rgba(16,30,54,.14);
+  --nx-ring:0 0 0 3px rgba(255,107,0,.22);
+  --nx-font:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+}
+
+/* ---------- Base ---------- */
+html,body{font-family:var(--nx-font)!important;-webkit-font-smoothing:antialiased}
+body,.wrapper,.main-panel{background:var(--nx-bg)!important;color:var(--nx-text)!important}
+h1,h2,h3,h4,h5,h6,.card-title{font-family:var(--nx-font)!important;letter-spacing:-.01em}
+.main-panel>.content{padding:88px 24px 32px!important}
+.container-fluid{max-width:1480px}
+a{transition:color .15s}
+:focus-visible{outline:2px solid var(--nx-accent);outline-offset:2px}
+
+/* ---------- Barra lateral ---------- */
+.sidebar{
+  background:linear-gradient(180deg,var(--nx-navy-900) 0%,var(--nx-navy-800) 100%)!important;
+  border-right:0!important;box-shadow:4px 0 24px rgba(7,26,51,.14)!important}
+.sidebar .logo{padding:22px 20px!important;border-bottom:1px solid rgba(255,255,255,.08)!important}
+.sidebar .logo a{font-size:21px!important;font-weight:800!important;letter-spacing:.04em;color:#fff!important}
+.sidebar .nav{padding:12px 0}
+.sidebar .nav li>a,.sidebar .nav .nav-link{
+  border-radius:12px!important;margin:3px 14px!important;width:auto!important;
+  padding:11px 14px!important;color:rgba(255,255,255,.78)!important;
+  background:transparent!important;box-shadow:none!important;
+  transition:background .15s,color .15s,transform .15s}
+.sidebar .nav li>a p{font-size:14px!important;font-weight:500;color:inherit!important;margin:0}
+.sidebar .nav li>a i{color:rgba(255,255,255,.7)!important;opacity:1}
+.sidebar .nav li>a:hover{background:rgba(255,255,255,.08)!important;color:#fff!important}
+.sidebar .nav li.active>a,.sidebar .nav li>a.active{
+  background:linear-gradient(90deg,var(--nx-orange-600),var(--nx-orange-400))!important;
+  color:#fff!important;box-shadow:0 6px 16px rgba(255,107,0,.28)!important}
+.sidebar .nav li.active>a i,.sidebar .nav li>a:hover i,.sidebar .nav li.active>a p{color:#fff!important}
+
+/* ---------- Barra superior ---------- */
+.navbar{background:transparent!important;box-shadow:none!important}
+.navbar .navbar-brand{font-size:22px!important;font-weight:700!important;color:var(--nx-text)!important}
+
+/* ---------- Tarjetas ---------- */
+.card{
+  background:var(--nx-surface)!important;border:1px solid var(--nx-border)!important;
+  border-radius:var(--nx-radius)!important;box-shadow:var(--nx-shadow)!important;
+  margin-top:20px!important;margin-bottom:20px!important;color:var(--nx-text)!important;overflow:hidden}
+.card .card-header,.card .card-header-primary,.card .card-header-warning,
+.card .card-header-success,.card .card-header-info,.card .card-header-danger{
+  background:var(--nx-surface)!important;background-image:none!important;
+  border-bottom:1px solid var(--nx-border)!important;box-shadow:none!important;
+  margin:0!important;padding:18px 24px!important;border-radius:0!important}
+.card .card-header .card-title,.card .card-header h4{
+  color:var(--nx-primary)!important;font-size:17px!important;font-weight:700!important;margin:0!important}
+.card .card-header .card-category{color:var(--nx-muted)!important;margin:4px 0 0!important}
+.card .card-body{padding:20px 24px!important}
+.card .card-footer{background:var(--nx-gray-50)!important;border-top:1px solid var(--nx-border)!important;padding:14px 24px!important}
+.card-stats .card-header{border:0!important;padding-bottom:0!important}
+.card-stats .card-title{font-size:30px!important;font-weight:800!important;color:var(--nx-primary)!important}
+.card-stats .card-category{font-size:13px!important;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+
+/* ---------- Botones ---------- */
+.btn{
+  font-family:var(--nx-font)!important;font-weight:600!important;text-transform:none!important;
+  letter-spacing:0!important;font-size:14px!important;border-radius:var(--nx-radius-sm)!important;
+  padding:10px 20px!important;transition:background .15s,box-shadow .15s,transform .1s!important}
+.btn:active{transform:translateY(1px)}
+.btn-primary,.btn-success,.btn-warning,.btn-info{
+  background:var(--nx-primary)!important;background-image:none!important;border:0!important;
+  color:#fff!important;box-shadow:0 2px 6px rgba(11,39,72,.22)!important}
+.btn-primary:hover,.btn-success:hover,.btn-warning:hover,.btn-info:hover{
+  background:var(--nx-primary-hover)!important;box-shadow:0 6px 16px rgba(11,39,72,.26)!important}
+#btnRegistrar,#pagar{
+  background:linear-gradient(90deg,var(--nx-orange-600),var(--nx-orange-400))!important;
+  box-shadow:0 8px 20px rgba(255,107,0,.28)!important;padding:14px 20px!important;font-size:16px!important}
+#btnRegistrar:hover,#pagar:hover{filter:brightness(1.05)}
+.btn-default,.btn-secondary{background:#fff!important;color:var(--nx-primary)!important;border:1px solid var(--nx-gray-300)!important;box-shadow:none!important}
+.btn-danger{background:#d93a3a!important;color:#fff!important;border:0!important}
+
+/* ---------- Formularios ---------- */
+label{font-size:13px!important;font-weight:600!important;color:var(--nx-muted)!important}
+.form-control,select.form-control,textarea.form-control,input.form-control{
+  background:#fff!important;border:1px solid var(--nx-gray-300)!important;border-radius:var(--nx-radius-sm)!important;
+  padding:10px 14px!important;height:auto!important;min-height:42px;color:var(--nx-text)!important;
+  background-image:none!important;box-shadow:none!important;transition:border-color .15s,box-shadow .15s}
+.form-control:focus{border-color:var(--nx-accent)!important;box-shadow:var(--nx-ring)!important}
+.bmd-form-group{padding-top:0!important}
+.bmd-form-group .bmd-label-floating,.bmd-form-group .bmd-label-static{position:static!important;transform:none!important;top:auto!important;margin-bottom:6px;display:block}
+.form-control:disabled,.form-control[readonly]{background:var(--nx-gray-100)!important}
+
+/* ---------- Tablas ---------- */
+.table{color:var(--nx-text)!important;margin-bottom:0}
+.table thead th{
+  background:var(--nx-gray-50)!important;color:var(--nx-muted)!important;
+  font-size:12px!important;font-weight:700!important;text-transform:uppercase;letter-spacing:.06em;
+  border-top:0!important;border-bottom:1px solid var(--nx-border)!important;padding:12px 14px!important;white-space:nowrap}
+.table td{padding:13px 14px!important;border-top:1px solid var(--nx-gray-100)!important;vertical-align:middle!important;font-size:14px}
+.table tbody tr{transition:background .12s}
+.table tbody tr:hover{background:#fafbfd}
+.table-responsive{border-radius:var(--nx-radius-sm)}
+
+/* ---------- Paginación ---------- */
+.fp-pager button,#salesPager button,#cashSalesPager button,#loginHistoryPager button{border-radius:8px!important;min-width:34px;font-weight:600}
+
+/* ---------- Modales ---------- */
+.modal-content{border:0!important;border-radius:var(--nx-radius)!important;box-shadow:var(--nx-shadow-lg)!important;overflow:hidden}
+.modal-header{border-bottom:1px solid var(--nx-border)!important;padding:18px 24px!important}
+.modal-title{font-weight:700!important;color:var(--nx-primary)!important}
+.modal-footer{border-top:1px solid var(--nx-border)!important;padding:14px 24px!important}
+.swal2-popup{border-radius:var(--nx-radius)!important;font-family:var(--nx-font)!important}
+
+/* ---------- Registro de entradas (ParkApp) ---------- */
+body[data-module="entries"] .content{padding:56px 28px 32px!important}
+body[data-module="entries"] .fp-entry-top-btn,
+body[data-module="entries"] a[href="index.html"]>div{
+  width:auto!important;padding:8px 22px!important;border-radius:0 0 16px 16px!important;
+  font-size:13px;box-shadow:0 4px 12px rgba(11,39,72,.2)}
+body[data-module="entries"] label[for],body[data-module="entries"] center>label{
+  font-size:12px!important;letter-spacing:.08em;text-transform:uppercase}
+body[data-module="entries"] input[type="placa"]{
+  font-size:clamp(48px,7vw,84px)!important;font-weight:800;text-align:center;letter-spacing:.08em;
+  padding:18px 12px!important;background:#fff;border:2px solid var(--nx-gray-300);
+  border-radius:var(--nx-radius);box-shadow:var(--nx-shadow);color:var(--nx-primary);transition:border-color .15s,box-shadow .15s}
+body[data-module="entries"] input[type="placa"]:focus{outline:0;border-color:var(--nx-accent);box-shadow:var(--nx-ring)}
+body[data-module="entries"] h1{
+  font-size:clamp(48px,7vw,84px)!important;font-weight:800!important;text-align:center;margin:0!important;
+  padding:12px;color:var(--nx-primary)!important;background:#fff;border:1px solid var(--nx-border);
+  border-radius:var(--nx-radius);box-shadow:var(--nx-shadow)}
+body[data-module="entries"] #resta{
+  background:#fff!important;border:1px solid var(--nx-border);border-radius:var(--nx-radius);
+  box-shadow:var(--nx-shadow);font-size:22px!important;font-weight:700;color:var(--nx-primary)!important;
+  text-align:center;padding:16px!important;margin-bottom:14px;text-transform:none}
+#placaSuggestions{border-radius:0 0 var(--nx-radius-sm) var(--nx-radius-sm)!important;border-color:var(--nx-border)!important;box-shadow:var(--nx-shadow-lg)!important}
+
+/* ---------- Panel de pago ---------- */
+.fp-payment-panel{background:#fff;border:1px solid var(--nx-border);border-radius:var(--nx-radius);padding:16px;box-shadow:var(--nx-shadow)}
+.fp-payment-title{font-size:13px!important;text-transform:uppercase;letter-spacing:.07em;color:var(--nx-muted)!important}
+.fp-payment-method{border-radius:var(--nx-radius-sm)!important;min-height:58px!important;border:1.5px solid var(--nx-gray-300)!important;transition:border-color .15s,background .15s}
+.fp-payment-method.active{box-shadow:0 6px 14px rgba(11,39,72,.22)}
+.fp-payment-summary{background:var(--nx-gray-50)!important;border:1px solid var(--nx-border)!important;border-radius:var(--nx-radius-sm)!important}
+
+/* ---------- Avisos ---------- */
+.alert{border:0!important;border-radius:var(--nx-radius-sm)!important;box-shadow:none!important}
+
+/* ---------- Scrollbar discreto ---------- */
+*{scrollbar-width:thin;scrollbar-color:var(--nx-gray-300) transparent}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:var(--nx-gray-300);border-radius:8px;border:2px solid transparent;background-clip:content-box}
+
+/* ---------- Responsive ---------- */
+@media (max-width:991px){
+  .main-panel>.content{padding:80px 14px 24px!important}
+  .card .card-body,.card .card-header{padding-left:16px!important;padding-right:16px!important}
+}
+
+/* ---------- Impresión: no tocar recibos ---------- */
+@media print{
+  .sidebar,.navbar{display:none!important}
+  body,.wrapper,.main-panel{background:#fff!important}
+}
+
+/* ==========================================================================
+   Refactor UI/UX v2 — legibilidad, tablas, badges, iconos y tarjetas
+   (se apoya en `body` para ganar especificidad a los estilos inline de cada vista)
+   ========================================================================== */
+:root{--nx-text-strong:#1e293b;--nx-th-bg:#e3edf9;--nx-th-text:#0b2748;--nx-card-border:#e2e8f0}
+
+/* 1. Tipografía */
+body,body p,body td,body li,body span,body .form-control,body .btn{font-weight:500}
+body,body td,body p,body li,body .table td{color:var(--nx-text-strong)}
+body th,body .table thead th,body h1,body h2,body h3,body h4,body h5,body h6,
+body .card-title,body .modal-title,body strong,body b{font-weight:700!important}
+body .table thead th,body .fp-payments-table th,body .fp-monthly-admin .table th{color:var(--nx-th-text)!important}
+
+/* 2. Tablas */
+body .table-responsive,body .fp-table-wrap{width:100%;overflow-x:auto}
+body table.table,body .fp-payments-table{width:100%!important;min-width:0!important;table-layout:auto!important;border-collapse:separate;border-spacing:0}
+body .table th,body .table td{vertical-align:middle!important}
+body .table thead th,body .fp-payments-table th,body .fp-monthly-admin .table th{
+  background:var(--nx-th-bg)!important;border:0!important;border-bottom:1px solid #c9d8ec!important;
+  font-weight:700!important;font-size:12px!important;text-transform:uppercase;letter-spacing:.05em;
+  padding:12px 12px!important;white-space:nowrap;text-align:left}
+body .table thead th:first-child{border-top-left-radius:10px}
+body .table thead th:last-child{border-top-right-radius:10px}
+body .fp-payments-table th,body .fp-payments-table td{text-align:left!important}
+/* fechas, horas, placas y montos nunca se parten */
+body .table td{white-space:nowrap}
+body .table td.nx-wrap,body .table td[data-wrap]{white-space:normal}
+body .table td strong{white-space:nowrap}
+body #monthlyTable tbody tr{height:55px}
+body #monthlyTable td{padding-top:8px!important;padding-bottom:8px!important}
+
+/* 3. Badges de estado */
+.fp-badges{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.fp-badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:11.5px;font-weight:700!important;
+  letter-spacing:.02em;line-height:1.3;white-space:nowrap;border:1px solid transparent}
+.fp-badge-ok{background:#dcfce7;color:#166534;border-color:#bbf7d0}
+.fp-badge-warn{background:#fff1d6;color:#9a4a00;border-color:#fed7aa}
+.fp-badge-bad{background:#fee2e2;color:#991b1b;border-color:#fecaca}
+
+/* 4. Acciones de solo icono */
+.fp-actions{display:flex;flex-wrap:nowrap;gap:6px;align-items:center}
+body .fp-icon-btn{width:34px;height:34px;padding:0!important;display:inline-flex;align-items:center;justify-content:center;
+  border-radius:8px;border:1px solid #d0d7e0;background:#fff;color:var(--nx-primary);cursor:pointer;
+  font-size:14px;line-height:1;transition:background .15s,color .15s,border-color .15s}
+body .fp-icon-btn i{margin:0!important;font-size:14px}
+body .fp-icon-btn:hover{background:var(--nx-primary);color:#fff;border-color:var(--nx-primary)}
+body .fp-icon-btn.fp-ic-pay{background:var(--nx-primary);color:#fff;border-color:var(--nx-primary)}
+body .fp-icon-btn.fp-ic-pay:hover{background:var(--nx-primary-hover)}
+body .fp-icon-btn.fp-ic-del:hover{background:#d93a3a;border-color:#d93a3a}
+body .fp-icon-btn.fp-ic-ok:hover{background:#16a34a;border-color:#16a34a}
+/* Botón imprimir existente: icono siempre visible, sin quedar como "." */
+body .printSale,body .printMonthlyPayment{min-width:36px;min-height:34px}
+body .printSale:empty::before,body .printMonthlyPayment:empty::before{content:"\f02f";font-family:FontAwesome;font-size:15px}
+body .fp-print-icon{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:inline-block;vertical-align:middle}
+
+/* Encabezado de página: botones con margen para no tapar títulos */
+body .fp-page-head{gap:24px;flex-wrap:wrap}
+body .fp-page-head .btn,body .fp-new-payment{margin:4px 0 4px 16px!important;flex-shrink:0}
+body .card-header .btn,body .card-body>.btn{margin-left:8px}
+
+/* 5. Tarjetas / secciones */
+body .card,body .fp-card,body .fp-page-head{
+  background:#fff!important;border:1px solid var(--nx-card-border)!important;border-radius:12px!important;
+  box-shadow:0 1px 3px rgba(15,23,42,.06),0 4px 14px rgba(15,23,42,.05)!important}
+body .card .card-body{padding:20px 24px!important}
+body .main-panel .content>.container-fluid>.row>[class*="col-"]>.card:not(.card-stats){padding:0}
+body .fp-monthly-admin .card-header-primary{background:#fff!important;background-image:none!important}
+body .fp-monthly-admin .card-title,body .fp-monthly-admin .card-category{color:var(--nx-primary)!important}
+
+@media(max-width:900px){
+  body .fp-page-head .btn,body .fp-new-payment{margin:8px 0 0!important;width:100%}
+  body .fp-actions{flex-wrap:wrap}
+}
+@media print{.fp-actions,.fp-icon-btn{display:none!important}}
+
+/* Barra superior de Entradas: botones en flujo normal (no absolutos) para no tapar el contenido */
+body[data-module="entries"] .fp-entry-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;
+  margin:0 0 20px;padding-top:0;position:relative;z-index:5}
+body[data-module="entries"] .fp-entry-toolbar>a:nth-child(2){margin-left:auto}
+body[data-module="entries"] .fp-entry-toolbar>a>div{position:static!important;left:auto!important;width:auto!important;
+  min-width:110px;padding:8px 22px!important;border-radius:0 0 16px 16px!important;color:#fff!important;
+  background:var(--nx-primary)!important;text-align:center;white-space:nowrap;font-size:13px}
+body[data-module="entries"] .fp-entry-toolbar>a>div:hover{background:var(--nx-primary-hover)!important}
+body[data-module="entries"] .fp-entry-toolbar>a>div i{margin-right:6px}
+@media(max-width:600px){body[data-module="entries"] .fp-entry-toolbar{flex-wrap:wrap}}
