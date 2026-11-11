@@ -22,6 +22,13 @@ function buildDatabaseUrl() {
   return `postgres://${user}${password}@${DB_HOST}:${DB_PORT}/${encodeURIComponent(dbName)}`;
 }
 
+function parseTrustProxy(value) {
+  if (!value) return false;
+  if (/^\d+$/.test(value)) return Number(value);
+  if (value === 'true') return true;
+  return value; // lista de IPs/subredes
+}
+
 const env = {
   nodeEnv,
   isProduction: nodeEnv === 'production',
@@ -32,6 +39,8 @@ const env = {
     .map((origin) => origin.trim())
     .filter(Boolean),
   databaseUrl: buildDatabaseUrl(),
+  // Valor de "trust proxy" de Express (p. ej. 1 = un proxy inverso delante). Vacío = no confiar.
+  trustProxy: parseTrustProxy(process.env.TRUST_PROXY),
   // Zona horaria de las sesiones de PostgreSQL (fechas "de hoy", cortes por día, etc.)
   timezone: process.env.APP_TIMEZONE || 'America/Bogota',
 };

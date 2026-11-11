@@ -1,10 +1,13 @@
+// Sedes. Todas las rutas exigen sesión (authenticate se aplica en routes/index.js).
 const { Router } = require('express');
 const sitesController = require('../controllers/sites.controller');
+const { requireSiteParam } = require('../middlewares/authorize');
 
 const router = Router();
 
-// PENDIENTE FASE 3: exigir sesión (JWT) y rol AG. Hasta entonces este endpoint está abierto,
-// por eso solo expone datos públicos de la sede (nombre, dirección, zonas), nunca de usuarios.
+// AG: todas las sedes; AS y OP: solo las asignadas
 router.get('/', sitesController.listSites);
+// 403 si la sede no es del usuario
+router.get('/:siteId', requireSiteParam('siteId'), sitesController.getSite);
 
 module.exports = router;

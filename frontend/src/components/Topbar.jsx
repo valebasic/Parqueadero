@@ -1,12 +1,21 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Icon from './Icon.jsx';
 import { useSession } from '../context/SessionContext.jsx';
 import { ROLES } from '../lib/roles.js';
 import { formatDate, formatTime12h } from '../lib/format.js';
 
+function siteLabel(user) {
+  if (user.allSites) return 'Todas las sedes';
+  if (user.sites.length === 0) return 'Sin sede';
+  if (user.sites.length === 1) return user.sites[0].name;
+  return `${user.sites.length} sedes`;
+}
+
 // Barra superior: título de la pantalla, sede, zona, turno, reloj y usuario.
+// Zona y turno se conectan en la Fase 4 (apertura de turno por zona).
 export default function Topbar({ title, onToggleMenu }) {
-  const { session } = useSession();
+  const { user } = useSession();
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -14,8 +23,7 @@ export default function Topbar({ title, onToggleMenu }) {
     return () => clearInterval(id);
   }, []);
 
-  const { user, sede, zona, turno } = session;
-  const initial = (user.username || '?').charAt(0).toUpperCase();
+  const initial = (user.fullName || user.username || '?').charAt(0).toUpperCase();
 
   return (
     <header className="nx-topbar">
@@ -25,17 +33,17 @@ export default function Topbar({ title, onToggleMenu }) {
       <h1 className="nx-topbar__title">{title}</h1>
 
       <dl className="nx-topbar__context">
-        <div className="nx-chip">
+        <div className="nx-chip" title={user.sites.map((s) => s.name).join(', ')}>
           <dt>Sede</dt>
-          <dd>{sede?.name || 'Sin sede'}</dd>
+          <dd>{siteLabel(user)}</dd>
         </div>
         <div className="nx-chip">
           <dt>Zona</dt>
-          <dd>{zona?.name || 'Sin zona'}</dd>
+          <dd>Sin zona</dd>
         </div>
-        <div className={`nx-chip ${turno ? 'nx-chip--ok' : 'nx-chip--warn'}`}>
+        <div className="nx-chip nx-chip--warn">
           <dt>Turno</dt>
-          <dd>{turno ? `Abierto desde ${formatTime12h(turno.openedAt)}` : 'Sin turno abierto'}</dd>
+          <dd>Sin turno abierto</dd>
         </div>
       </dl>
 
@@ -43,13 +51,15 @@ export default function Topbar({ title, onToggleMenu }) {
         <span className="nx-topbar__clock">
           {formatDate(now)} · {formatTime12h(now)}
         </span>
-        <span className="nx-user" title={ROLES[user.role]}>
-          <span className="nx-user__avatar" aria-hidden="true">{initial}</span>
+        <Link to="/cuenta" className="nx-user" title="Mi cuenta">
+          <span className="nx-user__avatar" aria-hidden="true">
+            {initial}
+          </span>
           <span className="nx-user__text">
-            <strong>{user.username}</strong>
+            <strong>{user.fullName}</strong>
             <small>{ROLES[user.role]}</small>
           </span>
-        </span>
+        </Link>
       </div>
     </header>
   );

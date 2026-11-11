@@ -3,6 +3,8 @@ import AppLayout from './layouts/AppLayout.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import PlaceholderPage from './pages/PlaceholderPage.jsx';
 import SitesPage from './pages/SitesPage.jsx';
+import UsersPage from './pages/UsersPage.jsx';
+import AccountPage from './pages/AccountPage.jsx';
 import { RequireAuth, RequireRole } from './components/RequireAuth.jsx';
 import { MENU } from './lib/roles.js';
 
@@ -17,12 +19,12 @@ const PHASE_BY_PATH = {
   '/transacciones': 'Fase 5',
   '/reportes': 'Fase 5',
   '/reportes-mensualidades': 'Fase 5',
-  '/usuarios': 'Fase 3',
-  '/configuracion': 'Fase 3',
+  '/configuracion': 'Fase 5',
 };
 
 // Pantallas ya construidas; el resto muestra el aviso provisional
 const PAGE_BY_PATH = {
+  '/usuarios': UsersPage,
   '/sedes': SitesPage,
 };
 
@@ -51,6 +53,8 @@ export default function App() {
             />
           );
         })}
+        {/* Disponible para todos los roles; se abre desde el usuario en la barra superior */}
+        <Route path="/cuenta" element={<AccountPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

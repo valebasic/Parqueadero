@@ -46,9 +46,20 @@ frontend/src/
 
 | Ruta | Pantalla | Roles |
 | --- | --- | --- |
-| `/login` | Inicio de sesión (todavía sin validar contra la API: llega en la Fase 3) | — |
+| `/login` | Inicio de sesión contra la API | Todos |
+| `/usuarios` | Usuarios: listar, crear, editar, desactivar y restablecer contraseña | AG, AS |
+| `/cuenta` | Mi cuenta: datos y cambio de contraseña propia (desde el usuario en la barra superior) | Todos |
 | `/sedes` | Sedes y zonas (listado) | AG |
 | Resto del menú | Aviso provisional con la fase en que se construye | Según el menú |
+
+## Sesión
+
+- El JWT de acceso vive solo en memoria; la sesión se recupera al recargar gracias a la cookie
+  httpOnly que pone la API. Si el JWT vence, [`src/lib/api.js`](src/lib/api.js) lo renueva y
+  repite la petición.
+- [`IdleGuard`](src/components/IdleGuard.jsx) cierra la sesión por inactividad (15 min operador,
+  30 min administradores; el tiempo lo envía la API), avisa un minuto antes y comparte la actividad
+  entre pestañas. Cerrar sesión en una pestaña la cierra en todas.
 
 ## Formatos
 

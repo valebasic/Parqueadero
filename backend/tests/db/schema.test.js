@@ -1,11 +1,13 @@
 // Restricciones del esquema y datos del seed.
 const { query, withTransaction, closePool } = require('../../src/db/pool');
+const { freshDatabase } = require('./helpers');
 
 let siteId;
 let zoneId;
 let userId;
 
 beforeAll(async () => {
+  await freshDatabase();
   ({ rows: [{ id: siteId }] } = await query("SELECT id FROM sites WHERE code = 'FACA'"));
   ({ rows: [{ id: zoneId }] } = await query('SELECT id FROM zones WHERE site_id = $1', [siteId]));
   ({ rows: [{ id: userId }] } = await query("SELECT id FROM users WHERE username = 'Felipe'"));

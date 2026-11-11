@@ -4,6 +4,15 @@ const http = require('http');
 const env = require('./config/env');
 const { createApp } = require('./app');
 const { closePool } = require('./db/pool');
+const { assertSecurityConfig } = require('./config/security');
+
+// Sin JWT_SECRET la API no arranca
+try {
+  assertSecurityConfig();
+} catch (err) {
+  console.error(err.message);
+  process.exit(1);
+}
 
 const server = http.createServer(createApp());
 

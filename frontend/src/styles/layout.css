@@ -228,10 +228,12 @@
 @media (max-width: 960px) {
   .nx-sidebar {
     transform: translateX(-100%);
+    box-shadow: none;
     transition: transform 0.2s ease;
   }
   .nx-sidebar.is-open {
     transform: translateX(0);
+    box-shadow: 6px 0 24px rgba(3, 18, 38, 0.18);
   }
   .nx-main {
     margin-left: 0;
@@ -338,48 +340,40 @@
   font-weight: 600;
   cursor: pointer;
 }
-.nx-dev-role {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin: 4px 0 20px;
-  padding: 10px 12px;
-  border: 1px dashed var(--nx-gray-300);
-  border-radius: 12px;
-  font-size: 13px;
-  color: var(--nx-muted);
-  font-weight: 600;
-}
-.nx-dev-role select {
-  height: 40px;
-  border-radius: 8px;
-  border: 1px solid var(--nx-gray-300);
-  padding: 0 10px;
-  font-size: 14px;
-}
 .nx-login__helper {
   text-align: center;
   color: #8b9299;
   font-size: 12px;
   margin: 20px 0 0;
 }
-.nx-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin: 0 4px 0 2px;
-  background: var(--nx-gray-300);
-}
-.nx-dot--up {
-  background: var(--nx-green-600);
-}
-.nx-dot--down {
-  background: var(--nx-red-600);
-}
 @media (max-width: 520px) {
   .nx-login__card {
     padding: 34px 22px;
     border-radius: 20px;
   }
+}
+
+/* ---------- Ajustes Fase 3 ---------- */
+a.nx-user {
+  color: inherit;
+  text-decoration: none;
+  border-radius: 999px;
+  padding: 2px 6px 2px 2px;
+}
+a.nx-user:hover {
+  background: #fff;
+}
+.nx-login__msg {
+  margin: -2px 0 16px;
+  padding: 11px 13px;
+  border-radius: 10px;
+  border: 1px solid #ffd09a;
+  background: #fff5e8;
+  color: #9b4d00;
+  font-size: 14px;
+}
+.nx-login__msg.is-error {
+  border-color: #f3b7b7;
+  background: #fdeeee;
+  color: #8a1f1f;
 }

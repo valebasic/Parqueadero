@@ -14,14 +14,15 @@ bcrypt, Jest + Supertest.
 ```bash
 cd backend
 npm install
-cp .env.example .env     # completar DB_PASSWORD y SEED_ADMIN_PASSWORD
+cp .env.example .env     # completar DB_PASSWORD, JWT_SECRET y SEED_ADMIN_PASSWORD
 npm run db:up            # levanta PostgreSQL 16 en Docker (usa los DB_* del .env)
 npm run db:reset         # crea las tablas y carga el seed
 npm run dev              # API en http://localhost:3000
 ```
 
-Comprobar: `curl http://localhost:3000/api/health` → `{"ok":true}` y
-`curl http://localhost:3000/api/sites` → la sede Facaparking con su zona.
+Comprobar: `curl http://localhost:3000/api/health` → `{"ok":true}`. El resto de la API exige
+sesión: ingresar como **Felipe** con la contraseña de `SEED_ADMIN_PASSWORD` y cambiarla desde
+"Mi cuenta" en el primer ingreso.
 
 El contenedor (`nexo-postgres`) guarda los datos en el volumen `nexo-pgdata`, así que sobreviven a
 `npm run db:down`. Al crearse por primera vez también crea la base de pruebas (`DB_NAME_TEST`).
@@ -74,6 +75,7 @@ Migraciones SQL en [`src/db/migrations/`](src/db/migrations) (una sección `-- U
 | `receipt_counters` | Consecutivo de recibos por sede y prefijo (FA, FM) |
 | `shifts` | Turnos (uno abierto por zona y por usuario) |
 | `cash_registers` | Cajas (exactamente una por turno) |
+| `user_sessions` | Sesiones: hash del token de la cookie, última actividad, vencimiento y revocación |
 | `cash_movements` | Movimientos de caja: `INCOME` (ingreso), `EXPENSE` (egreso), `BASE_IN` (base +), `BASE_OUT` (base −) |
 | `entries` | Entradas y salidas; una salida cobrada es una venta de parqueadero |
 | `monthly_plans` | Mensualidades |
@@ -131,12 +133,52 @@ backend/
 └── tests/               # pruebas de la API; tests/db/ = integración con PostgreSQL
 ```
 
+## Seguridad (RF01-RF06)
+
+- **Contraseñas**: bcrypt con costo 12. Política: mínimo 8 caracteres, con letras y números.
+- **Login**: `POST /api/auth/login` devuelve un **JWT de acceso** de 5 minutos (el frontend lo guarda
+  solo en memoria) y deja una **cookie de sesión** `nexo_rt` (httpOnly, SameSite=Strict, ruta
+  `/api/auth`; Secure en producción) con un token aleatorio cuyo hash se guarda en `user_sessions`.
+- **Renovación**: `POST /api/auth/refresh` entrega un JWT nuevo con la cookie. El frontend lo pide
+  cuando el JWT vence y, mientras el usuario está activo, cada ~2 minutos.
+- **Cierre por inactividad**: 15 min para OP y 30 min para AS y AG. Lo hace cumplir **el servidor**:
+  cada petición revisa `last_activity_at` de la sesión y, si se pasó el límite, la revoca y responde
+  `401 SESSION_IDLE` (ni el refresh la revive). Las peticiones automáticas pueden enviar
+  `X-Nexo-Background: 1` para no contar como actividad. El frontend además avisa un minuto antes y
+  cierra la sesión en todas las pestañas. Una sesión dura como máximo `SESSION_MAX_HOURS` (12 h).
+- **Bloqueo**: 5 intentos fallidos seguidos bloquean la cuenta 5 minutos (`423 ACCOUNT_LOCKED`),
+  aunque luego se escriba la contraseña correcta. Restablecer la contraseña desbloquea.
+- **Autorización**: todo lo que se monta después de `authenticate` en
+  [`src/routes/index.js`](src/routes/index.js) exige sesión (solo `/health` y `/auth/*` quedan
+  antes). El rol y las sedes se leen de la base en cada petición, así que un cambio de permisos o una
+  desactivación rige de inmediato. Rol incorrecto o sede ajena → `403` (y queda en auditoría).
+- **Usuarios**: el AG gestiona a todos; el AS solo operadores de sus sedes y solo les asigna sus
+  sedes (las sedes ajenas de un operador compartido se conservan). Nadie se desactiva a sí mismo ni
+  cambia su propio rol, y no se puede desactivar ni quitar el rol al último AG activo. No se borran
+  usuarios: se desactivan, y eso cierra sus sesiones.
+- **Auditoría** (`audit_log`): `LOGIN_SUCCESS`, `LOGIN_FAILED`, `LOGIN_BLOCKED`, `ACCOUNT_LOCKED`,
+  `LOGOUT`, `SESSION_IDLE_TIMEOUT`, `PASSWORD_CHANGED`, `PASSWORD_CHANGE_FAILED`, `USER_CREATED`,
+  `USER_UPDATED`, `USER_DEACTIVATED`, `USER_ACTIVATED`, `USER_PASSWORD_RESET`, `ACCESS_DENIED`.
+  Con IP y navegador; nunca contraseñas ni tokens.
+
+Respuestas de error: `{ ok: false, error: "mensaje en español", code: "CODIGO" }`.
+
 ## Endpoints
 
-| Método y ruta | Descripción |
-| --- | --- |
-| `GET /api/health` | Estado de la API: `{"ok":true}`. |
-| `GET /api/sites` | Sedes con sus zonas. **Pendiente Fase 3:** exigir sesión y rol AG. |
+| Método y ruta | Quién | Descripción |
+| --- | --- | --- |
+| `GET /api/health` | Público | Estado de la API: `{"ok":true}`. |
+| `POST /api/auth/login` | Público | `{ username, password }` → JWT, perfil y cookie de sesión. |
+| `POST /api/auth/refresh` | Cookie | JWT nuevo (cuenta como actividad). |
+| `POST /api/auth/logout` | Cookie | Revoca la sesión y borra la cookie. |
+| `GET /api/auth/me` | Con sesión | Perfil y datos de la sesión. |
+| `PUT /api/auth/password` | Con sesión | `{ currentPassword, newPassword }`; cierra las demás sesiones. |
+| `GET /api/sites` | Con sesión | AG: todas las sedes; AS y OP: las suyas. |
+| `GET /api/sites/:siteId` | Con sesión | 403 si la sede no es del usuario. |
+| `GET /api/users` | AG, AS | AG: todos; AS: operadores de sus sedes. |
+| `POST /api/users` | AG, AS | `{ username, fullName, password, role, siteIds }`. |
+| `GET /api/users/:id` | AG, AS | 403 si el AS no gestiona a ese usuario. |
+| `PATCH /api/users/:id` | AG, AS | `fullName`, `role`, `siteIds`, `isActive`, `password` (restablecer). |
 
 ## Variables de entorno
 

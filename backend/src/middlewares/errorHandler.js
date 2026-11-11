@@ -23,6 +23,8 @@ function errorHandler(err, req, res, next) {
         ? 'Error interno del servidor'
         : err.message,
   };
+  if (err.name === 'HttpError' && err.code) body.code = err.code;
+  if (dbUnavailable) body.code = 'DB_UNAVAILABLE';
   if (err.details) body.details = err.details;
 
   res.status(status).json(body);

@@ -2,14 +2,17 @@ import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from '../components/Sidebar.jsx';
 import Topbar from '../components/Topbar.jsx';
+import IdleGuard from '../components/IdleGuard.jsx';
 import { MENU } from '../lib/roles.js';
+
+const EXTRA_TITLES = { '/cuenta': 'Mi cuenta' };
 
 // Estructura de todas las pantallas internas: menú lateral + barra superior + contenido.
 // En pantallas angostas el menú se vuelve un panel deslizable.
 export default function AppLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { pathname } = useLocation();
-  const title = MENU.find((m) => m.path === pathname)?.label || 'Nexo.app';
+  const title = MENU.find((m) => m.path === pathname)?.label || EXTRA_TITLES[pathname] || 'Nexo.app';
 
   return (
     <div className="nx-shell">
@@ -21,6 +24,7 @@ export default function AppLayout() {
           <Outlet />
         </main>
       </div>
+      <IdleGuard />
     </div>
   );
 }

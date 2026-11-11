@@ -1,40 +1,47 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useSession } from '../context/SessionContext.jsx';
-import { ROLES } from '../lib/roles.js';
 
-// Login (FASE 1: vacío, sin validar contra la API).
-// El selector de rol solo aparece en desarrollo para revisar el menú de cada rol;
-// en la Fase 3 el rol vendrá del token JWT y este selector desaparece.
+// Mensaje que se muestra al volver al login según por qué terminó la sesión anterior
+const END_MESSAGES = {
+  idle: 'Su sesión se cerró por inactividad. Ingrese de nuevo.',
+  expired: 'Su sesión venció. Ingrese de nuevo.',
+  revoked: 'Su sesión ya no es válida. Ingrese de nuevo.',
+  inactive: 'Su usuario fue desactivado. Consulte con un administrador.',
+};
+
 export default function LoginPage() {
-  const { session, login } = useSession();
+  const { status, login, endReason } = useSession();
   const navigate = useNavigate();
   const location = useLocation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [role, setRole] = useState('OP');
-  const [apiStatus, setApiStatus] = useState('checking');
+  const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  // Comprueba que el proxy de Vite llega al backend
-  useEffect(() => {
-    let cancelled = false;
-    fetch('/api/health')
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((data) => !cancelled && setApiStatus(data.ok ? 'up' : 'down'))
-      .catch(() => !cancelled && setApiStatus('down'));
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  if (status === 'authenticated') return <Navigate to="/" replace />;
 
-  if (session) return <Navigate to="/" replace />;
-
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    login({ username: username.trim() || 'demo', role });
-    navigate(location.state?.from?.pathname || '/', { replace: true });
+    if (!username.trim() || !password) {
+      setError('Escriba el usuario y la contraseña.');
+      return;
+    }
+    setSubmitting(true);
+    setError('');
+    try {
+      await login(username.trim(), password);
+      navigate(location.state?.from?.pathname || '/', { replace: true });
+    } catch (err) {
+      setError(err.message);
+      setPassword('');
+    } finally {
+      setSubmitting(false);
+    }
   }
+
+  const notice = !error && endReason ? END_MESSAGES[endReason] : null;
 
   return (
     <div className="nx-login">
@@ -54,6 +61,8 @@ export default function LoginPage() {
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Usuario"
               autoComplete="username"
+              autoFocus
+              disabled={submitting}
             />
           </label>
           <label className="nx-field nx-field--password">
@@ -64,6 +73,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Contraseña"
               autoComplete="current-password"
+              disabled={submitting}
             />
             <button
               type="button"
@@ -75,28 +85,19 @@ export default function LoginPage() {
             </button>
           </label>
 
-          {import.meta.env.DEV && (
-            <label className="nx-dev-role">
-              <span>Rol de prueba (solo desarrollo)</span>
-              <select value={role} onChange={(e) => setRole(e.target.value)}>
-                {Object.entries(ROLES).map(([code, name]) => (
-                  <option key={code} value={code}>
-                    {code} · {name}
-                  </option>
-                ))}
-              </select>
-            </label>
+          {(error || notice) && (
+            <div className={`nx-login__msg${error ? ' is-error' : ''}`} role="alert">
+              {error || notice}
+            </div>
           )}
 
-          <button className="nx-btn nx-btn--accent nx-btn--block" type="submit">
-            Iniciar sesión
+          <button className="nx-btn nx-btn--accent nx-btn--block" type="submit" disabled={submitting}>
+            {submitting ? 'Ingresando…' : 'Iniciar sesión'}
           </button>
         </form>
 
         <p className="nx-login__helper">
-          Nexo.app · API{' '}
-          <span className={`nx-dot nx-dot--${apiStatus}`} aria-hidden="true" />
-          {apiStatus === 'up' ? 'conectada' : apiStatus === 'down' ? 'sin conexión' : 'verificando…'}
+          ¿Olvidó su contraseña? Un administrador puede restablecerla desde Usuarios.
         </p>
       </section>
     </div>

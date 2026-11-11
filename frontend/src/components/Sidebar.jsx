@@ -5,8 +5,8 @@ import { useSession } from '../context/SessionContext.jsx';
 
 // Menú lateral: solo muestra las opciones que el rol puede abrir.
 export default function Sidebar({ open, onNavigate }) {
-  const { session, logout } = useSession();
-  const items = menuForRole(session.user.role);
+  const { user, logout } = useSession();
+  const items = menuForRole(user.role);
 
   return (
     <aside className={`nx-sidebar${open ? ' is-open' : ''}`} aria-label="Menú principal">
@@ -27,7 +27,7 @@ export default function Sidebar({ open, onNavigate }) {
           </NavLink>
         ))}
       </nav>
-      <button type="button" className="nx-nav-link nx-nav-link--logout" onClick={logout}>
+      <button type="button" className="nx-nav-link nx-nav-link--logout" onClick={() => logout('logout')}>
         <Icon name="logout" />
         <span>Salir</span>
       </button>
