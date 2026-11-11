@@ -1,0 +1,133 @@
+/* ==========================================================================
+   Nexo.app v2 — Tokens visuales tomados de la v1.0 (assets/nexo-theme.css)
+   ========================================================================== */
+:root {
+  /* Primitivos */
+  --nx-navy-900: #071a33;
+  --nx-navy-800: #0b2748;
+  --nx-navy-700: #123b68;
+  --nx-orange-600: #ff6b00;
+  --nx-orange-400: #ffb300;
+  --nx-gray-50: #f5f7fa;
+  --nx-gray-100: #eef1f5;
+  --nx-gray-200: #e3e8ee;
+  --nx-gray-300: #d0d7e0;
+  --nx-gray-500: #6b7686;
+  --nx-gray-900: #1c2430;
+  --nx-green-600: #1e9e5a;
+  --nx-red-600: #d93a3a;
+
+  /* Semánticos */
+  --nx-bg: var(--nx-gray-50);
+  --nx-surface: #fff;
+  --nx-text: var(--nx-gray-900);
+  --nx-muted: var(--nx-gray-500);
+  --nx-border: var(--nx-gray-200);
+  --nx-primary: var(--nx-navy-800);
+  --nx-primary-hover: var(--nx-navy-700);
+  --nx-accent: var(--nx-orange-600);
+  --nx-accent-gradient: linear-gradient(90deg, var(--nx-orange-600), var(--nx-orange-400));
+  --nx-radius: 14px;
+  --nx-radius-sm: 10px;
+  --nx-shadow: 0 1px 2px rgba(16, 30, 54, 0.05), 0 6px 20px rgba(16, 30, 54, 0.06);
+  --nx-shadow-lg: 0 12px 36px rgba(16, 30, 54, 0.14);
+  --nx-ring: 0 0 0 3px rgba(255, 107, 0, 0.22);
+  --nx-font: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+
+  --nx-sidebar-w: 248px;
+  --nx-topbar-h: 64px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--nx-font);
+  background: var(--nx-bg);
+  color: var(--nx-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.01em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--nx-accent);
+  outline-offset: 2px;
+}
+
+.nx-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.nx-muted {
+  color: var(--nx-muted);
+}
+
+/* ---------- Botones ---------- */
+.nx-btn {
+  font: 600 14px/1 var(--nx-font);
+  border: 0;
+  border-radius: var(--nx-radius-sm);
+  padding: 12px 20px;
+  cursor: pointer;
+  background: var(--nx-primary);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(11, 39, 72, 0.22);
+  transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+}
+.nx-btn:hover {
+  background: var(--nx-primary-hover);
+}
+.nx-btn:active {
+  transform: translateY(1px);
+}
+.nx-btn--accent {
+  background: var(--nx-accent-gradient);
+  box-shadow: 0 8px 20px rgba(255, 107, 0, 0.28);
+}
+.nx-btn--accent:hover {
+  background: var(--nx-accent-gradient);
+  filter: brightness(1.05);
+}
+.nx-btn--block {
+  width: 100%;
+  min-height: 54px;
+  font-size: 17px;
+}
+
+/* ---------- Tarjetas ---------- */
+.nx-card {
+  background: var(--nx-surface);
+  border: 1px solid var(--nx-border);
+  border-top: 3px solid var(--nx-accent);
+  border-radius: var(--nx-radius);
+  box-shadow: var(--nx-shadow);
+  padding: 20px 24px;
+}
+.nx-empty h2 {
+  margin: 0 0 6px;
+  color: var(--nx-primary);
+  font-size: 18px;
+}
+.nx-empty p {
+  margin: 4px 0;
+}
