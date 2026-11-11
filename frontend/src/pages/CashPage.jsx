@@ -208,18 +208,24 @@ function CloseShiftModal({ shift, handover, onCancel, onDone }) {
   const [outgoingPassword, setOutgoingPassword] = useState('');
   const [incomingUsername, setIncomingUsername] = useState('');
   const [incomingPassword, setIncomingPassword] = useState('');
+  const [withdrawal, setWithdrawal] = useState('');
+  const [withdrawalTo, setWithdrawalTo] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
   const counted = cashCountTotal(count);
-  const expected = shift.summary.expectedInDrawer;
+  const withdrawn = Number(withdrawal) || 0;
+  // El retiro sale del cajón: lo que debe quedar es lo esperado menos el retiro
+  const expected = shift.summary.expectedInDrawer - withdrawn;
   const diff = counted - expected;
+  const withdrawalInvalid = withdrawn > 0 && withdrawalTo.trim().length < 3;
 
   async function submit() {
     setSaving(true);
     setError('');
     try {
       const denominations = cleanCashCount(count);
+      const withdrawalBody = withdrawn > 0 ? { amount: withdrawn, receivedBy: withdrawalTo.trim() } : undefined;
       const data = handover
         ? await apiPost(`/shifts/${shift.id}/handover`, {
             denominations,
@@ -227,8 +233,9 @@ function CloseShiftModal({ shift, handover, onCancel, onDone }) {
             outgoingPassword,
             incomingUsername: incomingUsername.trim(),
             incomingPassword,
+            withdrawal: withdrawalBody,
           })
-        : await apiPost(`/shifts/${shift.id}/close`, { denominations, notes });
+        : await apiPost(`/shifts/${shift.id}/close`, { denominations, notes, withdrawal: withdrawalBody });
       onDone({ ...data, handover });
     } catch (err) {
       setError(err.message);
@@ -252,15 +259,29 @@ function CloseShiftModal({ shift, handover, onCancel, onDone }) {
             type="button"
             className="nx-btn nx-btn--accent"
             onClick={submit}
-            disabled={saving || (handover && (!outgoingPassword || !incomingUsername || !incomingPassword))}
+            disabled={saving || withdrawalInvalid || (handover && (!outgoingPassword || !incomingUsername || !incomingPassword))}
           >
             {saving ? 'Guardando…' : handover ? 'Confirmar entrega' : 'Cerrar turno'}
           </button>
         </>
       }
     >
+      <fieldset className="nx-form__fieldset">
+        <legend>Retiro (opcional): efectivo que se entrega al administrador</legend>
+        <div className="nx-form__grid nx-form__grid--2">
+          <label className="nx-form__field">
+            <span>Valor del retiro</span>
+            <input inputMode="numeric" value={withdrawal} onChange={(e) => setWithdrawal(e.target.value.replace(/D/g, ''))} placeholder="0" />
+          </label>
+          <label className="nx-form__field">
+            <span>Quién lo recibe{withdrawn > 0 ? ' (obligatorio)' : ''}</span>
+            <input value={withdrawalTo} onChange={(e) => setWithdrawalTo(e.target.value)} maxLength={80} aria-invalid={withdrawalInvalid} disabled={withdrawn === 0} />
+          </label>
+        </div>
+      </fieldset>
       <p className="nx-muted">
-        Cuente todo el dinero del cajón. Debe haber <strong>{formatCOP(expected)}</strong>.
+        Después del retiro, cuente el dinero que <strong>queda</strong> en el cajón. Debe quedar{' '}
+        <strong>{formatCOP(expected)}</strong>.
         {handover && ' Quien recibe queda con lo contado como base de su turno.'}
       </p>
       <CashCount value={count} onChange={setCount} disabled={saving} />
@@ -314,6 +335,11 @@ function CloseResult({ result, onDismiss }) {
         <Stat label="Contado" value={formatCOP(result.counted)} />
         <Stat label="Diferencia" value={formatCOP(d)} tone={d === 0 ? 'ok' : 'danger'} />
       </div>
+      {result.withdrawal && (
+        <p className="nx-muted">
+          Retiro de {formatCOP(result.withdrawal.amount)} entregado a {result.withdrawal.receivedBy} (registrado como Base −).
+        </p>
+      )}
       {result.handover && (
         <p className="nx-muted">
           Para seguir operando, {result.receivedBy.fullName} debe iniciar sesión con su usuario ({result.receivedBy.username}).

@@ -183,8 +183,8 @@ Respuestas de error: `{ ok: false, error: "mensaje en español", code: "CODIGO" 
 | `GET /api/shifts/current` | Con sesión | Turno abierto del usuario con el resumen de su caja (o `null`). |
 | `GET /api/shifts/open?siteId=` | Con sesión | Turnos abiertos de la sede (zonas ocupadas, caja destino). |
 | `POST /api/shifts` | Con sesión | Abrir turno: `{ zoneId, denominations }` (base contada). |
-| `POST /api/shifts/:id/handover` | Dueño o AS/AG | Entrega: `{ denominations, outgoingPassword, incomingUsername, incomingPassword, notes }`. |
-| `POST /api/shifts/:id/close` | Dueño o AS/AG | Cierre sin relevo: `{ denominations, notes }`. |
+| `POST /api/shifts/:id/handover` | Dueño o AS/AG | Entrega: `{ denominations, withdrawal?: { amount, receivedBy }, outgoingPassword, incomingUsername, incomingPassword, notes }`. |
+| `POST /api/shifts/:id/close` | Dueño o AS/AG | Cierre sin relevo: `{ denominations, notes, withdrawal? }`. |
 | `GET /api/entries/lookup?siteId=&plate=` | Con sesión | Placa normalizada, tipo, si ya está adentro y mensualidad. |
 | `GET /api/entries/open?siteId=` | Con sesión | Vehículos adentro de la sede. |
 | `POST /api/entries` | Con turno | Entrada: `{ siteId, plate, vehicleType? }` → datos del tiquete. |
@@ -203,7 +203,7 @@ Respuestas de error: `{ ok: false, error: "mensaje en español", code: "CODIGO" 
   la base contada por denominación (`cash_counts`). La **entrega** es una sola transacción: arqueo,
   contraseña de quien entrega y de quien recibe (los fallos cuentan para el bloqueo de 5 intentos),
   cierre de la caja y del turno, y apertura del turno nuevo en la misma zona con lo contado como base.
-  El **cierre sin relevo** hace lo mismo sin turno nuevo. Sin turno abierto: `409 NO_OPEN_SHIFT` al
+  El **cierre sin relevo** hace lo mismo sin turno nuevo. En ambos se puede registrar un **retiro** (efectivo entregado al administrador, con quién lo recibe) como movimiento "Base −"; el arqueo cuenta lo que queda en el cajón y eso es la base del turno nuevo. Sin turno abierto: `409 NO_OPEN_SHIFT` al
   registrar entradas, salidas o cobros.
 - **Arqueo**: debe haber en el cajón = base del día + efectivo esperado (efectivo de ventas + ingresos
   − egresos). La diferencia (contado − debía haber) queda en la caja y en `cash_counts`.

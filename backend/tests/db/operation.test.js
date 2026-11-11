@@ -507,3 +507,81 @@ describe('entrega y cierre de turno (RF42, RF43)', () => {
     expect(res.status).toBe(403);
   });
 });
+
+// ---------------------------------------------------------------------------
+describe('retiro al entregar o cerrar el turno', () => {
+  let zoneA;
+  let zoneB;
+
+  beforeAll(async () => {
+    zoneA = await addZone('Retiro A');
+    zoneB = await addZone('Retiro B');
+    await createUser({ username: 'op6', role: 'OP', siteIds: [site] });
+    await createUser({ username: 'op7', role: 'OP', siteIds: [site] });
+  });
+
+  test('entrega con retiro: queda como "Base −" con quien lo recibe y el resto es la base del turno nuevo', async () => {
+    const op6 = await loginAs('op6');
+    const shift = await openShift(op6, zoneA, { 50000: 1 });
+    const id = (await enter(op6, 'RET001')).body.data.entryId;
+    await backdate(id, 61);
+    await api(op6).post(`/api/entries/${id}/exit`, { paymentMethod: 'CASH' }); // cajón: 55.100
+
+    // Se retiran 40.000 para el administrador; quedan 15.100 (exacto)
+    const res = await api(op6).post(`/api/shifts/${shift.id}/handover`, {
+      denominations: { 10000: 1, 5000: 1, 100: 1 },
+      withdrawal: { amount: 40000, receivedBy: 'Admin Felipe' },
+      outgoingPassword: DEFAULT_PASSWORD,
+      incomingUsername: 'op7',
+      incomingPassword: DEFAULT_PASSWORD,
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.data).toMatchObject({
+      counted: 15100,
+      expectedInDrawer: 15100,
+      difference: 0,
+      newShiftBase: 15100,
+      withdrawal: { amount: 40000, receivedBy: 'Admin Felipe' },
+    });
+
+    const { rows } = await query(
+      `SELECT m.type, m.amount, m.withdrawal_to FROM cash_movements m
+         JOIN cash_registers cr ON cr.id = m.cash_register_id WHERE cr.shift_id = $1`,
+      [shift.id],
+    );
+    expect(rows).toEqual([{ type: 'BASE_OUT', amount: 40000, withdrawal_to: 'Admin Felipe' }]);
+
+    const op7 = await loginAs('op7');
+    const current = (await api(op7).get('/api/shifts/current')).body.data;
+    expect(current).toMatchObject({ initialCash: 15100, zone: { name: 'Retiro A' } });
+  });
+
+  test('cierre sin relevo con retiro y faltante: la diferencia no cuenta el retiro', async () => {
+    const op6 = await loginAs('op6');
+    const shift = await openShift(op6, zoneB, { 20000: 1 });
+    // Cajón: 20.000. Retira 15.000 y cuenta 4.000 → faltan 1.000
+    const res = await api(op6).post(`/api/shifts/${shift.id}/close`, {
+      denominations: { 2000: 2 },
+      withdrawal: { amount: 15000, receivedBy: 'Administradora Sede' },
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.data).toMatchObject({ counted: 4000, expectedInDrawer: 5000, difference: -1000 });
+    expect(res.body.data.summary).toMatchObject({ initialCash: 20000, baseOut: 15000, baseFinal: 5000 });
+  });
+
+  test('retiro sin quién lo recibe → 400 y el turno sigue abierto', async () => {
+    const op6 = await loginAs('op6');
+    const shift = await openShift(op6, zoneB, { 20000: 1 });
+    const res = await api(op6).post(`/api/shifts/${shift.id}/close`, {
+      denominations: { 5000: 1 },
+      withdrawal: { amount: 15000, receivedBy: '' },
+    });
+    expect(res.status).toBe(400);
+    expect((await api(op6).get('/api/shifts/current')).body.data.id).toBe(shift.id);
+  });
+
+  test('los dos retiros quedan registrados con quién los recibió', async () => {
+    const { rows } = await query("SELECT count(*) AS n FROM cash_movements WHERE withdrawal_to IS NOT NULL");
+    expect(rows[0].n).toBe(2);
+  });
+});

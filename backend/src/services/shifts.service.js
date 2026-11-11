@@ -8,6 +8,7 @@ const { recordAudit } = require('./audit.service');
 const { confirmUserPassword } = require('./auth.service');
 const { registerSummary } = require('./cash.service');
 const { parseCashCount } = require('../lib/denominations');
+const { MAX_MONEY } = require('../lib/payments');
 
 const SHIFT_SELECT = `
   SELECT sh.id, sh.site_id, sh.zone_id, sh.user_id, sh.opened_at, sh.closed_at, sh.close_type, sh.previous_shift_id,
@@ -34,6 +35,21 @@ function toDto(r, summary) {
     initialCash: r.initial_cash,
     ...(summary ? { summary } : {}),
   };
+}
+
+// Retiro opcional al entregar o cerrar: { amount, receivedBy } (efectivo entregado al administrador).
+// Devuelve null si no hay retiro.
+function parseWithdrawal(input) {
+  if (input == null || input === '' || (typeof input === 'object' && !input.amount)) return null;
+  const amount = Number(input.amount);
+  if (!Number.isInteger(amount) || amount <= 0 || amount > MAX_MONEY) {
+    throw new HttpError(400, 'El retiro debe ser un valor entero mayor que $ 0', { code: 'VALIDATION_ERROR' });
+  }
+  const receivedBy = typeof input.receivedBy === 'string' ? input.receivedBy.trim().replace(/s+/g, ' ') : '';
+  if (receivedBy.length < 3) {
+    throw new HttpError(400, 'Indique quién recibe el retiro', { code: 'VALIDATION_ERROR' });
+  }
+  return { amount, receivedBy: receivedBy.slice(0, 80) };
 }
 
 function parseCount(input) {
@@ -190,8 +206,18 @@ async function lockOpenShift(client, req, shiftId) {
   return shift;
 }
 
-// Cierra caja y turno con el arqueo dado. Devuelve { count, summary, difference }.
-async function closeRegisterAndShift(client, shift, count, { kind, closedBy, receivedBy = null, notes, closeType }) {
+// Cierra caja y turno. `count` es lo que QUEDA en el cajón (después del retiro, si lo hay).
+// El retiro se registra antes como "Base -", así el esperado ya lo descuenta.
+// Devuelve { summary, difference }.
+async function closeRegisterAndShift(client, shift, count, { kind, closedBy, receivedBy = null, notes, closeType, withdrawal = null }) {
+  if (withdrawal) {
+    await client.query(
+      `INSERT INTO cash_movements (cash_register_id, type, amount, concept, created_by, withdrawal_to)
+       VALUES ($1, 'BASE_OUT', $2, $3, $4, $5)`,
+      [shift.cash_register_id, withdrawal.amount,
+        `Retiro al ${kind === 'HANDOVER' ? 'entregar' : 'cerrar'} el turno`, closedBy, withdrawal.receivedBy],
+    );
+  }
   const summary = await registerSummary(client, shift.cash_register_id);
   const difference = count.total - summary.expectedInDrawer;
 
@@ -208,7 +234,7 @@ async function closeRegisterAndShift(client, shift, count, { kind, closedBy, rec
             summary = $6, notes = $7
       WHERE id = $1`,
     [shift.cash_register_id, closedBy, count.total, summary.expectedCash, difference,
-      { ...summary, countedTotal: count.total, denominations: count.denominations }, notes || null],
+      { ...summary, countedTotal: count.total, denominations: count.denominations, withdrawal }, notes || null],
   );
   await client.query("UPDATE shifts SET closed_at = now(), close_type = $2 WHERE id = $1", [shift.id, closeType]);
   return { summary, difference };
@@ -218,10 +244,12 @@ async function closeRegisterAndShift(client, shift, count, { kind, closedBy, rec
 async function closeShift(req, rawShiftId, body) {
   const shiftId = Number.parseInt(rawShiftId, 10);
   const count = parseCount(body?.denominations);
+  const withdrawal = parseWithdrawal(body?.withdrawal);
 
   const result = await withTransaction(async (client) => {
     const shift = await lockOpenShift(client, req, shiftId);
     const closed = await closeRegisterAndShift(client, shift, count, {
+      withdrawal,
       kind: 'CLOSING',
       closedBy: req.user.id,
       notes: body?.notes,
@@ -235,7 +263,7 @@ async function closeShift(req, rawShiftId, body) {
         action: 'SHIFT_CLOSED',
         entityType: 'shift',
         entityId: shift.id,
-        details: { counted: count.total, expected: closed.summary.expectedInDrawer, difference: closed.difference },
+        details: { counted: count.total, expected: closed.summary.expectedInDrawer, difference: closed.difference, withdrawal },
       },
       client,
     );
@@ -244,6 +272,7 @@ async function closeShift(req, rawShiftId, body) {
 
   return {
     shiftId: result.shiftId,
+    withdrawal,
     counted: result.counted,
     expectedInDrawer: result.summary.expectedInDrawer,
     difference: result.difference,
@@ -255,6 +284,7 @@ async function closeShift(req, rawShiftId, body) {
 async function handoverShift(req, rawShiftId, body) {
   const shiftId = Number.parseInt(rawShiftId, 10);
   const count = parseCount(body?.denominations);
+  const withdrawal = parseWithdrawal(body?.withdrawal);
   if (!body?.incomingUsername) {
     throw new HttpError(400, 'Indique el usuario que recibe el turno', { code: 'VALIDATION_ERROR' });
   }
@@ -275,6 +305,7 @@ async function handoverShift(req, rawShiftId, body) {
   const result = await withTransaction(async (client) => {
     const shift = await lockOpenShift(client, req, shiftId);
     const closed = await closeRegisterAndShift(client, shift, count, {
+      withdrawal,
       kind: 'HANDOVER',
       closedBy: outgoing.id,
       receivedBy: incoming.id,
@@ -319,6 +350,7 @@ async function handoverShift(req, rawShiftId, body) {
           counted: count.total,
           expected: closed.summary.expectedInDrawer,
           difference: closed.difference,
+          withdrawal,
         },
       },
       client,
@@ -330,6 +362,8 @@ async function handoverShift(req, rawShiftId, body) {
     shiftId,
     newShiftId: result.newShiftId,
     receivedBy: { id: incoming.id, username: incoming.username, fullName: incoming.fullName },
+    withdrawal,
+    newShiftBase: count.total,
     counted: count.total,
     expectedInDrawer: result.closed.summary.expectedInDrawer,
     difference: result.closed.difference,
