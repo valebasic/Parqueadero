@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Icon from './Icon.jsx';
 import { useSession } from '../context/SessionContext.jsx';
+import { useShift } from '../context/ShiftContext.jsx';
 import { ROLES } from '../lib/roles.js';
 import { formatDate, formatTime12h } from '../lib/format.js';
 
@@ -13,9 +14,9 @@ function siteLabel(user) {
 }
 
 // Barra superior: título de la pantalla, sede, zona, turno, reloj y usuario.
-// Zona y turno se conectan en la Fase 4 (apertura de turno por zona).
 export default function Topbar({ title, onToggleMenu }) {
   const { user } = useSession();
+  const { shift } = useShift();
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -35,15 +36,19 @@ export default function Topbar({ title, onToggleMenu }) {
       <dl className="nx-topbar__context">
         <div className="nx-chip" title={user.sites.map((s) => s.name).join(', ')}>
           <dt>Sede</dt>
-          <dd>{siteLabel(user)}</dd>
+          <dd>{shift ? shift.site.name : siteLabel(user)}</dd>
         </div>
         <div className="nx-chip">
           <dt>Zona</dt>
-          <dd>Sin zona</dd>
+          <dd>{shift ? shift.zone.name : 'Sin zona'}</dd>
         </div>
-        <div className="nx-chip nx-chip--warn">
+        <div className={`nx-chip ${shift ? 'nx-chip--ok' : 'nx-chip--warn'}`}>
           <dt>Turno</dt>
-          <dd>Sin turno abierto</dd>
+          <dd>
+            <Link to="/caja" className="nx-chip__link" title="Ver turno y caja">
+              {shift ? `Abierto desde ${formatTime12h(shift.openedAt)}` : 'Sin turno abierto'}
+            </Link>
+          </dd>
         </div>
       </dl>
 

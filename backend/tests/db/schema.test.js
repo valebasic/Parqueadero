@@ -279,7 +279,7 @@ describe('turnos y cajas', () => {
     const shiftId = await withTransaction((client) => openShift(client));
     try {
       await expect(
-        withTransaction((client) => client.query('UPDATE shifts SET closed_at = now() WHERE id = $1', [shiftId])),
+        withTransaction((client) => client.query("UPDATE shifts SET closed_at = now(), close_type = 'CLOSE' WHERE id = $1", [shiftId])),
       ).rejects.toThrow(/caja abierta/);
     } finally {
       // Entrega de turno correcta: se cierra la caja y luego el turno, en la misma transacción
@@ -288,7 +288,7 @@ describe('turnos y cajas', () => {
           'UPDATE cash_registers SET closed_at = now(), closed_by = $2, physical_cash = 0 WHERE shift_id = $1',
           [shiftId, userId],
         );
-        await client.query('UPDATE shifts SET closed_at = now() WHERE id = $1', [shiftId]);
+        await client.query("UPDATE shifts SET closed_at = now(), close_type = 'CLOSE' WHERE id = $1", [shiftId]);
       });
     }
   });

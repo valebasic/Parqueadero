@@ -49,6 +49,10 @@ frontend/src/
 | `/login` | Inicio de sesión contra la API | Todos |
 | `/usuarios` | Usuarios: listar, crear, editar, desactivar y restablecer contraseña | AG, AS |
 | `/cuenta` | Mi cuenta: datos y cambio de contraseña propia (desde el usuario en la barra superior) | Todos |
+| `/entradas` | Entradas y salidas (como ParkApp.html): placa + Enter registra; cobro con descuento y forma de pago | Todos |
+| `/caja` | Abrir, entregar o cerrar el turno con arqueo por denominación | Todos |
+| `/ventas` | Ventas con filtros, reimpresión y cambio de forma de pago | Todos |
+| `/pendientes` | Cobros pendientes y confirmación de pago | AG, AS |
 | `/sedes` | Sedes y zonas (listado) | AG |
 | Resto del menú | Aviso provisional con la fase en que se construye | Según el menú |
 
@@ -60,6 +64,12 @@ frontend/src/
 - [`IdleGuard`](src/components/IdleGuard.jsx) cierra la sesión por inactividad (15 min operador,
   30 min administradores; el tiempo lo envía la API), avisa un minuto antes y comparte la actividad
   entre pestañas. Cerrar sesión en una pestaña la cierra en todas.
+
+## Recibos
+
+El recibo térmico de 50 mm (área útil 48 mm) se imprime con `window.print()`: [`styles/receipt.css`](src/styles/receipt.css)
+define `@page { size: 50mm auto }` y en `@media print` solo deja visible el recibo. Lleva un QR (librería
+`qrcode`) hacia el portal del cliente.
 
 ## Formatos
 

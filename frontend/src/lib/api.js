@@ -82,7 +82,7 @@ export function refreshSession() {
 export async function apiRequest(method, path, options = {}) {
   try {
     const res = await rawRequest(method, path, options);
-    return res.data ?? res;
+    return res && 'data' in res ? res.data : res;
   } catch (err) {
     if (err.status === 401 && err.code === 'TOKEN_EXPIRED') {
       try {
@@ -92,7 +92,7 @@ export async function apiRequest(method, path, options = {}) {
         throw refreshErr;
       }
       const res = await rawRequest(method, path, options);
-      return res.data ?? res;
+      return res && 'data' in res ? res.data : res;
     }
     if (err.status === 401 && !path.startsWith('/auth/')) sessionLostHandler?.(err.code);
     throw err;

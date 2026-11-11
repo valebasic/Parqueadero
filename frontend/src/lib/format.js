@@ -32,3 +32,29 @@ export function formatTime12h(input, { seconds = false } = {}) {
 export function formatDateTime(input) {
   return `${formatDate(input)} ${formatTime12h(input)}`;
 }
+
+// Duración legible: 1.505 min → "1 día 1 h 5 min"
+export function formatDuration(totalMinutes) {
+  const m = Math.max(0, Math.floor(Number(totalMinutes) || 0));
+  const days = Math.floor(m / 1440);
+  const hours = Math.floor((m % 1440) / 60);
+  const minutes = m % 60;
+  const parts = [];
+  if (days) parts.push(`${days} ${days === 1 ? 'día' : 'días'}`);
+  if (hours) parts.push(`${hours} h`);
+  if (minutes || parts.length === 0) parts.push(`${minutes} min`);
+  return parts.join(' ');
+}
+
+// Fecha local de hoy en formato AAAA-MM-DD (para filtros de fecha)
+export function todayIso() {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
+
+export const PAYMENT_LABELS = {
+  CASH: 'Efectivo',
+  ELECTRONIC: 'Electrónico',
+  MIXED: 'Efectivo + Electrónico',
+  PENDING: 'Pendiente',
+};

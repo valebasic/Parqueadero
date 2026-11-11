@@ -75,6 +75,7 @@ Migraciones SQL en [`src/db/migrations/`](src/db/migrations) (una sección `-- U
 | `receipt_counters` | Consecutivo de recibos por sede y prefijo (FA, FM) |
 | `shifts` | Turnos (uno abierto por zona y por usuario) |
 | `cash_registers` | Cajas (exactamente una por turno) |
+| `cash_counts` | Arqueos por denominación: apertura, entrega y cierre de turno |
 | `user_sessions` | Sesiones: hash del token de la cookie, última actividad, vencimiento y revocación |
 | `cash_movements` | Movimientos de caja: `INCOME` (ingreso), `EXPENSE` (egreso), `BASE_IN` (base +), `BASE_OUT` (base −) |
 | `entries` | Entradas y salidas; una salida cobrada es una venta de parqueadero |
@@ -179,6 +180,49 @@ Respuestas de error: `{ ok: false, error: "mensaje en español", code: "CODIGO" 
 | `POST /api/users` | AG, AS | `{ username, fullName, password, role, siteIds }`. |
 | `GET /api/users/:id` | AG, AS | 403 si el AS no gestiona a ese usuario. |
 | `PATCH /api/users/:id` | AG, AS | `fullName`, `role`, `siteIds`, `isActive`, `password` (restablecer). |
+| `GET /api/shifts/current` | Con sesión | Turno abierto del usuario con el resumen de su caja (o `null`). |
+| `GET /api/shifts/open?siteId=` | Con sesión | Turnos abiertos de la sede (zonas ocupadas, caja destino). |
+| `POST /api/shifts` | Con sesión | Abrir turno: `{ zoneId, denominations }` (base contada). |
+| `POST /api/shifts/:id/handover` | Dueño o AS/AG | Entrega: `{ denominations, outgoingPassword, incomingUsername, incomingPassword, notes }`. |
+| `POST /api/shifts/:id/close` | Dueño o AS/AG | Cierre sin relevo: `{ denominations, notes }`. |
+| `GET /api/entries/lookup?siteId=&plate=` | Con sesión | Placa normalizada, tipo, si ya está adentro y mensualidad. |
+| `GET /api/entries/open?siteId=` | Con sesión | Vehículos adentro de la sede. |
+| `POST /api/entries` | Con turno | Entrada: `{ siteId, plate, vehicleType? }` → datos del tiquete. |
+| `GET /api/entries/:id/quote` | Con sesión | Lo que se cobraría si sale ahora. |
+| `POST /api/entries/:id/exit` | Con turno | Salida: `{ paymentMethod: CASH\|ELECTRONIC\|MIXED\|PENDING, cashAmount?, chargedAmount?, discountReason? }`. |
+| `GET /api/entries/:id/receipt` | Con sesión | Datos del recibo. |
+| `GET /api/sales?siteId=&from=&to=&q=&method=&page=` | Con sesión | Ventas (10 por página) con totales. |
+| `PATCH /api/sales/:id/payment` | Ver abajo | Cambiar forma de pago (o a `PENDING`) con `reason` obligatorio. |
+| `POST /api/sales/:id/reprint` | Con sesión | Reimpresión (queda en auditoría). |
+| `GET /api/pending-charges?siteId=` | AG, AS | Pendientes agrupados por mensualidad o placa. |
+| `POST /api/pending-charges/confirm` | AG, AS | `{ chargeIds, paymentMethod, cashAmount?, chargedAmount?, discountReason?, shiftId? }`. |
+
+## Operación (RF07-RF12, RF19, RF41-RF43)
+
+- **Turnos**: un turno abierto por zona y por usuario, cada uno con exactamente una caja. Se abre con
+  la base contada por denominación (`cash_counts`). La **entrega** es una sola transacción: arqueo,
+  contraseña de quien entrega y de quien recibe (los fallos cuentan para el bloqueo de 5 intentos),
+  cierre de la caja y del turno, y apertura del turno nuevo en la misma zona con lo contado como base.
+  El **cierre sin relevo** hace lo mismo sin turno nuevo. Sin turno abierto: `409 NO_OPEN_SHIFT` al
+  registrar entradas, salidas o cobros.
+- **Arqueo**: debe haber en el cajón = base del día + efectivo esperado (efectivo de ventas + ingresos
+  − egresos). La diferencia (contado − debía haber) queda en la caja y en `cash_counts`.
+- **Entradas**: placa con las reglas de `mvc/validators.js` ([`src/lib/plates.js`](src/lib/plates.js)),
+  tipo deducido de la placa. Sin dos entradas abiertas (índice único parcial). Mensualidad vigente
+  hasta 3 días después del vencimiento → `409 MONTHLY_ACTIVE`; nocturna fuera de su franja → entra
+  vinculada y al salir el cobro va a Pendientes.
+- **Salidas**: tarifa calculada en el servidor ([`tariff.service.js`](src/services/tariff.service.js),
+  idéntica a `calculateTariff` de la v1.0: `tests/tariff-v1.test.js` la compara minuto a minuto contra
+  el código original). Un valor cobrado menor es descuento con motivo obligatorio. La entrada se
+  bloquea (`FOR UPDATE`): dos operadores no pueden cobrar la misma salida.
+- **Recibos**: consecutivo por sede y prefijo en `receipt_counters` (sin repetidos ni huecos aunque
+  registren varios a la vez). El QR apunta a `PORTAL_URL` (por ahora de ejemplo).
+- **Ventas**: el AS/AG cambia la forma de pago de cualquier venta de sus sedes; el OP solo las de su
+  caja abierta. Siempre con motivo y auditoría (`SALE_PAYMENT_CHANGED`, `RECEIPT_REPRINTED`).
+- **Pendientes**: se confirman en grupo en una caja abierta (la propia o, para AS/AG, la de un turno
+  de la sede); descuento y efectivo se reparten entre las salidas para que cada venta cuadre.
+- **Límite por IP**: `POST /api/auth/login` admite 20 intentos cada 15 min por IP (`429 RATE_LIMITED`).
+  [`createRateLimiter`](src/middlewares/rateLimit.js) sirve para el portal del cliente (RF57).
 
 ## Variables de entorno
 

@@ -41,6 +41,8 @@ const env = {
   databaseUrl: buildDatabaseUrl(),
   // Valor de "trust proxy" de Express (p. ej. 1 = un proxy inverso delante). Vacío = no confiar.
   trustProxy: parseTrustProxy(process.env.TRUST_PROXY),
+  // Portal del cliente (QR de los recibos)
+  portalUrl: process.env.PORTAL_URL || 'https://portal.ejemplo.com',
   // Zona horaria de las sesiones de PostgreSQL (fechas "de hoy", cortes por día, etc.)
   timezone: process.env.APP_TIMEZONE || 'America/Bogota',
 };

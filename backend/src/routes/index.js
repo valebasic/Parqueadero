@@ -9,6 +9,7 @@ const healthRoutes = require('./health.routes');
 const authRoutes = require('./auth.routes');
 const sitesRoutes = require('./sites.routes');
 const usersRoutes = require('./users.routes');
+const { shiftsRouter, entriesRouter, salesRouter, pendingRouter } = require('./operation.routes');
 
 const router = Router();
 
@@ -20,5 +21,9 @@ router.use('/auth', authRoutes);
 router.use(authenticate);
 router.use('/sites', sitesRoutes);
 router.use('/users', usersRoutes);
+router.use('/shifts', shiftsRouter);
+router.use('/entries', entriesRouter);
+router.use('/sales', salesRouter);
+router.use('/pending-charges', pendingRouter);
 
 module.exports = router;

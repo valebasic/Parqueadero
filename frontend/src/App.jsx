@@ -5,17 +5,17 @@ import PlaceholderPage from './pages/PlaceholderPage.jsx';
 import SitesPage from './pages/SitesPage.jsx';
 import UsersPage from './pages/UsersPage.jsx';
 import AccountPage from './pages/AccountPage.jsx';
+import EntriesPage from './pages/EntriesPage.jsx';
+import CashPage from './pages/CashPage.jsx';
+import SalesPage from './pages/SalesPage.jsx';
+import PendingPage from './pages/PendingPage.jsx';
 import { RequireAuth, RequireRole } from './components/RequireAuth.jsx';
 import { MENU } from './lib/roles.js';
 
 // Fase en la que se construye cada pantalla (texto provisional)
 const PHASE_BY_PATH = {
   '/': 'Fase 5',
-  '/entradas': 'Fase 4',
   '/mensualidades': 'Fase 5',
-  '/pendientes': 'Fase 4',
-  '/caja': 'Fase 5',
-  '/ventas': 'Fase 4',
   '/transacciones': 'Fase 5',
   '/reportes': 'Fase 5',
   '/reportes-mensualidades': 'Fase 5',
@@ -24,6 +24,10 @@ const PHASE_BY_PATH = {
 
 // Pantallas ya construidas; el resto muestra el aviso provisional
 const PAGE_BY_PATH = {
+  '/entradas': EntriesPage,
+  '/caja': CashPage,
+  '/ventas': SalesPage,
+  '/pendientes': PendingPage,
   '/usuarios': UsersPage,
   '/sedes': SitesPage,
 };

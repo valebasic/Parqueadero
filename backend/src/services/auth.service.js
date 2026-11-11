@@ -229,6 +229,61 @@ async function login({ username, password }, req) {
   };
 }
 
+// Confirma la identidad de un usuario con su contraseña dentro de una operación (p. ej. entrega de
+// turno: firma quien entrega y quien recibe). Aplica las mismas reglas que el login: los fallos
+// suman al contador y bloquean la cuenta a los 5. Responde 400 (no 401) para no cerrar la sesión
+// de quien está operando. Devuelve { id, username, fullName, role, siteIds }.
+async function confirmUserPassword({ userId, username }, password, req, purpose) {
+  const outcome = await withTransaction(async (client) => {
+    const { rows } = await client.query(
+      `SELECT u.id, u.username, u.full_name, u.role, u.is_active, u.password_hash, u.failed_login_count,
+              (u.locked_until IS NOT NULL AND u.locked_until > now()) AS is_locked,
+              ceil(extract(epoch FROM u.locked_until - now()))::int AS lock_seconds_left,
+              COALESCE((SELECT array_agg(site_id) FROM user_sites WHERE user_id = u.id), '{}') AS site_ids
+         FROM users u
+        WHERE ($1::int IS NOT NULL AND u.id = $1) OR ($1::int IS NULL AND lower(u.username) = lower($2))
+        FOR NO KEY UPDATE OF u`,
+      [userId ?? null, String(username ?? '').trim()],
+    );
+    const user = rows[0];
+    const label = user?.username || String(username ?? '').trim() || 'el usuario';
+    const failed = new HttpError(400, `Usuario o contraseña incorrectos (${label})`, {
+      code: 'CONFIRMATION_FAILED',
+      details: { username: label },
+    });
+    if (!user) {
+      await burnPasswordCheck(password);
+      return { error: failed };
+    }
+    const audit = (action, details = {}) =>
+      recordAudit({ req, userId: user.id, action, entityType: 'user', entityId: user.id, details: { purpose, ...details } }, client);
+
+    if (!user.is_active) return { error: new HttpError(400, `El usuario ${label} está desactivado`, { code: 'USER_INACTIVE' }) };
+    if (user.is_locked) return { error: lockedError(user.lock_seconds_left) };
+
+    if (!(await verifyPassword(String(password ?? ''), user.password_hash))) {
+      const attempts = user.failed_login_count + 1;
+      if (attempts >= security.maxFailedLogins) {
+        await client.query(
+          'UPDATE users SET failed_login_count = 0, locked_until = now() + make_interval(mins => $2) WHERE id = $1',
+          [user.id, security.lockMinutes],
+        );
+        await audit('ACCOUNT_LOCKED', { attempts });
+        return { error: lockedError(security.lockMinutes * 60) };
+      }
+      await client.query('UPDATE users SET failed_login_count = $2 WHERE id = $1', [user.id, attempts]);
+      await audit('CONFIRMATION_FAILED', { attempts });
+      return { error: failed };
+    }
+    await client.query('UPDATE users SET failed_login_count = 0 WHERE id = $1 AND failed_login_count > 0', [user.id]);
+    return {
+      user: { id: user.id, username: user.username, fullName: user.full_name, role: user.role, siteIds: user.site_ids },
+    };
+  });
+  if (outcome.error) throw outcome.error;
+  return outcome.user;
+}
+
 function lockedError(secondsLeft) {
   const minutes = Math.max(1, Math.ceil(secondsLeft / 60));
   return new HttpError(
@@ -312,6 +367,7 @@ module.exports = {
   refresh,
   logout,
   changeOwnPassword,
+  confirmUserPassword,
   resolveSession,
   getProfile,
   sessionInfo,
