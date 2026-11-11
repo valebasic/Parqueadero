@@ -123,6 +123,111 @@ h3 {
   box-shadow: var(--nx-shadow);
   padding: 20px 24px;
 }
+.nx-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.nx-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--nx-border);
+}
+.nx-card__title {
+  margin: 0;
+  font-size: 18px;
+  color: var(--nx-primary);
+}
+.nx-card__subtitle {
+  margin: 4px 0 0;
+  font-size: 14px;
+}
+.nx-section-title {
+  margin: 20px 0 10px;
+  font-size: 15px;
+  color: var(--nx-primary);
+}
+
+/* Datos clave en rejilla (se acomoda solo en pantallas angostas) */
+.nx-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px 20px;
+  margin: 0;
+}
+.nx-facts dt {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--nx-muted);
+}
+.nx-facts dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+}
+
+/* ---------- Tablas ---------- */
+.nx-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--nx-border);
+  border-radius: var(--nx-radius-sm);
+}
+.nx-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.nx-table th {
+  background: var(--nx-gray-50);
+  color: var(--nx-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 2px solid var(--nx-accent);
+  white-space: nowrap;
+}
+.nx-table td {
+  padding: 12px 14px;
+  border-top: 1px solid var(--nx-gray-100);
+}
+.nx-table tbody tr:hover {
+  background: #fff8f2;
+}
+.nx-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Etiquetas y avisos ---------- */
+.nx-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.nx-badge--ok {
+  background: #eefaf3;
+  color: var(--nx-green-600);
+}
+.nx-badge--off {
+  background: var(--nx-gray-100);
+  color: var(--nx-muted);
+}
+.nx-alert--error {
+  border-top-color: var(--nx-red-600);
+  color: #8a1f1f;
+}
+
 .nx-empty h2 {
   margin: 0 0 6px;
   color: var(--nx-primary);

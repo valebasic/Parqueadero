@@ -24,6 +24,7 @@ export const MENU = [
   { path: '/reportes', label: 'Reportes', icon: 'chart', roles: ADMINS },
   { path: '/reportes-mensualidades', label: 'Rep. Mensualidades', icon: 'wallet', roles: ADMINS },
   { path: '/usuarios', label: 'Usuarios', icon: 'users', roles: ADMINS },
+  { path: '/sedes', label: 'Sedes y zonas', icon: 'building', roles: ['AG'] },
   { path: '/configuracion', label: 'Configuración', icon: 'cog', roles: ADMINS },
 ];
 

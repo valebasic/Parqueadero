@@ -5,7 +5,10 @@ const env = require('../config/env');
 // eslint-disable-next-line no-unused-vars
 function errorHandler(err, req, res, next) {
   // Errores de body-parser (JSON mal formado, cuerpo demasiado grande) traen su propio status
-  const status = err.status || err.statusCode || 500;
+  let status = err.status || err.statusCode || 500;
+  // PostgreSQL apagado o inalcanzable → 503 en vez de 500
+  const dbUnavailable = ['ECONNREFUSED', 'ENOTFOUND', 'ETIMEDOUT', '57P03'].includes(err.code);
+  if (dbUnavailable) status = 503;
   const isServerError = status >= 500;
 
   if (isServerError && !env.isTest) {
@@ -14,7 +17,11 @@ function errorHandler(err, req, res, next) {
 
   const body = {
     ok: false,
-    error: isServerError && env.isProduction ? 'Error interno del servidor' : err.message,
+    error: dbUnavailable
+      ? 'Base de datos no disponible'
+      : isServerError && env.isProduction
+        ? 'Error interno del servidor'
+        : err.message,
   };
   if (err.details) body.details = err.details;
 

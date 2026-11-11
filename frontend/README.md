@@ -42,6 +42,14 @@ frontend/src/
 └── styles/          # tema visual (tokens de la v1.0) y layout responsivo
 ```
 
+## Pantallas disponibles
+
+| Ruta | Pantalla | Roles |
+| --- | --- | --- |
+| `/login` | Inicio de sesión (todavía sin validar contra la API: llega en la Fase 3) | — |
+| `/sedes` | Sedes y zonas (listado) | AG |
+| Resto del menú | Aviso provisional con la fase en que se construye | Según el menú |
+
 ## Formatos
 
 Todo en español de Colombia, en [`src/lib/format.js`](src/lib/format.js): montos `$ 130.000`,

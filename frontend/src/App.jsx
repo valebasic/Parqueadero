@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import AppLayout from './layouts/AppLayout.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import PlaceholderPage from './pages/PlaceholderPage.jsx';
+import SitesPage from './pages/SitesPage.jsx';
 import { RequireAuth, RequireRole } from './components/RequireAuth.jsx';
 import { MENU } from './lib/roles.js';
 
@@ -20,6 +21,11 @@ const PHASE_BY_PATH = {
   '/configuracion': 'Fase 3',
 };
 
+// Pantallas ya construidas; el resto muestra el aviso provisional
+const PAGE_BY_PATH = {
+  '/sedes': SitesPage,
+};
+
 export default function App() {
   return (
     <Routes>
@@ -31,17 +37,20 @@ export default function App() {
           </RequireAuth>
         }
       >
-        {MENU.map((item) => (
-          <Route
-            key={item.path}
-            path={item.path}
-            element={
-              <RequireRole path={item.path}>
-                <PlaceholderPage title={item.label} phase={PHASE_BY_PATH[item.path]} />
-              </RequireRole>
-            }
-          />
-        ))}
+        {MENU.map((item) => {
+          const Page = PAGE_BY_PATH[item.path];
+          return (
+            <Route
+              key={item.path}
+              path={item.path}
+              element={
+                <RequireRole path={item.path}>
+                  {Page ? <Page /> : <PlaceholderPage title={item.label} phase={PHASE_BY_PATH[item.path]} />}
+                </RequireRole>
+              }
+            />
+          );
+        })}
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

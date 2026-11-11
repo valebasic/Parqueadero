@@ -1,0 +1,29 @@
+# PostgreSQL 16 para desarrollo. Lee puerto y credenciales de backend/.env.
+#   docker compose up -d      (o npm run db:up)
+#   docker compose down       (o npm run db:down; los datos se conservan en el volumen)
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: nexo-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:?Falta DB_USER en .env}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Falta DB_PASSWORD en .env}
+      POSTGRES_DB: ${DB_NAME:?Falta DB_NAME en .env}
+      # Base adicional para las pruebas de integración (la crea docker/initdb/01-create-test-db.sh)
+      DB_NAME_TEST: ${DB_NAME_TEST:-nexo_test}
+      TZ: America/Bogota
+      PGTZ: America/Bogota
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - nexo-pgdata:/var/lib/postgresql/data
+      - ./docker/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  nexo-pgdata:
