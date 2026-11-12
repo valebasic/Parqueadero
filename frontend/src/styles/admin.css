@@ -45,3 +45,5 @@
   .nx-alert-row { grid-template-columns: 1fr; }
 }
 .nx-conn { min-width: 190px; }
+.nx-card__header .nx-actions select { min-height: 36px; border: 1px solid var(--nx-gray-300); border-radius: var(--nx-radius-sm); padding: 0 8px; font: 14px var(--nx-font); }
+.nx-card__header .nx-actions { flex-wrap: wrap; align-items: center; }

@@ -19,6 +19,8 @@ import ConflictsPage from './pages/ConflictsPage.jsx';
 import PanelPage from './pages/PanelPage.jsx';
 import AccountingPage from './pages/AccountingPage.jsx';
 import SchedulesPage from './pages/SchedulesPage.jsx';
+import ComparePage from './pages/ComparePage.jsx';
+import StaffPage from './pages/StaffPage.jsx';
 import { RequireAuth, RequireRole } from './components/RequireAuth.jsx';
 import { OnlineOnly } from './components/OfflineGuards.jsx';
 
@@ -47,6 +49,8 @@ const PAGE_BY_PATH = {
   '/panel': PanelPage,
   '/contabilidad': AccountingPage,
   '/horarios': SchedulesPage,
+  '/comparativo': ComparePage,
+  '/personal': StaffPage,
 };
 
 export default function App() {

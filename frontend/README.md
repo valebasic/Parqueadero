@@ -53,7 +53,12 @@ frontend/src/
 | `/caja` | Abrir, entregar o cerrar el turno con arqueo por denominación | Todos |
 | `/ventas` | Ventas con filtros, reimpresión y cambio de forma de pago | Todos |
 | `/pendientes` | Cobros pendientes y confirmación de pago | AG, AS |
-| `/sedes` | Sedes y zonas (listado) | AG |
+| `/sedes` | Sedes (crear, editar, activar/desactivar: AG) y zonas con capacidad y tipos admitidos (AG, AS) | AG, AS |
+| `/panel` | Panel multisede en tiempo real: consolidado, alertas (atender/descartar, configuración), sedes con su conexión y quién está a cargo de cada zona | AG, AS |
+| `/contabilidad` | Estado de resultados por sede y consolidado, flujo de caja diario, diferencias de arqueo; Excel | AG, AS |
+| `/comparativo` | Comparativo entre sedes con gráfica de barras por indicador | AG, AS |
+| `/horarios` | Horarios programados por zona y día de la semana | AG, AS |
+| `/personal` | Horas trabajadas (diurnas, nocturnas, dominicales/festivas) y reporte de turnos con ajuste autorizado; Excel | AG, AS |
 | `/` | Inicio: tablero de la sede (AG/AS) o accesos del turno (OP) | Todos |
 | `/mensualidades` | Registro, pagos (único, quincenal, adelantado), importación CSV, historial | AG, AS |
 | `/transacciones` | Ingresos, egresos y base (verde/rojo/naranja); edición el mismo día | Todos (OP con tope) |

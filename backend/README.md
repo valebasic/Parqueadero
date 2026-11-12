@@ -371,3 +371,42 @@ queda a nombre del usuario de sistema `migracion.v1` (desactivado).
    pedir a los administradores que la cambien si era débil. Activar `admin` solo si hace falta,
    con una contraseña nueva.
 7. Borrar el archivo exportado de la USB: lleva los hashes de las contraseñas.
+
+## Panel multisede (RF26-RF33) y turnos (RF44-RF46)
+
+Todo bajo `/api/admin` (solo AG y AS). Cada consulta se limita a las sedes del usuario: el AG ve
+todas, el AS las suyas; pedir otra (`?siteId=`) responde 403 auditado. Sin `siteId` = todas las del
+usuario (consolidado).
+
+| Endpoint | Qué hace |
+| --- | --- |
+| `POST /api/sites`, `PATCH /api/sites/:id` (AG) | Sedes: dirección, municipio (`city`), horario, `capacityByType` (la capacidad total es la suma), responsable AS (`managerUserId`, queda asignado), `isActive`. Copia opcional de tarifas (`copyRatesFromSiteId`). No se borran; no se desactivan con turnos abiertos. |
+| `POST/PATCH /api/sites/:id/zones[/:zoneId]` (AG, AS) | Zonas: capacidad y `vehicleTypes` admitidos (una entrada de un tipo no admitido → 409 `ZONE_VEHICLE_NOT_ALLOWED`). |
+| `GET /overview` | RF28: por sede y consolidado: vehículos dentro por tipo, ocupación %, entradas/salidas y ventas del día por forma de pago, pendientes, mensualidades por vencer/en mora y conexión (`ONLINE` / `OFFLINE` / `NO_SHIFT`, última sincronización y última actividad). |
+| `GET /accounting[/export]` | RF29: estado de resultados (parqueadero, mensualidades, otros ingresos, egresos por categoría, utilidad), flujo de caja diario y diferencias de arqueo; Excel. |
+| `GET/POST/PATCH /schedules` | RF30: horarios por zona y día (1 = lunes … 7 = domingo; si termina antes de empezar, cruza la medianoche). Sin solapes por persona; la persona debe estar asignada a la sede. Se desactivan, no se borran. |
+| `GET /zones-status`, `GET /zones/:id/history` | RF31: quién está a cargo de cada zona, desde qué hora, operaciones del turno, efectivo esperado, correcciones (cambios de forma de pago y movimientos editados/anulados), quién debería estar según el horario y diferencias de los últimos 30 días. |
+| `GET /alerts`, `POST /alerts/:id/attend|dismiss`, `GET/PUT /alert-settings/:siteId` | RF32: alertas por sede (ver abajo). Descartar exige nota. |
+| `GET /compare` | RF33: por sede: ingresos, ventas, ticket y estancia promedio, ocupación promedio, empleados, horas trabajadas, ventas por hora e ingresos por empleado. |
+| `GET /hours?groupBy=shift|day|week|month` | RF44: horas por empleado: diurnas, nocturnas y dominicales/festivas. |
+| `GET /shift-report[/export]` | RF45: turnos con horas, ventas, esperado, contado y diferencia; totales de faltantes/sobrantes; Excel (turnos + horas por día). |
+| `POST /shifts/:id/adjust`, `GET /shifts/:id/adjustments` | RF46: ajuste de la hora de inicio/fin **trabajada** con motivo (≥ 10 caracteres). Lo autoriza otro administrador (nadie ajusta su propio turno); no se cruza con otros turnos del empleado; un turno abierto solo admite ajustar el inicio. El turno real y su caja no cambian; queda `shift_adjustments` y `SHIFT_ADJUSTED` en auditoría. |
+
+**Horas (lib/workhours.js)**: hora de Colombia. Diurna de 6:00 a. m. a 7:00 p. m. y nocturna de
+7:00 p. m. a 6:00 a. m. desde el 25/12/2025 (Ley 2466 de 2025; antes la noche empezaba a las 9:00 p. m.).
+Dominical o festivo por el día calendario de cada minuto. Festivos con la Ley Emiliani (lunes
+siguiente) y los que dependen de la Pascua. Si el turno fue ajustado, cuentan las horas ajustadas.
+
+**Alertas (RF32)**, configurables por sede (`sites.alert_config`, valores por defecto entre paréntesis):
+
+- Zona sin turno en su horario (15 min de tolerancia): una vez por ocurrencia (zona, horario y día).
+- Ocupación mayor que el % (90 %): no se repite mientras esté abierta ni durante 1 h después de atendida.
+- Diferencia de arqueo mayor que el monto ($ 20.000): al cerrar o entregar un turno.
+- Sede sin conexión (10 min): hay turnos abiertos y ninguno de sus responsables tiene la app conectada.
+
+La API revisa las alertas cada minuto (`PANEL_ALERTS_EVERY_MS`) y las publica en tiempo real
+(`alert:created`, `alert:updated`); el estado de conexión usa la presencia de Socket.IO
+(`src/realtime/presence.js`, por proceso).
+
+**Egresos por categoría**: `cash_movements.category` (Insumos, Servicios públicos, Nómina,
+Mantenimiento, Arriendo, Impuestos, Otros); un egreso sin categoría cuenta como "Otros".

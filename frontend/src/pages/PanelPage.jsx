@@ -2,8 +2,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { apiGet } from '../lib/api.js';
 import { useRealtime } from '../context/RealtimeContext.jsx';
 import { formatCOP, formatDateTime, formatTime12h } from '../lib/format.js';
+import AlertsPanel from '../components/panel/AlertsPanel.jsx';
+import ZonesInCharge from '../components/panel/ZonesInCharge.jsx';
 
-// Panel multisede en tiempo real (RF28). AG: todas las sedes; AS: las suyas.
+// Panel multisede en tiempo real (RF28): consolidado, alertas (RF32), sedes y zonas a cargo (RF31). AG: todas las sedes; AS: las suyas.
 // Se recarga con cualquier evento de tiempo real de sus sedes (y cada minuto).
 const CONNECTION = {
   ONLINE: ['En línea', 'nx-badge--ok'],
@@ -92,6 +94,8 @@ export default function PanelPage() {
         </div>
       </section>
 
+      <AlertsPanel sites={data.sites.map((s) => s.site)} refreshKey={tick} />
+
       <section className="nx-card">
         <h2 className="nx-card__title nx-card__title--spaced">Por sede</h2>
         <div className="nx-table-wrap">
@@ -157,6 +161,7 @@ export default function PanelPage() {
         </div>
       </section>
 
+      <ZonesInCharge refreshKey={tick} />
     </div>
   );
 }

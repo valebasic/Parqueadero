@@ -243,6 +243,15 @@ async function closeRegisterAndShift(client, shift, count, { kind, closedBy, rec
   return { summary, difference };
 }
 
+// Alerta de diferencia de arqueo (RF32). Un fallo aquí no deshace el cierre ya confirmado.
+async function alertOnClose(siteId, shiftId, difference) {
+  try {
+    await require('./admin/alerts.service').onShiftClosed(siteId, shiftId, difference);
+  } catch (err) {
+    console.error('No se pudo generar la alerta de arqueo:', err.message);
+  }
+}
+
 // Cierre sin relevo
 async function closeShift(req, rawShiftId, body) {
   const shiftId = Number.parseInt(rawShiftId, 10);
@@ -273,6 +282,7 @@ async function closeShift(req, rawShiftId, body) {
     return { shiftId: shift.id, siteId: shift.site_id, ...closed, counted: count.total };
   });
   publish(result.siteId, 'shift:closed', { shiftId: result.shiftId, difference: result.difference });
+  await alertOnClose(result.siteId, result.shiftId, result.difference);
 
   return {
     shiftId: result.shiftId,
@@ -368,6 +378,7 @@ async function handoverShift(req, rawShiftId, body) {
     to: incoming.fullName,
     difference: result.closed.difference,
   });
+  await alertOnClose(result.siteId, shiftId, result.closed.difference);
   return {
     shiftId,
     newShiftId: result.newShiftId,

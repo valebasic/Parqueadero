@@ -21,6 +21,8 @@ const presence = require('./presence');
 
 const REVALIDATE_MS = Number.parseInt(process.env.REALTIME_REVALIDATE_MS, 10) || 60000;
 const ALERTS_EVERY_MS = 30 * 60 * 1000;
+// Alertas del panel (RF32): zona sin turno, ocupación y sede sin conexión
+const PANEL_ALERTS_EVERY_MS = Number.parseInt(process.env.PANEL_ALERTS_EVERY_MS, 10) || 60000;
 
 let io = null;
 
@@ -151,6 +153,10 @@ function initRealtime(httpServer) {
       /* se reintenta en la próxima vuelta */
     }
   }, ALERTS_EVERY_MS);
+  const panelAlerts = setInterval(() => {
+    require('../services/admin/alerts.service').evaluateAll().catch(() => {});
+  }, PANEL_ALERTS_EVERY_MS);
+  panelAlerts.unref?.();
   revalidate.unref?.();
   alerts.unref?.();
 
@@ -160,6 +166,7 @@ function initRealtime(httpServer) {
       new Promise((resolve) => {
         clearInterval(revalidate);
         clearInterval(alerts);
+        clearInterval(panelAlerts);
         bus.off('site-event', onSiteEvent);
         bus.off('session-ended', onSessionEnded);
         bus.off('user-sessions-ended', onUserEnded);
