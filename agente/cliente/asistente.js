@@ -51,7 +51,7 @@
   '#nxAiForm button{background:#0b2748;color:#fff;border:0;border-radius:10px;padding:0 14px;font-weight:700;cursor:pointer}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
 
-  var btn=document.createElement('button');btn.id='nxAiBtn';btn.innerHTML=ROBOT+'<span>Asistente</span>';
+  var btn=document.createElement('button');btn.id='nxAiBtn';btn.innerHTML=ROBOT+'<span>NexoIA</span>';
   var box=document.createElement('div');box.id='nxAiBox';
   box.innerHTML='<div id="nxAiHead"><span>'+(ADMIN?'Asistente del administrador':'Asistente operativo')+'</span><span>'+
     '<button id="nxAiX">×</button></span></div>'+
