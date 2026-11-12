@@ -12,6 +12,7 @@ const { splitPayment, resolveCharge } = require('../lib/payments');
 const { calculateFare } = require('./tariff.service');
 const { requireOpenShift } = require('./shifts.service');
 const { nextReceiptNumber, buildReceipt } = require('./receipts.service');
+const { publish } = require('../realtime/bus');
 
 const VEHICLE_TYPES = ['CAR', 'MOTORCYCLE', 'BICYCLE'];
 const MONTHLY_GRACE_DAYS = 3;
@@ -259,7 +260,16 @@ async function createEntry(req, body) {
     }
   });
 
-  return buildReceipt({ query: (t, p) => query(t, p) }, entryId);
+  const receipt = await buildReceipt({ query: (t, p) => query(t, p) }, entryId);
+  publish(siteId, 'entry:created', {
+    entryId,
+    plate: receipt.plate,
+    vehicleType: receipt.vehicleType,
+    receipt: receipt.receipt,
+    zone: receipt.zone,
+    entryAt: receipt.entryAt,
+  });
+  return receipt;
 }
 
 async function alreadyInsideError(plate, siteId) {
@@ -343,7 +353,17 @@ async function registerExit(req, rawEntryId, body) {
     );
   });
 
-  return buildReceipt({ query: (t, p) => query(t, p) }, entryId);
+  const receipt = await buildReceipt({ query: (t, p) => query(t, p) }, entryId);
+  publish(receipt.siteId, 'entry:exited', {
+    entryId,
+    plate: receipt.plate,
+    status: receipt.status,
+    chargedAmount: receipt.chargedAmount,
+    paymentMethod: receipt.paymentMethod,
+  });
+  if (receipt.status === 'PENDING_CHARGE') publish(receipt.siteId, 'pending:changed', { entryId });
+  else publish(receipt.siteId, 'sales:changed', { entryId });
+  return receipt;
 }
 
 // Recibo (para imprimir justo después de registrar; la reimpresión desde Ventas se audita aparte)

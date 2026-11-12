@@ -70,6 +70,13 @@ frontend/src/
   30 min administradores; el tiempo lo envía la API), avisa un minuto antes y comparte la actividad
   entre pestañas. Cerrar sesión en una pestaña la cierra en todas.
 
+## Tiempo real
+
+[`RealtimeContext`](src/context/RealtimeContext.jsx) abre una conexión Socket.IO con el token de la sesión,
+se reconecta sola (renovando el token si venció) y muestra en la barra superior **En vivo** o
+**Reconectando…**. Inicio, Entradas y el resumen del turno se actualizan solos con los eventos de la
+sede (`useSiteEvents`). Si el servidor cierra la sesión, la app vuelve al login.
+
 ## Recibos
 
 El recibo térmico de 50 mm (área útil 48 mm) se imprime con `window.print()`: [`styles/receipt.css`](src/styles/receipt.css)

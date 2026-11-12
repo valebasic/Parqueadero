@@ -282,6 +282,28 @@ describe('mensualidades: importación CSV (RF16)', () => {
     expect((await api(as1).post(`/api/monthly/${m.id}/confirm-import`)).status).toBe(409);
   });
 
+  test('una importada sin autorización de datos la exige al cobrar su primera renovación', async () => {
+    const m = (await api(as1).get(`/api/monthly?siteId=${site}&q=IMP001`)).body.data.items[0];
+    expect(m.dataConsent).toBe(false);
+
+    const without = await api(as1).post(`/api/monthly/${m.id}/prepay`, { paymentMethod: 'CASH' });
+    expect(without.status).toBe(400);
+    expect(without.body.code).toBe('CONSENT_REQUIRED');
+    const { rows: none } = await query('SELECT count(*) AS n FROM monthly_payments WHERE monthly_plan_id = $1', [m.id]);
+    expect(none[0].n).toBe(0);
+
+    const ok = await api(as1).post(`/api/monthly/${m.id}/prepay`, { paymentMethod: 'CASH', dataConsent: true });
+    expect(ok.status).toBe(200);
+    expect(ok.body.data.plan.dataConsent).toBe(true);
+    const { rows } = await query('SELECT data_consent_at IS NOT NULL AS has_date FROM monthly_plans WHERE id = $1', [m.id]);
+    expect(rows[0].has_date).toBe(true);
+  });
+
+  test('una registrada a mano (ya autorizada) no vuelve a pedir la autorización', async () => {
+    const p = (await api(as1).post('/api/monthly', plan({ plate: 'CON100' }))).body.data;
+    expect((await api(as1).post(`/api/monthly/${p.id}/pay`, { paymentMethod: 'CASH' })).status).toBe(200);
+  });
+
   test('archivo sin columnas obligatorias → 400', async () => {
     const res = await api(as1).post('/api/monthly/import', { siteId: site, csv: 'placa,nombre\nABC123,Ana' });
     expect(res.status).toBe(400);

@@ -6,6 +6,7 @@ const { security, idleTimeoutSecondsFor } = require('../config/security');
 const { recordAudit, requestMeta } = require('./audit.service');
 const { hashPassword, verifyPassword, burnPasswordCheck, passwordPolicyError } = require('./password.service');
 const { signAccessToken, generateRefreshToken, hashRefreshToken } = require('./token.service');
+const { sessionEnded } = require('../realtime/bus');
 
 const INVALID_CREDENTIALS = 'Usuario o contraseña incorrectos';
 
@@ -30,15 +31,18 @@ async function revokeSession(sessionId, reason, client) {
       WHERE id = $1 AND revoked_at IS NULL`,
     [sessionId, reason],
   );
+  sessionEnded(sessionId, reason); // desconecta sus sockets de tiempo real
 }
 
 async function revokeUserSessions(userId, reason, client, { exceptSessionId = null } = {}) {
   const run = client ? client.query.bind(client) : query;
-  await run(
+  const { rows } = await run(
     `UPDATE user_sessions SET revoked_at = now(), revoked_reason = $2
-      WHERE user_id = $1 AND revoked_at IS NULL AND ($3::uuid IS NULL OR id <> $3::uuid)`,
+      WHERE user_id = $1 AND revoked_at IS NULL AND ($3::uuid IS NULL OR id <> $3::uuid)
+      RETURNING id`,
     [userId, reason, exceptSessionId],
   );
+  rows.forEach((r) => sessionEnded(r.id, reason));
 }
 
 // Revisa que la sesión siga viva; si no, la revoca (cuando corresponde) y lanza 401.
@@ -324,6 +328,7 @@ async function logout(refreshToken, req) {
     [hashRefreshToken(refreshToken)],
   );
   if (rows[0]) {
+    sessionEnded(rows[0].id, 'LOGOUT');
     await recordAudit({
       req,
       userId: rows[0].user_id,

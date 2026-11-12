@@ -7,6 +7,7 @@ const { normalizePlate, VEHICLE_LABELS } = require('../lib/plates');
 const { splitPayment, requireReason, PAYMENT_LABELS } = require('../lib/payments');
 const { recordAudit } = require('./audit.service');
 const { buildReceipt } = require('./receipts.service');
+const { publish } = require('../realtime/bus');
 
 const PAGE_SIZE = 10; // como en la v1.0
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -183,6 +184,8 @@ async function changePaymentMethod(req, rawId, body) {
       WHERE e.id = $1`,
     [id],
   );
+  publish(rows[0].site_id, 'sales:changed', { entryId: id });
+  if (rows[0].status !== 'PAID') publish(rows[0].site_id, 'pending:changed', { entryId: id });
   return rows[0].status === 'PAID' ? toSaleDto(rows[0]) : { id, status: rows[0].status };
 }
 

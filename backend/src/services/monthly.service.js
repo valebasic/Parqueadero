@@ -15,6 +15,7 @@ const { splitPayment, resolveCharge, PAYMENT_LABELS, MAX_MONEY } = require('../l
 const { isDate, addDays, addMonths, diffDays, minDate, parseFlexibleDate, parseFlexibleTime } = require('../lib/dates');
 const { recordAudit } = require('./audit.service');
 const { nextReceiptNumber, portalUrlFor } = require('./receipts.service');
+const { publish } = require('../realtime/bus');
 
 const PAGE_SIZE = 10;
 const INSTALLMENT_DAYS = 15;
@@ -252,6 +253,23 @@ async function defaultMonthlyAmount(client, siteId, vehicleType) {
   return rows[0]?.monthly_amount ?? 0;
 }
 
+// Una mensualidad sin autorización de datos (importada de la v1.0) la exige antes de cobrar
+// su primera renovación; al cobrar queda registrada.
+function assertConsent(p, body) {
+  if (!p.data_consent && body?.dataConsent !== true) {
+    throw new HttpError(400, 'Antes de cobrar, confirme que el titular autoriza el tratamiento de sus datos personales', {
+      code: 'CONSENT_REQUIRED',
+      details: { dataConsent: 'Falta la autorización de tratamiento de datos' },
+    });
+  }
+}
+
+async function recordConsentIfMissing(client, p) {
+  if (!p.data_consent) {
+    await client.query('UPDATE monthly_plans SET data_consent = true, data_consent_at = now() WHERE id = $1', [p.id]);
+  }
+}
+
 async function loadPlan(client, req, id, { lock = false } = {}) {
   const planId = Number.parseInt(id, 10);
   if (!Number.isInteger(planId)) throw new HttpError(400, 'Mensualidad inválida', { code: 'VALIDATION_ERROR' });
@@ -302,9 +320,10 @@ async function listPlans(req, filters) {
   };
 }
 
-async function getPlan(req, id) {
+async function getPlan(req, id, { changed = false } = {}) {
   await rollQueuedPeriods({ query });
   const p = await loadPlan({ query }, req, id);
+  if (changed) publish(p.site_id, 'monthly:changed', { monthlyPlanId: p.id });
   const { rows: payments } = await query(
     `SELECT mp.*, u.full_name AS paid_by_name FROM monthly_payments mp LEFT JOIN users u ON u.id = mp.paid_by
       WHERE monthly_plan_id = $1 ORDER BY paid_at DESC`,
@@ -375,7 +394,7 @@ async function createPlan(req, body) {
     );
     return rows[0].id;
   });
-  return getPlan(req, id);
+  return getPlan(req, id, { changed: true });
 }
 
 async function updatePlan(req, id, body) {
@@ -426,12 +445,14 @@ async function updatePlan(req, id, body) {
       client,
     );
   });
-  return getPlan(req, id);
+  return getPlan(req, id, { changed: true });
 }
 
 async function deletePlan(req, id) {
+  let siteId = null;
   await withTransaction(async (client) => {
     const p = await loadPlan(client, req, id, { lock: true });
+    siteId = p.site_id;
     await client.query('UPDATE monthly_plans SET deleted_at = now(), deleted_by = $2, is_active = false WHERE id = $1', [
       p.id,
       req.user.id,
@@ -441,6 +462,7 @@ async function deletePlan(req, id) {
       client,
     );
   });
+  publish(siteId, 'monthly:changed', {});
 }
 
 // Mensualidad importada: el administrador confirma que ya estaba pagada (sin pasar por caja)
@@ -456,7 +478,7 @@ async function confirmImported(req, id) {
       client,
     );
   });
-  return getPlan(req, id);
+  return getPlan(req, id, { changed: true });
 }
 
 // ---------------------------------------------------------------------------
@@ -480,6 +502,7 @@ async function payPlan(req, id, body) {
     if (p.next_period_start) {
       throw new HttpError(409, `Ya tiene pagado por adelantado el siguiente período (vence ${p.next_period_end})`, { code: 'ALREADY_PREPAID' });
     }
+    assertConsent(p, body);
 
     // Período que cubre este pago
     const renewal = { start: p.end_date, end: addMonths(p.end_date, 1) };
@@ -511,6 +534,7 @@ async function payPlan(req, id, body) {
     const totalPaid = p.is_biweekly ? alreadyPaid + charge.charged : full;
     const isFinal = totalPaid >= full;
 
+    await recordConsentIfMissing(client, p);
     const { rows: site } = await client.query('SELECT monthly_receipt_prefix FROM sites WHERE id = $1', [p.site_id]);
     const prefix = site[0].monthly_receipt_prefix;
     const number = await nextReceiptNumber(client, p.site_id, prefix);
@@ -556,7 +580,7 @@ async function payPlan(req, id, body) {
     return { paymentId: pay[0].id, isFinal, balance: Math.max(0, full - totalPaid) };
   });
 
-  return { ...result, plan: await getPlan(req, id), receipt: await buildMonthlyReceipt(req, result.paymentId) };
+  return { ...result, plan: await getPlan(req, id, { changed: true }), receipt: await buildMonthlyReceipt(req, result.paymentId) };
 }
 
 // Pago por adelantado ("en cola"): el período actual sigue; el siguiente arranca solo en su fecha
@@ -570,9 +594,11 @@ async function prepayPlan(req, id, body) {
         code: 'PREPAY_NOT_ALLOWED',
       });
     }
+    assertConsent(p, body);
     const period = { start: p.end_date, end: addMonths(p.end_date, 1) };
     const charge = resolveCharge(p.amount, body?.chargedAmount, body?.discountReason);
     const split = splitPayment(body?.paymentMethod, charge.charged, body?.cashAmount);
+    await recordConsentIfMissing(client, p);
     const { rows: site } = await client.query('SELECT monthly_receipt_prefix FROM sites WHERE id = $1', [p.site_id]);
     const prefix = site[0].monthly_receipt_prefix;
     const number = await nextReceiptNumber(client, p.site_id, prefix);
@@ -595,7 +621,7 @@ async function prepayPlan(req, id, body) {
     );
     return { paymentId: pay[0].id };
   });
-  return { plan: await getPlan(req, id), receipt: await buildMonthlyReceipt(req, result.paymentId) };
+  return { plan: await getPlan(req, id, { changed: true }), receipt: await buildMonthlyReceipt(req, result.paymentId) };
 }
 
 // Recibo de un pago de mensualidad (consecutivo FM)
@@ -771,6 +797,7 @@ async function importCsv(req, body) {
     );
   });
   errors.sort((a, b) => a.line - b.line);
+  if (imported) publish(siteId, 'monthly:changed', { imported });
   return { imported, errors, total: rows.length - 1 };
 }
 

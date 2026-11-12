@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { apiGet } from '../lib/api.js';
 import { useSession } from '../context/SessionContext.jsx';
 import { useShift, useWorkingSite } from '../context/ShiftContext.jsx';
+import { useSiteEvents } from '../context/RealtimeContext.jsx';
 import { formatCOP, formatDate, formatTime12h } from '../lib/format.js';
 
 // Inicio. AG y AS: tablero de la sede (se actualiza cada minuto). OP: accesos rápidos de su turno.
@@ -57,6 +58,9 @@ function AdminDashboard() {
       setError(err.message);
     }
   }, [siteId]);
+
+  // Tiempo real: cualquier evento de la sede (entradas, salidas, caja, turnos, mensualidades)
+  useSiteEvents(siteId, null, () => load());
 
   useEffect(() => {
     load();

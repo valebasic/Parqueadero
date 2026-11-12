@@ -9,6 +9,7 @@ const { confirmUserPassword } = require('./auth.service');
 const { registerSummary } = require('./cash.service');
 const { parseCashCount } = require('../lib/denominations');
 const { MAX_MONEY } = require('../lib/payments');
+const { publish } = require('../realtime/bus');
 
 const SHIFT_SELECT = `
   SELECT sh.id, sh.site_id, sh.zone_id, sh.user_id, sh.opened_at, sh.closed_at, sh.close_type, sh.previous_shift_id,
@@ -178,7 +179,9 @@ async function openShift(req, body) {
     return id;
   });
 
-  return getCurrentShift(req.user.id).then((s) => s ?? { id: shiftId });
+  const opened = await getCurrentShift(req.user.id);
+  publish(zone.site_id, 'shift:opened', { shiftId, zoneId, user: req.user.fullName });
+  return opened ?? { id: shiftId };
 }
 
 // ---------------------------------------------------------------------------
@@ -267,8 +270,9 @@ async function closeShift(req, rawShiftId, body) {
       },
       client,
     );
-    return { shiftId: shift.id, ...closed, counted: count.total };
+    return { shiftId: shift.id, siteId: shift.site_id, ...closed, counted: count.total };
   });
+  publish(result.siteId, 'shift:closed', { shiftId: result.shiftId, difference: result.difference });
 
   return {
     shiftId: result.shiftId,
@@ -358,6 +362,12 @@ async function handoverShift(req, rawShiftId, body) {
     return { closed, newShiftId: next.rows[0].id, siteId: shift.site_id };
   });
 
+  publish(result.siteId, 'shift:handover', {
+    shiftId,
+    newShiftId: result.newShiftId,
+    to: incoming.fullName,
+    difference: result.closed.difference,
+  });
   return {
     shiftId,
     newShiftId: result.newShiftId,

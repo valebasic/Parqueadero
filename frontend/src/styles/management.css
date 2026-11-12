@@ -139,3 +139,43 @@
 @media (max-width: 560px) {
   .nx-filters__wide { grid-column: auto; }
 }
+
+/* Indicador de tiempo real */
+.nx-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.nx-live i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.nx-live--live {
+  background: #eefaf3;
+  color: var(--nx-green-600);
+}
+.nx-live--live i {
+  animation: nx-pulse 2s ease-in-out infinite;
+}
+.nx-live--reconnecting,
+.nx-live--connecting {
+  background: #fff5e8;
+  color: #9b4d00;
+}
+.nx-live--off {
+  background: var(--nx-gray-100);
+  color: var(--nx-muted);
+}
+@keyframes nx-pulse {
+  50% { opacity: 0.35; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nx-live--live i { animation: none; }
+}

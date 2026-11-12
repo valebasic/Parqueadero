@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { apiGet } from '../lib/api.js';
 import { useSession } from './SessionContext.jsx';
+import { useSiteEvents } from './RealtimeContext.jsx';
 
 // Turno abierto del usuario (o null). Lo usan la barra superior, Entradas, Caja, Ventas y Pendientes.
 const ShiftContext = createContext(null);
@@ -27,6 +28,13 @@ export function ShiftProvider({ children }) {
       setLoading(status === 'loading');
     }
   }, [status, refresh]);
+
+  // Tiempo real: ventas, movimientos y cambios de turno de la sede refrescan el resumen de la caja
+  useSiteEvents(
+    shift?.site.id,
+    ['shift:opened', 'shift:closed', 'shift:handover', 'cash:movement', 'sales:changed', 'entry:exited'],
+    () => refresh(),
+  );
 
   const value = useMemo(() => ({ shift, loading, refresh }), [shift, loading, refresh]);
   return <ShiftContext.Provider value={value}>{children}</ShiftContext.Provider>;

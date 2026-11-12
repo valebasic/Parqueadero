@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { apiGet, apiPost } from '../lib/api.js';
 import { useShift, useWorkingSite } from '../context/ShiftContext.jsx';
 import { useReceipt } from '../components/Receipt.jsx';
+import { useSiteEvents } from '../context/RealtimeContext.jsx';
 import { formatCOP, formatDate, formatDuration, formatTime12h } from '../lib/format.js';
 import { detectVehicleType, normalizePlate, plateError, PLATE_MAX_LENGTH, VEHICLE_LABELS } from '../lib/plates.js';
 
@@ -38,6 +39,10 @@ export default function EntriesPage() {
   const [busy, setBusy] = useState(false);
 
   const plate = normalizePlate(plateInput);
+  const selectedRef = useRef(null);
+  const busyRef = useRef(false);
+  selectedRef.current = selected;
+  busyRef.current = busy;
 
   // --- Datos ---
   const loadOpen = useCallback(async () => {
@@ -54,6 +59,16 @@ export default function EntriesPage() {
     const id = setInterval(loadOpen, 60000);
     return () => clearInterval(id);
   }, [loadOpen]);
+
+  // Tiempo real: entradas y salidas registradas por otros operadores de la sede
+  useSiteEvents(siteId, ['entry:created', 'entry:exited'], (events) => {
+    loadOpen();
+    const closedHere = events.find((e) => e.type === 'entry:exited' && e.payload.entryId === selectedRef.current?.id);
+    if (closedHere && !busyRef.current) {
+      reset(true);
+      setMessage({ type: 'warn', text: `Otro operador ya registró la salida de ${closedHere.payload.plate}.` });
+    }
+  });
 
   // Consulta la placa mientras se escribe (tipo, si ya está adentro, mensualidad)
   useEffect(() => {

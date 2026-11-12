@@ -146,3 +146,8 @@ export async function apiDownload(path, fallbackName) {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+// Token actual (lo usa la conexión de tiempo real)
+export function getAccessToken() {
+  return accessToken;
+}

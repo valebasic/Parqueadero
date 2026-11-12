@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Icon from './Icon.jsx';
 import { useSession } from '../context/SessionContext.jsx';
 import { useShift } from '../context/ShiftContext.jsx';
+import { useRealtime } from '../context/RealtimeContext.jsx';
 import { ROLES } from '../lib/roles.js';
 import { formatDate, formatTime12h } from '../lib/format.js';
 
@@ -17,6 +18,7 @@ function siteLabel(user) {
 export default function Topbar({ title, onToggleMenu }) {
   const { user } = useSession();
   const { shift } = useShift();
+  const { status: live } = useRealtime();
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -53,6 +55,10 @@ export default function Topbar({ title, onToggleMenu }) {
       </dl>
 
       <div className="nx-topbar__right">
+        <span className={`nx-live nx-live--${live}`} role="status" title="Actualización en tiempo real">
+          <i aria-hidden="true" />
+          {live === 'live' ? 'En vivo' : live === 'off' ? 'Sin conexión' : 'Reconectando…'}
+        </span>
         <span className="nx-topbar__clock">
           {formatDate(now)} · {formatTime12h(now)}
         </span>

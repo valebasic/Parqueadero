@@ -252,3 +252,20 @@ Ver [`.env.example`](.env.example). Ninguna credencial va en el código.
 - **Respaldos** (`/api/backups`, solo AG): `pg_dump -Fc` diario a `BACKUP_HOUR`, bajo demanda y descarga;
   conserva `BACKUP_KEEP`. Con Docker, `PG_DUMP_DOCKER_CONTAINER=nexo-postgres`. Restaurar:
   `pg_restore -d nexo --clean archivo.dump`.
+
+## Tiempo real (RF28, RNF03)
+
+Socket.IO en el mismo servidor y puerto (`/socket.io`; en desarrollo lo reenvía el proxy de Vite).
+
+- **Autenticación**: el cliente envía su JWT de acceso en `auth.token`; se valida el token y la sesión
+  en la base (como en la API). Sin sesión → `connect_error` (`AUTH_REQUIRED`, `TOKEN_EXPIRED`,
+  `TOKEN_INVALID`, `SESSION_REVOKED`…). Los sockets no cuentan como actividad.
+- **Salas por sede** (`site:<id>`): cada usuario solo recibe eventos de sus sedes (el AG, de todas).
+- **Sesión revocada** (logout, inactividad, usuario desactivado, cambio o restablecimiento de
+  contraseña): el servidor envía `session:ended` y desconecta. Además revalida las sesiones cada
+  `REALTIME_REVALIDATE_MS` (60 s por defecto).
+- **Eventos** (`event` con `{ siteId, type, payload, at }`): `entry:created`, `entry:exited`,
+  `occupancy:changed`, `shift:opened`, `shift:closed`, `shift:handover`, `cash:movement`,
+  `sales:changed`, `pending:changed`, `monthly:alerts` (al cambiar una mensualidad y cada 30 min).
+- Los servicios publican en un bus en memoria (`src/realtime/bus.js`) **después** de confirmar la
+  transacción. Con varias instancias de la API hay que agregar el adaptador de Redis de Socket.IO.

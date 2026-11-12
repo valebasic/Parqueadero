@@ -1,11 +1,12 @@
 // Punto de entrada: levanta el servidor HTTP.
-// Socket.IO se acoplará a este mismo servidor en la Fase 6.
+// Socket.IO (tiempo real) comparte este mismo servidor y puerto.
 const http = require('http');
 const env = require('./config/env');
 const { createApp } = require('./app');
 const { closePool } = require('./db/pool');
 const { assertSecurityConfig } = require('./config/security');
 const { scheduleDailyBackups } = require('./services/backup.service');
+const { initRealtime } = require('./realtime');
 
 // Sin JWT_SECRET la API no arranca
 try {
@@ -16,6 +17,7 @@ try {
 }
 
 const server = http.createServer(createApp());
+const realtime = initRealtime(server);
 
 server.listen(env.port, () => {
   console.log(`Nexo API escuchando en http://localhost:${env.port} (${env.nodeEnv})`);
@@ -28,6 +30,7 @@ const stopBackups = scheduleDailyBackups();
 function shutdown(signal) {
   console.log(`${signal} recibido, cerrando servidor...`);
   stopBackups();
+  realtime.close();
   server.close(async () => {
     await closePool();
     process.exit(0);

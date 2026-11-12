@@ -8,6 +8,7 @@ const { VEHICLE_LABELS } = require('../lib/plates');
 const { splitPayment, resolveCharge } = require('../lib/payments');
 const { recordAudit } = require('./audit.service');
 const { requireOpenShift } = require('./shifts.service');
+const { publish } = require('../realtime/bus');
 
 async function listPending(req, rawSiteId) {
   const siteId = Number.parseInt(rawSiteId, 10);
@@ -150,7 +151,11 @@ async function confirmPending(req, body) {
       },
       client,
     );
-    return { confirmed: ids.length, total, charged: charge.charged, discount: charge.discount, cashRegisterId: shift.cashRegisterId };
+    return { confirmed: ids.length, total, charged: charge.charged, discount: charge.discount, cashRegisterId: shift.cashRegisterId, siteId };
+  }).then((r) => {
+    publish(r.siteId, 'pending:changed', { confirmed: r.confirmed });
+    publish(r.siteId, 'sales:changed', {});
+    return r;
   });
 }
 

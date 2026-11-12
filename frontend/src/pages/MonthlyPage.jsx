@@ -376,6 +376,8 @@ function PayModal({ plan, prepay, onClose, onReceipt }) {
   const [installment, setInstallment] = useState(String(plan.installment ? balance : Math.round(plan.amount / 2)));
   const base = biweekly ? Number(installment) || 0 : plan.amount;
   const [pay, setPay] = useState({ charged: '', reason: '', method: 'CASH', cash: '' });
+  const [consent, setConsent] = useState(false);
+  const needsConsent = !plan.dataConsent;
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -385,6 +387,7 @@ function PayModal({ plan, prepay, onClose, onReceipt }) {
     try {
       const body = { ...paymentPayload(pay, base) };
       if (biweekly) body.installmentAmount = base;
+      if (needsConsent) body.dataConsent = consent;
       const r = await apiPost(`/monthly/${plan.id}/${prepay ? 'prepay' : 'pay'}`, body);
       onReceipt(r.receipt);
       onClose(
@@ -402,7 +405,7 @@ function PayModal({ plan, prepay, onClose, onReceipt }) {
   }
 
   const title = prepay ? 'Pago adelantado' : biweekly ? `Pago quincenal (${plan.installment ? '2/2' : '1/2'})` : 'Pagar mensualidad';
-  const valid = paymentIsValid(pay, base) && base > 0 && (!biweekly || base <= balance);
+  const valid = paymentIsValid(pay, base) && base > 0 && (!biweekly || base <= balance) && (!needsConsent || consent);
 
   return (
     <Modal
@@ -430,6 +433,15 @@ function PayModal({ plan, prepay, onClose, onReceipt }) {
         </label>
       )}
       <PaymentFields value={pay} onChange={setPay} base={base} />
+      {needsConsent && (
+        <label className="nx-check nx-consent">
+          <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
+          <span>
+            Esta mensualidad viene de la importación y no tiene la autorización de datos. El titular autoriza el
+            tratamiento de sus datos personales (nombre, teléfono, correo y placa) conforme a la Ley 1581 de 2012.
+          </span>
+        </label>
+      )}
       <p className="nx-muted nx-small">Los pagos de mensualidad no pasan por la caja; tienen su propio consecutivo (FM).</p>
       {error && <p className="nx-form__alert" role="alert">{error}</p>}
     </Modal>

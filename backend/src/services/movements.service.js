@@ -14,6 +14,7 @@ const { isDate } = require('../lib/dates');
 const { recordAudit } = require('./audit.service');
 const { requireOpenShift } = require('./shifts.service');
 const { registerSummary } = require('./cash.service');
+const { publish } = require('../realtime/bus');
 
 const TYPES = ['INCOME', 'EXPENSE', 'BASE_IN', 'BASE_OUT'];
 const BASE_TYPES = ['BASE_IN', 'BASE_OUT'];
@@ -143,6 +144,7 @@ async function createMovement(req, body) {
     return rows[0].id;
   });
   const { rows } = await query(`${MOVEMENT_SELECT} WHERE m.id = $1`, [id]);
+  publish(rows[0].site_id, 'cash:movement', { action: 'created', id, type: rows[0].type, amount: rows[0].amount });
   return toDto(rows[0], req.user);
 }
 
@@ -193,12 +195,15 @@ async function updateMovement(req, rawId, body) {
     );
   });
   const { rows } = await query(`${MOVEMENT_SELECT} WHERE m.id = $1`, [Number.parseInt(rawId, 10)]);
+  publish(rows[0].site_id, 'cash:movement', { action: 'updated', id: rows[0].id, type: rows[0].type, amount: rows[0].amount });
   return toDto(rows[0], req.user);
 }
 
 async function deleteMovement(req, rawId) {
+  let siteId = null;
   await withTransaction(async (client) => {
     const m = await lockForChange(client, req, rawId);
+    siteId = m.site_id;
     if (m.register_closed && BASE_TYPES.includes(m.type)) {
       throw new HttpError(409, 'Un movimiento de base de una caja cerrada no se puede eliminar', { code: 'BASE_LOCKED' });
     }
@@ -217,6 +222,7 @@ async function deleteMovement(req, rawId) {
       client,
     );
   });
+  publish(siteId, 'cash:movement', { action: 'deleted', id: Number.parseInt(rawId, 10) });
 }
 
 module.exports = { listMovements, createMovement, updateMovement, deleteMovement, TYPE_LABELS, canAccessSite };
