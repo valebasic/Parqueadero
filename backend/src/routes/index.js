@@ -10,6 +10,7 @@ const authRoutes = require('./auth.routes');
 const sitesRoutes = require('./sites.routes');
 const usersRoutes = require('./users.routes');
 const { shiftsRouter, entriesRouter, salesRouter, pendingRouter } = require('./operation.routes');
+const { monthlyRouter, movementsRouter, reportsRouter, configRouter, backupsRouter } = require('./management.routes');
 
 const router = Router();
 
@@ -25,5 +26,10 @@ router.use('/shifts', shiftsRouter);
 router.use('/entries', entriesRouter);
 router.use('/sales', salesRouter);
 router.use('/pending-charges', pendingRouter);
+router.use('/monthly', monthlyRouter);
+router.use('/cash-movements', movementsRouter);
+router.use('/reports', reportsRouter);
+router.use('/config', configRouter);
+router.use('/backups', backupsRouter);
 
 module.exports = router;

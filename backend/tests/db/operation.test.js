@@ -40,9 +40,9 @@ async function backdate(entryId, minutes) {
 async function addMonthly({ plate, schedule = 'DAY', startOffset = -10, endOffset = 20, nightStart, nightEnd }) {
   const { rows } = await query(
     `INSERT INTO monthly_plans (site_id, plate, vehicle_type, client_name, start_date, end_date, amount,
-                                schedule, night_start, night_end)
+                                schedule, night_start, night_end, data_consent, data_consent_at)
      VALUES ($1, $2, 'CAR', 'Cliente Mensual', CURRENT_DATE + $3::int, CURRENT_DATE + $4::int, 130000, $5,
-             $6::time, $7::time)
+             $6::time, $7::time, true, now())
      RETURNING id`,
     [site, plate, startOffset, endOffset, schedule, nightStart ?? null, nightEnd ?? null],
   );

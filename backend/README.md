@@ -227,3 +227,28 @@ Respuestas de error: `{ ok: false, error: "mensaje en español", code: "CODIGO" 
 ## Variables de entorno
 
 Ver [`.env.example`](.env.example). Ninguna credencial va en el código.
+
+## Mensualidades, caja, reportes y configuración (RF13-RF25)
+
+- **Mensualidades** (`/api/monthly`, AG y AS): titular, teléfonos, correo, modalidad día/noche con franja,
+  espacio y autorización de tratamiento de datos (obligatoria al registrar). Una placa no tiene dos
+  vigentes (bloqueo por placa en la transacción). Registrar no cobra. Pago único o **quincenal** (2 abonos;
+  el saldo se calcula sobre lo realmente cobrado; plazo del 2.º abono = inicio + 15 días). **Sin límite de
+  mora**: el período siempre continúa desde el vencimiento anterior; la renovación se permite desde 1 día
+  antes. **Pago adelantado en cola** (`next_period_*`): el nuevo período arranca solo en su fecha.
+  **Importación CSV** con plantilla (`/api/monthly/import/template`): las filas válidas quedan "pendiente
+  de confirmar pago" y se confirman una a una; las inválidas se informan con línea y motivo. Recibos con
+  consecutivo **FM**; no pasan por caja. Reporte con totales y cartera; alertas rojo/amarillo/verde en Inicio.
+- **Transacciones** (`/api/cash-movements`): ingresos, egresos y base +/−; editar solo el mismo día;
+  la base nunca queda negativa; los movimientos de base de cajas cerradas y los retiros no se tocan. El OP
+  registra ingresos y egresos de su caja, con tope por egreso (`sites.op_expense_limit`).
+- **Inicio y reportes** (`/api/reports/*`, AG y AS): vehículos dentro, ocupación, ventas por forma de pago,
+  alertas de mensualidades; KPIs y serie por hora / día / semana / mes según el rango; cierres de caja con
+  detalle; fidelidad de clientes (puntaje de la v1.0); exportación `.xlsx` (exceljs) y PDF (pdfkit).
+- **Configuración** (`/api/config/:siteId/*`, AG y AS): tarifas con vigencia (la abierta se cierra en la
+  fecha de la nueva; se pueden programar a futuro y cancelar antes de que empiecen; el historial no se
+  reescribe), datos del local, horario, tope de egresos del OP y edición de recibos (campos visibles,
+  etiquetas, mensajes).
+- **Respaldos** (`/api/backups`, solo AG): `pg_dump -Fc` diario a `BACKUP_HOUR`, bajo demanda y descarga;
+  conserva `BACKUP_KEEP`. Con Docker, `PG_DUMP_DOCKER_CONTAINER=nexo-postgres`. Restaurar:
+  `pg_restore -d nexo --clean archivo.dump`.

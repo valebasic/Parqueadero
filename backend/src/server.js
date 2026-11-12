@@ -5,6 +5,7 @@ const env = require('./config/env');
 const { createApp } = require('./app');
 const { closePool } = require('./db/pool');
 const { assertSecurityConfig } = require('./config/security');
+const { scheduleDailyBackups } = require('./services/backup.service');
 
 // Sin JWT_SECRET la API no arranca
 try {
@@ -20,9 +21,13 @@ server.listen(env.port, () => {
   console.log(`Nexo API escuchando en http://localhost:${env.port} (${env.nodeEnv})`);
 });
 
+// Respaldo diario con pg_dump (si BACKUP_HOUR está configurado)
+const stopBackups = scheduleDailyBackups();
+
 // Cierre ordenado: deja de aceptar conexiones y libera el pool de PostgreSQL
 function shutdown(signal) {
   console.log(`${signal} recibido, cerrando servidor...`);
+  stopBackups();
   server.close(async () => {
     await closePool();
     process.exit(0);

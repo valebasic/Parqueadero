@@ -72,10 +72,13 @@ async function findActiveMonthly(client, siteId, plate) {
               ELSE true
             END AS inside_window
        FROM monthly_plans
-      WHERE site_id = $1 AND plate = $2 AND is_active
+      WHERE site_id = $1 AND plate = $2 AND is_active AND deleted_at IS NULL
         AND payment_status <> 'PENDING_CONFIRMATION'
         AND start_date <= CURRENT_DATE
-        AND CURRENT_DATE <= COALESCE(CASE WHEN payment_status = 'PARTIAL' THEN installment_due_date END, end_date) + $3::int
+        AND CURRENT_DATE <= GREATEST(
+              COALESCE(CASE WHEN payment_status = 'PARTIAL' THEN installment_due_date END, end_date),
+              COALESCE(next_period_end, end_date)
+            ) + $3::int
       ORDER BY end_date DESC, updated_at DESC
       LIMIT 1`,
     [siteId, plate, MONTHLY_GRACE_DAYS],

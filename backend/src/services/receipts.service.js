@@ -34,7 +34,7 @@ function portalUrlFor(siteCode, receipt) {
  */
 async function buildReceipt(client, entryId) {
   const { rows } = await client.query(
-    `SELECT e.*, s.code AS site_code, s.name AS site_name, s.legal_id, s.address, s.phone, s.city,
+    `SELECT e.*, s.code AS site_code, s.name AS site_name, s.legal_id, s.address, s.phone, s.city, s.business_hours, s.receipt_config,
             z.name AS zone_name, ue.full_name AS entry_by_name, ux.full_name AS exit_by_name,
             mp.client_name AS monthly_client,
             extract(epoch FROM (COALESCE(e.exit_at, now()) - e.entry_at))::bigint / 60 AS minutes
@@ -55,7 +55,9 @@ async function buildReceipt(client, entryId) {
     type: isExit ? 'EXIT' : 'ENTRY',
     entryId: e.id,
     siteId: e.site_id,
-    business: { name: e.site_name, legalId: e.legal_id, address: e.address, phone: e.phone, city: e.city },
+    business: { name: e.site_name, legalId: e.legal_id, address: e.address, phone: e.phone, city: e.city, hours: e.business_hours },
+    // Campos visibles, etiquetas y mensajes de Configuración → Recibos
+    config: e.receipt_config ?? {},
     zone: e.zone_name,
     receipt,
     plate: e.plate,
