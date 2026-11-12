@@ -21,11 +21,14 @@ import AccountingPage from './pages/AccountingPage.jsx';
 import SchedulesPage from './pages/SchedulesPage.jsx';
 import ComparePage from './pages/ComparePage.jsx';
 import StaffPage from './pages/StaffPage.jsx';
+import MapPage from './pages/MapPage.jsx';
+import MapEditorPage from './pages/MapEditorPage.jsx';
+import OccupancyPage from './pages/OccupancyPage.jsx';
 import { RequireAuth, RequireRole } from './components/RequireAuth.jsx';
 import { OnlineOnly } from './components/OfflineGuards.jsx';
 
 // Sin conexión solo se opera en Entradas (RF60); el resto de pantallas necesita el servidor
-const OFFLINE_OK = ['/entradas'];
+const OFFLINE_OK = ['/entradas', '/mapa'];
 import { MENU } from './lib/roles.js';
 
 // Todas las pantallas del menú ya están construidas; el aviso provisional queda como respaldo
@@ -51,6 +54,9 @@ const PAGE_BY_PATH = {
   '/horarios': SchedulesPage,
   '/comparativo': ComparePage,
   '/personal': StaffPage,
+  '/mapa': MapPage,
+  '/mapa-editor': MapEditorPage,
+  '/ocupacion': OccupancyPage,
 };
 
 export default function App() {

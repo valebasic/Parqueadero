@@ -69,6 +69,7 @@ export function ReceiptTicket({ data, qr }) {
         {isMonthly && <Row label="Período" value={`${formatDate(`${data.periodStart}T12:00:00`)} a ${formatDate(`${data.periodEnd}T12:00:00`)}`} />}
         {isMonthly && data.installmentNumber && <Row label="Abono" value={`${data.installmentNumber} de 2`} />}
         {isMonthly && data.isAdvance && <Row label="Tipo" value="Pago adelantado" />}
+        {data.space && <Row label="Puesto" value={data.space.code} />}
         {!isMonthly && <Row label={L.entry} value={dateTime(data.entryAt)} />}
         {isExit && <Row label={L.exit} value={dateTime(data.exitAt)} />}
         {isExit && show('duration') && <Row label={L.duration} value={formatDuration(data.minutes)} />}

@@ -13,6 +13,7 @@ import './styles/operation.css';
 import './styles/management.css';
 import './styles/admin.css';
 import './styles/nexoia.css';
+import './styles/map.css';
 import './styles/receipt.css';
 
 // PWA: el service worker (generado por vite-plugin-pwa) guarda la app para abrirla sin internet.
