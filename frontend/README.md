@@ -59,7 +59,7 @@ frontend/src/
 | `/transacciones` | Ingresos, egresos y base (verde/rojo/naranja); edición el mismo día | Todos (OP con tope) |
 | `/reportes` | KPIs, gráficas, efectivo vs electrónico, cierres, fidelidad, Excel/PDF | AG, AS |
 | `/reportes-mensualidades` | Pagos FM, totales y cartera | AG, AS |
-| `/conflictos` | Bandeja de conflictos de sincronización: aplicar o descartar con nota | AG, AS |
+| `/conflictos` | Bandeja de conflictos de sincronización: aplicar o descartar con nota; pestaña "Advertencias de hora" (reloj del equipo desfasado > 10 min o con hora futura) | AG, AS |
 | `/configuracion` | Tarifas con vigencia, datos del local, recibos con vista previa, respaldos (AG) | AG, AS |
 
 ## Sesión
@@ -107,4 +107,5 @@ fechas `05/03/2026` y hora `2:05 p. m.`.
   bloquea la pantalla y se desbloquea con la contraseña (verificada en el equipo). Sin conexión no se
   puede iniciar una sesión nueva.
 - **Sincronización** automática al volver la conexión, en orden, con progreso en la barra superior
-  ("Sin conexión · N operaciones por sincronizar" / "Sincronizando X de Y").
+  ("Sin conexión · N operaciones por sincronizar" / "Sincronizando X de Y"). Cada envío lleva la hora
+  del equipo (`deviceTime`) para detectar relojes desfasados.

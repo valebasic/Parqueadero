@@ -24,6 +24,14 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-
 const DEVICE_RE = /^[A-Z0-9]{4,12}$/;
 const MAX_BATCH = 100;
 const FUTURE_TOLERANCE_MS = 5 * 60 * 1000;
+// Reloj del dispositivo: más de 10 min de diferencia con el servidor, o una operación con hora
+// futura (más de 1 min, por latencia), se marca como advertencia. No bloquea nada.
+const CLOCK_SKEW_LIMIT_SECONDS = 10 * 60;
+const CLOCK_FUTURE_TOLERANCE_MS = 60 * 1000;
+const CLOCK_MESSAGES = {
+  SKEW: 'La hora del dispositivo difería más de 10 minutos de la del servidor',
+  FUTURE: 'La operación tenía una hora futura respecto a la recepción en el servidor',
+};
 
 const CONFLICT_MESSAGES = {
   PLATE_OPEN_ELSEWHERE: 'La placa ya tenía una entrada abierta en otra sede',
@@ -52,6 +60,7 @@ function toResult(row) {
     entryId: row.entry_id ?? null,
     receipt: row.result_receipt ?? row.payload?.result?.receipt ?? null,
     provisionalReceipt: row.provisional_receipt,
+    clockWarning: row.clock_warning ?? null,
     conflict: row.conflict_code
       ? { code: row.conflict_code, message: CONFLICT_MESSAGES[row.conflict_code] ?? row.conflict_code, detail: row.conflict_detail }
       : null,
@@ -74,7 +83,27 @@ function parseBatch(body) {
     if (!Number.isInteger(op.seq) || op.seq <= 0) throw new HttpError(400, 'Cada operación necesita su número de orden', { code: 'VALIDATION_ERROR' });
     if (Number.isNaN(new Date(op.clientTs).getTime())) throw new HttpError(400, 'Hora del dispositivo inválida', { code: 'VALIDATION_ERROR' });
   }
-  return { deviceId, ops };
+  // Hora del dispositivo al enviar (opcional: los clientes anteriores no la mandan)
+  let deviceTime = null;
+  if (body.deviceTime != null) {
+    deviceTime = new Date(body.deviceTime);
+    if (Number.isNaN(deviceTime.getTime())) throw new HttpError(400, 'Hora del dispositivo inválida', { code: 'VALIDATION_ERROR' });
+  }
+  return { deviceId, ops, deviceTime };
+}
+
+/**
+ * Compara el reloj del dispositivo con la hora de recepción en el servidor.
+ * Devuelve { receivedAt, deviceTime, offsetSeconds, warning } para una operación.
+ */
+function clockCheck(clock, clientTs) {
+  if (!clock?.receivedAt) return { receivedAt: null, deviceTime: null, offsetSeconds: null, warning: null };
+  const { receivedAt, deviceTime } = clock;
+  const offsetSeconds = deviceTime ? Math.round((deviceTime.getTime() - receivedAt.getTime()) / 1000) : null;
+  let warning = null;
+  if (offsetSeconds !== null && Math.abs(offsetSeconds) > CLOCK_SKEW_LIMIT_SECONDS) warning = 'SKEW';
+  else if (new Date(clientTs).getTime() > receivedAt.getTime() + CLOCK_FUTURE_TOLERANCE_MS) warning = 'FUTURE';
+  return { receivedAt, deviceTime, offsetSeconds, warning };
 }
 
 // La hora del dispositivo se respeta salvo que esté en el futuro (reloj adelantado)
@@ -292,6 +321,7 @@ async function processOperation(user, op, deviceId, req, options = {}) {
     throw new HttpError(403, 'La operación es de una sede a la que el usuario no tiene acceso', { code: 'FORBIDDEN_SITE' });
   }
 
+  const clock = options.resolving ? {} : clockCheck(options.clock, op.clientTs);
   try {
     const outcome = await withTransaction(async (client) => {
       await client.query('SAVEPOINT op');
@@ -328,11 +358,35 @@ async function processOperation(user, op, deviceId, req, options = {}) {
       } else {
         await client.query(
           `INSERT INTO offline_operations (id, site_id, user_id, device_id, seq, kind, client_ts, provisional_receipt,
-                                           payload, status, entry_id, conflict_code, conflict_detail)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+                                           payload, status, entry_id, conflict_code, conflict_detail,
+                                           received_at, device_time, clock_offset_seconds, clock_warning)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, COALESCE($14, now()), $15, $16, $17)`,
           [op.id, siteId, user.id, deviceId, op.seq, op.kind, op.clientTs, op.provisionalReceipt ?? null,
-            payload, conflict ? 'CONFLICT' : 'APPLIED', applied?.entryId ?? null, conflict?.code ?? null, conflict ? conflict.detail : null],
+            payload, conflict ? 'CONFLICT' : 'APPLIED', applied?.entryId ?? null, conflict?.code ?? null, conflict ? conflict.detail : null,
+            clock.receivedAt, clock.deviceTime, clock.offsetSeconds, clock.warning],
         );
+        if (clock.warning) {
+          await recordAudit(
+            {
+              req,
+              userId: user.id,
+              siteId,
+              action: 'OFFLINE_CLOCK_SKEW',
+              entityType: 'offline_operation',
+              entityId: op.id,
+              details: {
+                warning: clock.warning,
+                deviceId,
+                clientTs: op.clientTs,
+                deviceTime: clock.deviceTime,
+                receivedAt: clock.receivedAt,
+                offsetSeconds: clock.offsetSeconds,
+                entryId: applied?.entryId ?? null,
+              },
+            },
+            client,
+          );
+        }
       }
 
       if (applied?.tariffDifference) {
@@ -380,15 +434,19 @@ async function withReceipt(row) {
 }
 
 async function syncBatch(req, body) {
-  const { deviceId, ops } = parseBatch(body);
+  const { deviceId, ops, deviceTime } = parseBatch(body);
+  // Hora de recepción (reloj de la base, el mismo de received_at) para todo el lote
+  const { rows: nowRows } = await query('SELECT now() AS now');
+  const clock = { receivedAt: nowRows[0].now, deviceTime };
   const results = [];
   for (const op of ops) {
-    results.push(await processOperation(req.user, op, deviceId, req));
+    results.push(await processOperation(req.user, op, deviceId, req, { clock }));
   }
   return {
     results,
     applied: results.filter((r) => r.status === 'APPLIED').length,
     conflicts: results.filter((r) => r.status === 'CONFLICT').length,
+    clockWarnings: results.filter((r) => r.clockWarning).length,
   };
 }
 
@@ -468,4 +526,15 @@ async function snapshot(req, rawSiteId) {
   };
 }
 
-module.exports = { syncBatch, processOperation, snapshot, CONFLICT_MESSAGES, Conflict, toResult, withReceipt };
+module.exports = {
+  syncBatch,
+  processOperation,
+  snapshot,
+  clockCheck,
+  CONFLICT_MESSAGES,
+  CLOCK_MESSAGES,
+  CLOCK_SKEW_LIMIT_SECONDS,
+  Conflict,
+  toResult,
+  withReceipt,
+};

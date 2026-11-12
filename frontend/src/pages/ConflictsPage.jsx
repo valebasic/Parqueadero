@@ -8,8 +8,36 @@ import { formatCOP, formatDateTime, PAYMENT_LABELS } from '../lib/format.js';
 // Bandeja de conflictos de sincronización (RF62): operaciones hechas sin conexión que no se pudieron
 // aplicar. AS/AG las resuelven a mano (aplicar o descartar) con una nota; todo queda en auditoría.
 const KIND = { ENTRY: 'Entrada', EXIT: 'Salida' };
+const STATUS = { APPLIED: 'Aplicada', CONFLICT: 'En conflicto', RESOLVED_APPLIED: 'Aplicada (resuelta)', RESOLVED_DISCARDED: 'Descartada' };
+
+// "adelantado 15 min" / "atrasado 1 h 5 min"
+function offsetText(seconds) {
+  if (seconds == null) return '';
+  const abs = Math.abs(seconds);
+  const h = Math.floor(abs / 3600);
+  const m = Math.round((abs % 3600) / 60);
+  const span = h ? `${h} h${m ? ` ${m} min` : ''}` : `${m} min`;
+  return `${seconds > 0 ? 'adelantado' : 'atrasado'} ${span}`;
+}
+
+// Advertencia de reloj del dispositivo (no bloquea el cobro)
+function ClockWarning({ clock }) {
+  if (!clock) return null;
+  return (
+    <div className="nx-small nx-clockwarn">
+      <span className="nx-badge nx-badge--warn nx-badge--wrap">⚠ Reloj del equipo</span>{' '}
+      {clock.warning === 'SKEW'
+        ? `Reloj ${offsetText(clock.offsetSeconds)} respecto al servidor.`
+        : 'La hora de la operación era posterior a la recepción en el servidor.'}
+      <div className="nx-muted">
+        Equipo: {clock.deviceTime ? formatDateTime(clock.deviceTime) : '—'} · Recibido: {formatDateTime(clock.receivedAt)}
+      </div>
+    </div>
+  );
+}
 
 function detailText(c) {
+  if (!c.conflict) return '';
   const d = c.conflict.detail ?? {};
   switch (c.conflict.code) {
     case 'PLATE_OPEN_ELSEWHERE':
@@ -56,6 +84,7 @@ export default function ConflictsPage() {
         <div className="nx-tabs" role="tablist">
           <button type="button" role="tab" aria-selected={tab === 'open'} className={tab === 'open' ? 'is-active' : ''} onClick={() => setTab('open')}>Por resolver</button>
           <button type="button" role="tab" aria-selected={tab === 'resolved'} className={tab === 'resolved' ? 'is-active' : ''} onClick={() => setTab('resolved')}>Resueltos</button>
+          <button type="button" role="tab" aria-selected={tab === 'clock'} className={tab === 'clock' ? 'is-active' : ''} onClick={() => setTab('clock')}>Advertencias de hora</button>
         </div>
         {sites.length > 1 && (
           <label className="nx-form__field nx-form__field--inline">
@@ -70,14 +99,24 @@ export default function ConflictsPage() {
       {error && <div className="nx-banner nx-banner--error" role="alert">{error}</div>}
 
       <section className="nx-card">
-        <p className="nx-muted nx-small">
-          Operaciones registradas sin conexión que el servidor no pudo aplicar al sincronizar. Nada se descarta solo:
-          cada una se resuelve a mano, con una nota, y queda en auditoría.
-        </p>
+        {tab === 'clock' ? (
+          <p className="nx-muted nx-small">
+            Operaciones sin conexión hechas en un equipo cuyo reloj difería más de 10 minutos del servidor, o con una hora
+            futura. Solo es una advertencia: el cobro se registró igual. Revise la hora del equipo y, si hace falta, la
+            hora de entrada o salida registrada.
+          </p>
+        ) : (
+          <p className="nx-muted nx-small">
+            Operaciones registradas sin conexión que el servidor no pudo aplicar al sincronizar. Nada se descarta solo:
+            cada una se resuelve a mano, con una nota, y queda en auditoría.
+          </p>
+        )}
         {!items ? (
           <p className="nx-muted">Cargando…</p>
         ) : items.length === 0 ? (
-          <p className="nx-muted">{tab === 'open' ? 'No hay conflictos por resolver.' : 'Todavía no hay conflictos resueltos.'}</p>
+          <p className="nx-muted">
+            {{ open: 'No hay conflictos por resolver.', resolved: 'Todavía no hay conflictos resueltos.', clock: 'No hay advertencias de hora.' }[tab]}
+          </p>
         ) : (
           <div className="nx-table-wrap">
             <table className="nx-table">
@@ -87,8 +126,8 @@ export default function ConflictsPage() {
                   <th>Operación</th>
                   <th>Placa</th>
                   <th>Operador</th>
-                  <th>Conflicto</th>
-                  <th aria-label={tab === 'open' ? 'Acciones' : 'Resolución'} />
+                  <th>{tab === 'clock' ? 'Advertencia' : 'Conflicto'}</th>
+                  <th aria-label={{ open: 'Acciones', resolved: 'Resolución', clock: 'Estado' }[tab]} />
                 </tr>
               </thead>
               <tbody>
@@ -105,11 +144,21 @@ export default function ConflictsPage() {
                     <td><strong>{c.plate ?? '—'}</strong></td>
                     <td>{c.operator}<div className="nx-muted nx-small">Equipo {c.deviceId}</div></td>
                     <td>
-                      <span className="nx-badge nx-badge--danger nx-badge--wrap">{c.conflict.message}</span>
-                      <div className="nx-small">{detailText(c)}</div>
+                      {c.conflict && tab !== 'clock' && (
+                        <>
+                          <span className="nx-badge nx-badge--danger nx-badge--wrap">{c.conflict.message}</span>
+                          <div className="nx-small">{detailText(c)}</div>
+                        </>
+                      )}
+                      <ClockWarning clock={c.clock} />
                     </td>
                     <td className="nx-actions">
-                      {tab === 'open' ? (
+                      {tab === 'clock' ? (
+                        <div className="nx-small nx-left">
+                          <strong>{STATUS[c.status]}</strong>
+                          {c.entryReceipt ? ` · ${c.entryReceipt}` : ''}
+                        </div>
+                      ) : tab === 'open' ? (
                         <>
                           {c.conflict.canApply && (
                             <button type="button" className="nx-btn nx-btn--accent nx-btn--sm" onClick={() => setResolving({ item: c, action: 'apply' })}>Aplicar</button>

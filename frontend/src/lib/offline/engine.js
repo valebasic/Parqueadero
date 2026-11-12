@@ -211,7 +211,8 @@ async function postBatch(token, device, ops) {
   const res = await fetch('/api/sync/operations', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ deviceId: device, operations: ops }),
+    // deviceTime: hora del equipo al enviar; el servidor la compara con la suya (advertencia si difiere > 10 min)
+    body: JSON.stringify({ deviceId: device, deviceTime: new Date().toISOString(), operations: ops }),
   });
   const body = await res.json().catch(() => null);
   if (!res.ok) {

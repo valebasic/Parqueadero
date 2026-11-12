@@ -14,7 +14,7 @@ const HttpError = require('../middlewares/httpError');
 const { assertSiteAccess } = require('../middlewares/authorize');
 const { recordAudit } = require('./audit.service');
 const { publish } = require('../realtime/bus');
-const { processOperation, CONFLICT_MESSAGES } = require('./sync.service');
+const { processOperation, CONFLICT_MESSAGES, CLOCK_MESSAGES } = require('./sync.service');
 
 const APPLICABLE = ['PLATE_OPEN_ELSEWHERE', 'PLATE_ALREADY_INSIDE', 'MONTHLY_ACTIVE', 'REGISTER_CLOSED', 'ENTRY_IN_CONFLICT'];
 const MIN_NOTE = 5;
@@ -33,13 +33,24 @@ function toDto(r) {
     plate: r.payload?.plate ?? r.conflict_detail?.plate ?? null,
     paymentMethod: r.payload?.paymentMethod ?? null,
     chargedAmount: r.payload?.chargedAmount ?? null,
-    conflict: {
+    // Advertencia de reloj (no bloquea): hora del dispositivo vs. hora de recepción en el servidor
+    clock: r.clock_warning
+      ? {
+          warning: r.clock_warning,
+          message: CLOCK_MESSAGES[r.clock_warning],
+          offsetSeconds: r.clock_offset_seconds,
+          deviceTime: r.device_time,
+          receivedAt: r.received_at,
+        }
+      : null,
+    entryId: r.entry_id,
+    conflict: r.conflict_code ? {
       code: r.conflict_code,
       message: CONFLICT_MESSAGES[r.conflict_code] ?? r.conflict_code,
       detail: r.conflict_detail,
       canApply: APPLICABLE.includes(r.conflict_code),
       needsShift: r.conflict_code === 'REGISTER_CLOSED',
-    },
+    } : null,
     resolution: r.resolved_at
       ? { at: r.resolved_at, by: r.resolved_by_name, note: r.resolution_note, applied: r.status === 'RESOLVED_APPLIED' }
       : null,
@@ -59,11 +70,18 @@ async function listConflicts(req, filters) {
   const siteId = Number.parseInt(filters.siteId, 10);
   if (!Number.isInteger(siteId)) throw new HttpError(400, 'Indique la sede', { code: 'VALIDATION_ERROR' });
   await assertSiteAccess(req, siteId);
-  const resolved = filters.status === 'resolved';
+  // open = por resolver · resolved = resueltos · clock = advertencias de reloj (aplicadas o no)
+  const status = ['resolved', 'clock'].includes(filters.status) ? filters.status : 'open';
+  const where = {
+    open: "o.status = 'CONFLICT'",
+    resolved: "o.status LIKE 'RESOLVED_%'",
+    clock: 'o.clock_warning IS NOT NULL',
+  }[status];
+  const order = { open: 'o.client_ts, o.seq', resolved: 'o.resolved_at DESC', clock: 'o.received_at DESC, o.seq' }[status];
   const { rows } = await query(
     `${SELECT}
-      WHERE o.site_id = $1 AND ${resolved ? "o.status LIKE 'RESOLVED_%'" : "o.status = 'CONFLICT'"}
-      ORDER BY ${resolved ? 'o.resolved_at DESC' : 'o.client_ts, o.seq'}
+      WHERE o.site_id = $1 AND ${where}
+      ORDER BY ${order}
       LIMIT 200`,
     [siteId],
   );
