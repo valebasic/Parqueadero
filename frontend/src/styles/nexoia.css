@@ -60,3 +60,11 @@
   .nxai-panel { right: 8px; bottom: 66px; height: calc(100vh - 90px); }
 }
 @media print { .nxai-btn, .nxai-panel { display: none !important; } }
+/* Cambio de tarifa: actual y nueva lado a lado */
+.nxai-compare { width: 100%; border-collapse: collapse; margin: 0 0 10px; font-size: 12px; }
+.nxai-compare th, .nxai-compare td { padding: 4px 6px; border-bottom: 1px solid #e1e5ea; text-align: right; vertical-align: top; }
+.nxai-compare thead th { color: #5f6670; font-weight: 700; }
+.nxai-compare tbody th { text-align: left; font-weight: 600; color: #30343b; }
+.nxai-compare tr.is-changed td:last-child { background: #fff4d6; color: #7a5600; font-weight: 700; }
+.nxai-compare tr.is-changed td:nth-child(2) { color: #5f6670; text-decoration: line-through; }
+.nxai-compare__validity td { text-align: left; font-size: 11px; color: #5f6670; }

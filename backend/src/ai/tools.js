@@ -604,8 +604,24 @@ async function proposeRate(ctx, { servicio, campo, valor, sede }) {
     site,
     title: `Cambiar ${RATE_LABELS[campo].toLowerCase()} de ${VEHICLE_LABELS[type].toLowerCase()}`,
     risk: 'alto',
-    details: [`Sede: ${site.name}`, `${RATE_LABELS[campo]}: ${cop(current[RATE_FIELDS[campo]])} → ${cop(valor)}`, 'Rige desde el momento de confirmar'],
+    details: [`Sede: ${site.name}`, `Servicio: ${VEHICLE_LABELS[type]}`],
     request: { method: 'POST', path: `/config/${site.id}/rates`, body },
+    // La tarjeta muestra la tarifa actual y la nueva lado a lado, con su vigencia
+    extra: {
+      comparison: {
+        columns: ['Actual', 'Nueva'],
+        rows: Object.entries(RATE_FIELDS).map(([k, field]) => ({
+          label: RATE_LABELS[k],
+          current: current[field],
+          next: body[field],
+          changed: current[field] !== body[field],
+        })),
+        validity: {
+          current: `Vigente desde ${localText(current.validFrom)}`,
+          next: 'Rige desde el momento en que confirme (la actual queda en el historial)',
+        },
+      },
+    },
     forAi: { sede: site.code, servicio: VEHICLE_LABELS[type], campo, antes: current[RATE_FIELDS[campo]], despues: valor },
   });
 }

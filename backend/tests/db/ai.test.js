@@ -237,6 +237,12 @@ describe('acciones: la IA solo propone', () => {
     const res = await ask(ag, { question: 'Sube la hora de moto en FACA a 2500' });
     const [p] = res.body.data.proposals;
     expect(p).toMatchObject({ kind: 'RATE', risk: 'alto', request: { path: `/config/${faca}/rates`, body: { vehicleType: 'MOTORCYCLE', hourAmount: 2500, fractionAmount: 1500 } } });
+    // La tarjeta compara la tarifa actual y la nueva, con su vigencia
+    expect(p.comparison.columns).toEqual(['Actual', 'Nueva']);
+    expect(p.comparison.rows.find((r) => r.label === 'Hora')).toEqual({ label: 'Hora', current: 2200, next: 2500, changed: true });
+    expect(p.comparison.rows.find((r) => r.label === 'Fracción')).toMatchObject({ current: 1500, next: 1500, changed: false });
+    expect(p.comparison.validity.current).toMatch(/^Vigente desde \d{2}\/\d{2}\/\d{4}/);
+    expect(p.comparison.validity.next).toMatch('confirme');
     const current = (await query("SELECT hour_amount FROM rates WHERE site_id = $1 AND vehicle_type = 'MOTORCYCLE' AND valid_to IS NULL", [faca])).rows[0];
     expect(current.hour_amount).toBe(2200);
   });

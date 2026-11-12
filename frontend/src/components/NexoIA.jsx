@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { apiDownload, apiGet, apiPost, apiRequest } from '../lib/api.js';
 import { useSession } from '../context/SessionContext.jsx';
+import { formatCOP } from '../lib/format.js';
 import { useOffline } from '../context/OfflineContext.jsx';
 
 // NexoIA (de la v1.0: agente/cliente/asistente.js). Chat flotante en todas las pantallas.
@@ -191,6 +192,30 @@ function ProposalCard({ card, onConfirm, onCancel }) {
       <ul>
         {p.details.map((d) => <li key={d}>{d}</li>)}
       </ul>
+      {p.comparison && (
+        <table className="nxai-compare">
+          <thead>
+            <tr>
+              <th scope="col"><span className="nx-sr-only">Valor</span></th>
+              {p.comparison.columns.map((c) => <th key={c} scope="col">{c}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {p.comparison.rows.map((r) => (
+              <tr key={r.label} className={r.changed ? 'is-changed' : ''}>
+                <th scope="row">{r.label}</th>
+                <td>{formatCOP(r.current)}</td>
+                <td>{formatCOP(r.next)}{r.changed && <span className="nx-sr-only"> (cambia)</span>}</td>
+              </tr>
+            ))}
+            <tr className="nxai-compare__validity">
+              <th scope="row">Vigencia</th>
+              <td>{p.comparison.validity.current}</td>
+              <td>{p.comparison.validity.next}</td>
+            </tr>
+          </tbody>
+        </table>
+      )}
       {p.needsConsent && pending && (
         <label className="nx-check nxai-consent">
           <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />

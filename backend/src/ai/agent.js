@@ -132,7 +132,7 @@ async function ask(req, body) {
     text: role === 'administrador' ? resolveEmployeeCodes(text, privacy.employees) : text,
     // Para el historial que reenvía la pantalla: tal como lo escribió la IA (con códigos)
     rawText: text,
-    proposals: ctx.proposals.map((p) => ({ id: p.id, kind: p.kind, title: p.title, risk: p.risk, details: p.details, request: p.request, needsConsent: p.needsConsent ?? false })),
+    proposals: ctx.proposals.map((p) => ({ id: p.id, kind: p.kind, title: p.title, risk: p.risk, details: p.details, request: p.request, needsConsent: p.needsConsent ?? false, comparison: p.comparison ?? null })),
     tools: used,
     denied,
   };
