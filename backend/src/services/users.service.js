@@ -312,6 +312,7 @@ async function updateUser(req, rawId, body) {
       `UPDATE users
           SET full_name = $2, role = $3, is_active = $4,
               password_hash = COALESCE($5, password_hash),
+              legacy_password_hash = CASE WHEN $5 IS NULL THEN legacy_password_hash ELSE NULL END,
               password_changed_at = CASE WHEN $5 IS NULL THEN password_changed_at ELSE now() END,
               failed_login_count = CASE WHEN $5 IS NOT NULL OR $6 THEN 0 ELSE failed_login_count END,
               locked_until = CASE WHEN $5 IS NOT NULL OR $6 THEN NULL ELSE locked_until END

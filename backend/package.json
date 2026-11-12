@@ -14,7 +14,8 @@
     "db:migrate:down": "node src/db/migrate.js down",
     "db:migrate:create": "node-pg-migrate create -m src/db/migrations -j sql",
     "db:seed": "node src/db/seed.js",
-    "db:reset": "node src/db/reset.js"
+    "db:reset": "node src/db/reset.js",
+    "migrate:v1": "node scripts/migrate-v1.js"
   },
   "author": "Santiago Suarez",
   "license": "UNLICENSED",

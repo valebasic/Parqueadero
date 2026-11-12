@@ -4,7 +4,13 @@ const { query, withTransaction } = require('../db/pool');
 const HttpError = require('../middlewares/httpError');
 const { security, idleTimeoutSecondsFor } = require('../config/security');
 const { recordAudit, requestMeta } = require('./audit.service');
-const { hashPassword, verifyPassword, burnPasswordCheck, passwordPolicyError } = require('./password.service');
+const {
+  hashPassword,
+  burnPasswordCheck,
+  passwordPolicyError,
+  verifyUserPassword,
+  upgradeLegacyPassword,
+} = require('./password.service');
 const { signAccessToken, signOfflineToken, generateRefreshToken, hashRefreshToken } = require('./token.service');
 const { sessionEnded } = require('../realtime/bus');
 
@@ -179,7 +185,7 @@ async function login({ username, password }, req) {
   // el error, si lo hay, se lanza después.
   const outcome = await withTransaction(async (client) => {
     const { rows } = await client.query(
-      `SELECT id, username, role, is_active, password_hash, failed_login_count,
+      `SELECT id, username, role, is_active, password_hash, legacy_password_hash, failed_login_count,
               (locked_until IS NOT NULL AND locked_until > now()) AS is_locked,
               ceil(extract(epoch FROM locked_until - now()))::int AS lock_seconds_left
          FROM users WHERE lower(username) = lower($1)
@@ -205,8 +211,8 @@ async function login({ username, password }, req) {
       return { error: lockedError(user.lock_seconds_left) };
     }
 
-    const passwordOk = await verifyPassword(password, user.password_hash);
-    if (!passwordOk) {
+    const check = await verifyUserPassword(password, user);
+    if (!check.ok) {
       const attempts = user.failed_login_count + 1;
       if (attempts >= security.maxFailedLogins) {
         await client.query(
@@ -230,6 +236,8 @@ async function login({ username, password }, req) {
       'UPDATE users SET failed_login_count = 0, locked_until = NULL, last_login_at = now() WHERE id = $1',
       [user.id],
     );
+    // Contraseña importada de la v1.0: primer login correcto → bcrypt y se borra el legacy
+    if (check.legacy) await upgradeLegacyPassword(client, user.id, password, audit);
     const session = await createSession(client, user.id, req);
     await audit('LOGIN_SUCCESS', { sessionId: session.sessionId });
     return { user, session };
@@ -254,7 +262,7 @@ async function login({ username, password }, req) {
 async function confirmUserPassword({ userId, username }, password, req, purpose) {
   const outcome = await withTransaction(async (client) => {
     const { rows } = await client.query(
-      `SELECT u.id, u.username, u.full_name, u.role, u.is_active, u.password_hash, u.failed_login_count,
+      `SELECT u.id, u.username, u.full_name, u.role, u.is_active, u.password_hash, u.legacy_password_hash, u.failed_login_count,
               (u.locked_until IS NOT NULL AND u.locked_until > now()) AS is_locked,
               ceil(extract(epoch FROM u.locked_until - now()))::int AS lock_seconds_left,
               COALESCE((SELECT array_agg(site_id) FROM user_sites WHERE user_id = u.id), '{}') AS site_ids
@@ -279,7 +287,8 @@ async function confirmUserPassword({ userId, username }, password, req, purpose)
     if (!user.is_active) return { error: new HttpError(400, `El usuario ${label} está desactivado`, { code: 'USER_INACTIVE' }) };
     if (user.is_locked) return { error: lockedError(user.lock_seconds_left) };
 
-    if (!(await verifyPassword(String(password ?? ''), user.password_hash))) {
+    const check = await verifyUserPassword(String(password ?? ''), user);
+    if (!check.ok) {
       const attempts = user.failed_login_count + 1;
       if (attempts >= security.maxFailedLogins) {
         await client.query(
@@ -294,6 +303,7 @@ async function confirmUserPassword({ userId, username }, password, req, purpose)
       return { error: failed };
     }
     await client.query('UPDATE users SET failed_login_count = 0 WHERE id = $1 AND failed_login_count > 0', [user.id]);
+    if (check.legacy) await upgradeLegacyPassword(client, user.id, String(password), audit);
     return {
       user: { id: user.id, username: user.username, fullName: user.full_name, role: user.role, siteIds: user.site_ids },
     };
@@ -362,15 +372,15 @@ async function changeOwnPassword(authUser, { currentPassword, newPassword }, req
     throw new HttpError(400, 'La contraseña nueva debe ser distinta de la actual', { code: 'VALIDATION_ERROR' });
   }
 
-  const { rows } = await query('SELECT password_hash FROM users WHERE id = $1', [authUser.id]);
-  if (!(await verifyPassword(currentPassword, rows[0]?.password_hash))) {
+  const { rows } = await query('SELECT password_hash, legacy_password_hash FROM users WHERE id = $1', [authUser.id]);
+  if (!(await verifyUserPassword(currentPassword, rows[0])).ok) {
     await recordAudit({ req, userId: authUser.id, action: 'PASSWORD_CHANGE_FAILED', entityType: 'user', entityId: authUser.id });
     throw new HttpError(400, 'La contraseña actual no es correcta', { code: 'WRONG_PASSWORD' });
   }
 
   const newHash = await hashPassword(newPassword);
   await withTransaction(async (client) => {
-    await client.query('UPDATE users SET password_hash = $2, password_changed_at = now() WHERE id = $1', [
+    await client.query('UPDATE users SET password_hash = $2, legacy_password_hash = NULL, password_changed_at = now() WHERE id = $1', [
       authUser.id,
       newHash,
     ]);

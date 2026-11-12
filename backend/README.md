@@ -60,6 +60,7 @@ La primera migración se detiene con un mensaje claro si la base no está en UTF
 | `npm run db:migrate:create -- nombre` | Crea un archivo de migración SQL nuevo. |
 | `npm run db:seed` | Carga los datos iniciales (se puede repetir: no duplica). |
 | `npm run db:reset` | **Borra todo**, aplica todas las migraciones y carga el seed. Bloqueado con `NODE_ENV=production`. |
+| `npm run migrate:v1 -- archivo.json [--dry-run]` | Migra los datos de la v1.0 (ver [Migración desde la v1.0](#migración-desde-la-v10)). |
 
 ## Base de datos
 
@@ -83,6 +84,8 @@ Migraciones SQL en [`src/db/migrations/`](src/db/migrations) (una sección `-- U
 | `monthly_payments` | Pagos de mensualidad |
 | `pending_charges` | Cargos pendientes (p. ej. mensualidad nocturna fuera de franja) |
 | `audit_log` | Auditoría de acciones sensibles (solo inserción) |
+| `offline_operations` | Operaciones hechas sin conexión (idempotentes por UUID), con su reloj y conflictos |
+| `v1_import_map`, `v1_import_runs` | Migración desde la v1.0: qué registro v1 quedó en qué id v2 y el reporte de cada corrida |
 
 Convenciones:
 
@@ -130,7 +133,9 @@ backend/
 │   ├── controllers/     # traducen HTTP ↔ servicios
 │   ├── services/        # reglas de negocio y consultas
 │   ├── middlewares/     # errores, 404 y (Fase 3) autenticación
-│   └── db/              # conexión, migraciones, seed y reset
+│   ├── db/              # conexión, migraciones, seed y reset
+│   └── migration/v1/    # importador de datos de la v1.0 (npm run migrate:v1)
+├── scripts/             # migrate-v1.js (consola)
 └── tests/               # pruebas de la API; tests/db/ = integración con PostgreSQL
 ```
 
@@ -292,10 +297,77 @@ Solo para Entradas, en una sede con el turno **ya abierto** antes de perder inte
   - **Conflictos** (se guardan con `status = CONFLICT`, se auditan y nunca se descartan en silencio):
     `PLATE_OPEN_ELSEWHERE`, `PLATE_ALREADY_INSIDE`, `MONTHLY_ACTIVE`, `ALREADY_EXITED`,
     `ENTRY_IN_CONFLICT`, `REGISTER_CLOSED`, `SHIFT_INVALID`, `INVALID`.
-- **Bandeja de conflictos** (AS y AG): `GET /api/sync/conflicts?siteId=&status=open|resolved` y
+- **Reloj del dispositivo**: el lote trae `deviceTime` (hora del equipo al enviar) y el servidor guarda
+  `received_at` (su hora de recepción), `device_time` y `clock_offset_seconds`. Si el reloj difiere más
+  de **10 minutos** (`clock_warning = SKEW`) o la operación tiene hora **futura** respecto a la
+  recepción (más de 1 min, `FUTURE`), se registra `OFFLINE_CLOCK_SKEW` en auditoría y aparece como
+  advertencia en la bandeja. **No bloquea el cobro**: la operación se aplica igual.
+- **Bandeja de conflictos** (AS y AG): `GET /api/sync/conflicts?siteId=&status=open|resolved|clock` y
   `POST /api/sync/conflicts/:id/resolve` `{ action: 'apply' | 'discard', note, shiftId? }`. La nota es
   obligatoria y todo queda en auditoría (`OFFLINE_CONFLICT_RESOLVED`). Aplicar se hace a nombre del
   operador que hizo la operación: anula la otra entrada abierta (placa duplicada), registra la entrada
   normal (mensualidad), reintenta una salida cuya entrada ya se resolvió o lleva el cobro a la caja del
   turno abierto indicado (caja cerrada). `ALREADY_EXITED`, `INVALID` y `SHIFT_INVALID` solo se
   descartan. Dos administradores no pueden resolver el mismo conflicto.
+
+## Migración desde la v1.0
+
+Pasa los datos de la v1.0 (Electron, todo en `localStorage`) a esta base. Dos piezas:
+
+1. **Exportador** (en la v1.0, rama `v1-exportador`, versión 2.6.52): Configuración → **Exportar todo a
+   JSON**, solo para Superadmin. Descarga una copia literal de todas las claves de `localStorage` en
+   `{ format: 'nexo-v1-export', formatVersion: 1, appVersion, exportedAt, exportedBy, keys }`. No
+   modifica nada. (Se descartó leer el LevelDB de `%APPDATA%` con un script: depende de la versión de
+   Chromium, exige cerrar la app y es frágil; el botón usa la misma API con la que la app guarda.)
+2. **Importador**: `npm run migrate:v1 -- archivo.json [--dry-run] [--sede=FACA] [--reporte=r.json]`
+   ([`scripts/migrate-v1.js`](scripts/migrate-v1.js), lógica en [`src/migration/v1/`](src/migration/v1)).
+   Acepta también un volcado plano `{ "fp_entries": "...", ... }`.
+
+### Cómo se mapea
+
+| v1.0 (`localStorage`) | v2.0 |
+| --- | --- |
+| `fp_users` | `users` (+ `user_sites` para AS/OP). Superadmin→AG, Administrador→AS, Empleado→OP. Usuario saneado a `^[A-Za-z0-9._-]{3,40}$` (`José Ñúñez` → `Jose.Nunez`). Si ya existe en la v2.0 (p. ej. Felipe) se conserva la cuenta actual. |
+| contraseña `salt:sha256` | `users.legacy_password_hash` tal cual (texto plano de instalaciones viejas: se convierte a ese formato). En el **primer login correcto** se verifica con SHA-256 + salt, se re-hashea con bcrypt y se borra el legacy (`PASSWORD_REHASHED`). |
+| cuentas por defecto (`admin`/`admin`, `Felipe`/clave de fábrica) | se importan **desactivadas** |
+| `fp_config` | `sites` (nombre, NIT, teléfono, dirección, capacidad, prefijos, horario) y `sites.receipt_config` |
+| `fp_services` | `rates`: si cambió, se cierra la vigente y se crea una nueva desde ahora |
+| `facaparking_offline_receipt_v4`, `…_monthly_v1`, `nextReceiptNumber*` | `receipt_counters` (FA/FM): el mayor entre la v1.0 y lo importado (nunca baja) |
+| `fp_cash_closings` (y `fp_closures`) | `shifts` + `cash_registers` cerrados, con el resumen de la v1.0 en `summary` |
+| `fp_entries` + `fp_entries_archive` | `entries` (`origin = V1_IMPORT`): PAID (venta), PENDING_CHARGE o OPEN; fechas `dd-mm-aaaa` en hora de Colombia |
+| `fp_monthly_extra_charges` | `pending_charges` (abiertos o ya confirmados con su caja) |
+| `fp_monthly` | `monthly_plans` (`origin = V1_MIGRATION`, sin autorización de datos: se pide en la primera renovación) |
+| `fp_monthly_payments` | `monthly_payments` (abono quincenal 1/2, adelantado). Si su mensualidad se borró en la v1.0, se reconstruye como eliminada |
+| `fp_incomes`, `fp_expenses`, `fp_base_in`, `fp_base_out` | `cash_movements` (INCOME, EXPENSE, BASE_IN, BASE_OUT) en la caja de su cierre |
+
+Reglas: una venta "Sin método" se importa como electrónico (la caja v1 no la contaba como efectivo);
+un descuento sin motivo recibe un motivo genérico; lo de la caja que seguía **abierta** en la v1.0 se
+rechaza (hay que cerrarla y exportar de nuevo). Lo que la v1.0 no atribuye (quién registró una entrada)
+queda a nombre del usuario de sistema `migracion.v1` (desactivado).
+
+### Garantías
+
+- **Todo o nada**: una sola transacción. `--dry-run` hace todo y revierte.
+- **Cuadre**: por categoría (ventas, pendientes, vehículos adentro, mensualidades, pagos, ingresos,
+  egresos, base ±, cierres y usuarios) compara conteo y total COP de la base **antes → después** con lo
+  importado. Si algo no cuadra, se revierte completa (código de salida 2).
+- **Idempotente**: `v1_import_map` (sede, entidad, id v1). Repetirla, o correr una exportación
+  posterior, solo agrega lo nuevo.
+- **Reporte**: conteos y totales en archivo / importados / omitidos / rechazados, la base antes y
+  después, la lista de rechazados con su motivo y las advertencias. Cada corrida real queda en
+  `v1_import_runs` y en auditoría (`V1_IMPORT`).
+
+### Pasos (para quien hace la migración)
+
+1. En el equipo de la v1.0: **cerrar la caja** del día.
+2. Instalar la v1.0 **2.6.52** (`npm run dist` en la rama `v1-exportador`) **encima** de la instalada:
+   los datos no se pierden (viven en `%APPDATA%`).
+3. Entrar como **Superadmin** → Configuración → **Exportar todo a JSON** → guardar el archivo
+   (`nexo-v1-export_AAAAMMDD_HHMM.json`) en una memoria USB.
+4. En el servidor de la v2.0 (con la base migrada: `npm run db:migrate`):
+   `npm run migrate:v1 -- ruta/al/archivo.json --dry-run` y revisar el reporte (rechazados y advertencias).
+5. Si el reporte está bien: `npm run migrate:v1 -- ruta/al/archivo.json --reporte=migracion.json`.
+6. Avisar a cada usuario que entre con **su misma contraseña de la v1.0** (se cambia sola a bcrypt) y
+   pedir a los administradores que la cambien si era débil. Activar `admin` solo si hace falta,
+   con una contraseña nueva.
+7. Borrar el archivo exportado de la USB: lleva los hashes de las contraseñas.
