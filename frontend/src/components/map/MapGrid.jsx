@@ -16,7 +16,8 @@ const STATE_STYLE = {
   EDIT: { fill: '#ffffff', stroke: '#5f6670', label: '' },
 };
 const MONTHLY_BLUE = '#2f6fd6';
-const TYPE_LABEL = { CAR: 'carro', MOTORCYCLE: 'moto', BICYCLE: 'cicla', REDUCED_MOBILITY: 'movilidad reducida' };
+const TYPE_LABEL = { CAR: 'carro', MOTORCYCLE: 'moto', BICYCLE: 'cicla', MOTORCYCLE_BICYCLE: 'moto y cicla', REDUCED_MOBILITY: 'movilidad reducida' };
+const FACING_LABEL = { N: 'arriba', S: 'abajo', E: 'la derecha', W: 'la izquierda' };
 const USAGE_LABEL = { MONTHLY: 'solo mensualidad', HOURLY: 'por hora', MIXED: 'mixto' };
 
 // Escala secuencial (azul claro → azul oscuro) para el mapa de calor
@@ -63,6 +64,14 @@ export function BikeIcon({ x, y, s = 12, color = '#30343b' }) {
     </g>
   );
 }
+export function KeyIcon({ x, y, s = 12, color = '#8a5a00' }) {
+  return (
+    <g transform={`translate(${x} ${y}) scale(${s / 12})`} aria-hidden="true" fill="none" stroke={color} strokeWidth="1.4" strokeLinecap="round">
+      <circle cx="3.6" cy="6" r="2.6" fill="#fff4d6" />
+      <path d="M6.2 6h5M9.2 6v2.2M11 6v1.6" />
+    </g>
+  );
+}
 export function WheelchairIcon({ x, y, s = 12, color = '#1d4fa3' }) {
   return (
     <g transform={`translate(${x} ${y}) scale(${s / 12})`} aria-hidden="true" fill="none" stroke={color} strokeWidth="1.3" strokeLinecap="round">
@@ -79,8 +88,9 @@ function SpaceIcons({ el, x, y, w }) {
   if (monthly) icons.push(CalendarIcon);
   else icons.push(ClockIcon);
   if (el.usage === 'MIXED' && !el.reserved) icons.push(CalendarIcon);
-  if (el.spaceType === 'MOTORCYCLE') icons.push(MotoIcon);
-  if (el.spaceType === 'BICYCLE') icons.push(BikeIcon);
+  if (el.spaceType === 'MOTORCYCLE' || el.spaceType === 'MOTORCYCLE_BICYCLE') icons.push(MotoIcon);
+  if (el.spaceType === 'BICYCLE' || el.spaceType === 'MOTORCYCLE_BICYCLE') icons.push(BikeIcon);
+  if (el.requiresKeys) icons.push(KeyIcon);
   if (el.spaceType === 'REDUCED_MOBILITY') icons.push(WheelchairIcon);
   const size = 11;
   return icons.slice(0, Math.max(2, Math.floor((w - 6) / (size + 2)))).map((Icon, i) => <Icon key={i} x={x + 4 + i * (size + 2)} y={y + 4} s={size} />);
@@ -88,9 +98,15 @@ function SpaceIcons({ el, x, y, w }) {
 
 export function describeSpace(el) {
   const state = el.state ? STATE_STYLE[el.state].label.toLowerCase() : '';
-  return [`Puesto ${el.code}`, state, TYPE_LABEL[el.spaceType], USAGE_LABEL[el.usage], el.reserved ? 'reservado' : '', el.covered ? 'techado' : '', el.entry ? `placa ${el.entry.plate}` : '']
+  return [`Puesto ${el.code}`, state, TYPE_LABEL[el.spaceType], USAGE_LABEL[el.usage], el.reserved ? 'reservado' : '', el.covered ? 'techado' : '', el.requiresKeys ? 'pide llaves' : '', el.facing ? `frente hacia ${FACING_LABEL[el.facing]}` : '', el.entry ? `placa ${el.entry.plate}` : '']
     .filter(Boolean)
     .join(', ');
+}
+
+function FacingBar({ facing, x, y, w, h }) {
+  const t = 4;
+  const r = { N: [x + 10, y + 3, w - 20, t], S: [x + 10, y + h - 3 - t, w - 20, t], W: [x + 3, y + 10, t, h - 20], E: [x + w - 3 - t, y + 10, t, h - 20] }[facing];
+  return <rect x={r[0]} y={r[1]} width={Math.max(2, r[2])} height={Math.max(2, r[3])} rx="2" fill="#4a5462" aria-hidden="true" />;
 }
 
 /**
@@ -194,13 +210,13 @@ export default function MapGrid({ layout, mode = 'live', zoom = 1, selectedId = 
         };
         if (el.kind !== 'SPACE') {
           const fill = { ROAD: '#d5d9df', ENTRANCE: '#c9f0d6', EXIT: '#fde2cc', BLOCKED: 'url(#nx-hatch)' }[el.kind];
-          const text = { ROAD: '', ENTRANCE: 'Entrada', EXIT: 'Salida', BLOCKED: el.label }[el.kind];
+          const text = { ROAD: '', ENTRANCE: el.label ?? 'Entrada', EXIT: el.label ?? 'Salida', BLOCKED: el.label }[el.kind];
           return (
             <g {...common} onClick={editor ? () => onSelect?.(el.id) : undefined}>
               <rect x={x + 1} y={y + 1} width={w - 2} height={h - 2} rx="4" fill={fill} stroke={el.kind === 'BLOCKED' ? '#8a9099' : 'none'} strokeDasharray={el.kind === 'BLOCKED' ? '4 3' : undefined} />
               {el.kind === 'ROAD' && w > CELL && <line x1={x + 8} x2={x + w - 8} y1={y + h / 2} y2={y + h / 2} stroke="#fff" strokeWidth="2" strokeDasharray="8 6" aria-hidden="true" />}
               {text && (
-                <text x={x + w / 2} y={y + h / 2} className="nx-map__label" textAnchor="middle" dominantBaseline="middle">
+                <text x={x + w / 2} y={y + h / 2} className="nx-map__label" textAnchor="middle" dominantBaseline="middle" transform={h > w && w <= CELL ? `rotate(-90 ${x + w / 2} ${y + h / 2})` : undefined}>
                   {el.kind === 'ENTRANCE' ? '➜ ' : ''}{text}
                 </text>
               )}
@@ -238,6 +254,8 @@ export default function MapGrid({ layout, mode = 'live', zoom = 1, selectedId = 
             />
             {el.state === 'BLOCKED' && mode !== 'heat' && <rect x={x + 3} y={y + 3} width={w - 6} height={h - 6} rx="6" fill="url(#nx-hatch)" opacity="0.7" aria-hidden="true" />}
             {el.covered && <path d={`M${x + w - 18} ${y + 3} h15 v15 z`} fill="#8a6d3b" opacity="0.8" aria-hidden="true" />}
+            {/* Frente del carro (parqueo en reversa): barra gruesa en el lado que mira a la vía */}
+            {el.facing && mode !== 'heat' && <FacingBar facing={el.facing} x={x} y={y} w={w} h={h} />}
             {mode !== 'heat' && <SpaceIcons el={el} x={x} y={y} w={w} />}
             <text x={x + w / 2} y={y + h / 2 + (el.entry ? -2 : 4)} className="nx-map__code" fill={textColor} textAnchor="middle" dominantBaseline="middle">
               {el.code}
@@ -269,6 +287,8 @@ export function MapLegend({ counts }) {
       <li><svg width="14" height="14" aria-hidden="true"><BikeIcon x={1} y={1} /></svg> Cicla</li>
       <li><svg width="14" height="14" aria-hidden="true"><WheelchairIcon x={1} y={1} /></svg> Movilidad reducida</li>
       <li><svg width="14" height="14" aria-hidden="true"><path d="M0 0h13v13z" fill="#8a6d3b" opacity="0.8" /></svg> Techado</li>
+      <li><svg width="14" height="14" aria-hidden="true"><KeyIcon x={1} y={1} /></svg> Pide llaves</li>
+      <li><svg width="18" height="18" aria-hidden="true"><rect x="1" y="1" width="16" height="16" rx="4" fill="#fff" stroke="#8a9099" /><rect x="12" y="4" width="3" height="10" rx="1.5" fill="#4a5462" /></svg> Frente del carro (reversa)</li>
     </ul>
   );
 }

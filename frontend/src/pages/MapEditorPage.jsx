@@ -17,13 +17,14 @@ const TOOLS = [
   { key: 'CAR', label: 'Puesto carro', kind: 'SPACE', spaceType: 'CAR' },
   { key: 'MOTORCYCLE', label: 'Puesto moto', kind: 'SPACE', spaceType: 'MOTORCYCLE' },
   { key: 'BICYCLE', label: 'Puesto cicla', kind: 'SPACE', spaceType: 'BICYCLE' },
+  { key: 'MOTORCYCLE_BICYCLE', label: 'Puesto moto y cicla', kind: 'SPACE', spaceType: 'MOTORCYCLE_BICYCLE' },
   { key: 'REDUCED_MOBILITY', label: 'Movilidad reducida', kind: 'SPACE', spaceType: 'REDUCED_MOBILITY' },
   { key: 'ROAD', label: 'Vía', kind: 'ROAD' },
   { key: 'ENTRANCE', label: 'Entrada', kind: 'ENTRANCE' },
   { key: 'EXIT', label: 'Salida', kind: 'EXIT' },
   { key: 'BLOCKED', label: 'Área no disponible', kind: 'BLOCKED' },
 ];
-const PREFIX = { CAR: 'A', MOTORCYCLE: 'M', BICYCLE: 'C', REDUCED_MOBILITY: 'R' };
+const PREFIX = { CAR: 'A', MOTORCYCLE: 'M', BICYCLE: 'C', MOTORCYCLE_BICYCLE: 'M', REDUCED_MOBILITY: 'R' };
 const EMPTY = { rows: 10, cols: 12, elements: [] };
 
 let seq = 0;
@@ -109,7 +110,7 @@ export default function MapEditorPage() {
     const t = TOOLS.find((x) => x.key === tool);
     const el =
       t.kind === 'SPACE'
-        ? withSize({ id: newId(), kind: 'SPACE', row, col, code: nextCode(layout.elements, PREFIX[t.spaceType]), spaceType: t.spaceType, usage: 'HOURLY', covered: false, size: '1x1', orientation: 'H' })
+        ? withSize({ id: newId(), kind: 'SPACE', row, col, code: nextCode(layout.elements, PREFIX[t.spaceType]), spaceType: t.spaceType, usage: 'HOURLY', covered: false, requiresKeys: false, facing: null, size: '1x1', orientation: 'H' })
         : { id: newId(), kind: t.kind, row, col, width: 1, height: 1, ...(t.kind === 'BLOCKED' ? { label: 'No disponible' } : {}) };
     change((l) => ({ ...l, elements: [...l.elements, el] }));
     setSelectedId(el.id);
@@ -307,6 +308,7 @@ function Properties({ el, onChange, onRotate, onDuplicate, onDelete }) {
               <option value="CAR">Carro</option>
               <option value="MOTORCYCLE">Moto</option>
               <option value="BICYCLE">Cicla</option>
+              <option value="MOTORCYCLE_BICYCLE">Moto y cicla</option>
               <option value="REDUCED_MOBILITY">Movilidad reducida</option>
             </select>
           </label>
@@ -326,10 +328,29 @@ function Properties({ el, onChange, onRotate, onDuplicate, onDelete }) {
             </select>
           </label>
           <label className="nx-check"><input type="checkbox" checked={el.covered} onChange={(e) => onChange({ covered: e.target.checked })} /><span>Techado</span></label>
+          <label className="nx-check">
+            <input type="checkbox" checked={Boolean(el.requiresKeys)} onChange={(e) => onChange({ requiresKeys: e.target.checked })} />
+            <span>Pide llaves (bloquea otros puestos)</span>
+          </label>
+          <label className="nx-form__field">
+            <span>Frente del carro hacia (reversa)</span>
+            <select value={el.facing ?? ''} onChange={(e) => onChange({ facing: e.target.value || null })}>
+              <option value="">Sin indicar</option>
+              <option value="N">Arriba</option>
+              <option value="S">Abajo</option>
+              <option value="E">Derecha</option>
+              <option value="W">Izquierda</option>
+            </select>
+          </label>
         </>
       ) : (
         <>
-          {el.kind === 'BLOCKED' && <label className="nx-form__field"><span>Etiqueta</span><input value={el.label} maxLength={40} onChange={(e) => onChange({ label: e.target.value })} /></label>}
+          {['BLOCKED', 'ENTRANCE', 'EXIT'].includes(el.kind) && (
+            <label className="nx-form__field">
+              <span>Etiqueta</span>
+              <input value={el.label ?? ''} maxLength={40} placeholder={{ ENTRANCE: 'Entrada', EXIT: 'Salida', BLOCKED: 'No disponible' }[el.kind]} onChange={(e) => onChange({ label: e.target.value })} />
+            </label>
+          )}
           <div className="nx-form__grid nx-form__grid--2">
             <label className="nx-form__field"><span>Ancho</span><input type="number" min="1" value={el.width} onChange={(e) => onChange({ width: Math.max(1, Number(e.target.value) || 1) })} /></label>
             <label className="nx-form__field"><span>Alto</span><input type="number" min="1" value={el.height} onChange={(e) => onChange({ height: Math.max(1, Number(e.target.value) || 1) })} /></label>

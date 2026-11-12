@@ -6,7 +6,7 @@ import MapGrid, { MapLegend, MapViewport } from './MapGrid.jsx';
 
 // Elegir el puesto de una entrada tocando el mapa (RF50). Solo se pueden tocar los puestos libres
 // que sirven para el vehículo; la API vuelve a validar al registrar.
-const ALLOWED = { CAR: ['CAR', 'REDUCED_MOBILITY'], MOTORCYCLE: ['MOTORCYCLE'], BICYCLE: ['BICYCLE'] };
+const ALLOWED = { CAR: ['CAR', 'REDUCED_MOBILITY'], MOTORCYCLE: ['MOTORCYCLE', 'MOTORCYCLE_BICYCLE'], BICYCLE: ['BICYCLE', 'MOTORCYCLE_BICYCLE'] };
 
 export default function SpacePicker({ zoneId, vehicleType, plate, offline, snapshot, openEntries, suggestedId, onClose }) {
   const [map, setMap] = useState(null);
@@ -47,7 +47,7 @@ export default function SpacePicker({ zoneId, vehicleType, plate, offline, snaps
               zoom={zoom}
               selectedId={map.elements.find((e) => e.spaceId === suggestedId)?.id}
               isSelectable={selectable}
-              onSelect={(el) => onClose({ id: el.spaceId, code: el.code })}
+              onSelect={(el) => onClose({ id: el.spaceId, code: el.code, requiresKeys: Boolean(el.requiresKeys) })}
             />
           </MapViewport>
         </>

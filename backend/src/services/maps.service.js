@@ -129,13 +129,12 @@ async function copyFrom(req, rawZoneId, body) {
   return saveDraft(req, zone.id, { rows: rows[0].rows, cols: rows[0].cols, elements: rows[0].elements, notes: `Copia de ${source.site_name} · ${source.name}` });
 }
 
-async function publishDraft(req, rawZoneId) {
-  const zone = await loadZone(req, rawZoneId);
-  const result = await withTransaction(async (client) => {
-    await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [`zone-map-${zone.id}`]);
-    const { rows } = await client.query("SELECT * FROM zone_maps WHERE zone_id = $1 AND status = 'DRAFT' FOR UPDATE", [zone.id]);
-    const draft = rows[0];
-    if (!draft) throw new HttpError(404, 'No hay borrador para publicar', { code: 'NOT_FOUND' });
+/**
+ * Publica el borrador `draft` de la zona dentro de la transacción: pasa los puestos a parking_spaces,
+ * archiva la versión anterior y deja auditoría. La usan el editor y el seed (mapa de Facaparking).
+ */
+async function applyPublication(client, zone, draft, { userId = null, req = null } = {}) {
+  {
     const layout = layoutOrThrow({ rows: draft.rows, cols: draft.cols, elements: draft.elements });
     const spaces = layout.elements.filter((e) => e.kind === 'SPACE');
 
@@ -157,20 +156,21 @@ async function publishDraft(req, rawZoneId) {
     }
 
     for (const sp of spaces) {
-      const values = [sp.spaceType, sp.usage, sp.covered, sp.row, sp.col, sp.width, sp.height, entranceDistance(sp, layout.elements), draft.version];
+      const values = [sp.spaceType, sp.usage, sp.covered, sp.row, sp.col, sp.width, sp.height, entranceDistance(sp, layout.elements), draft.version, sp.requiresKeys, sp.facing];
       const existing = byCode.get(sp.code);
       if (existing) {
         await client.query(
           `UPDATE parking_spaces SET space_type = $2, usage = $3, covered = $4, row = $5, col = $6, width = $7, height = $8,
-                  entrance_distance = $9, map_version = $10, is_active = true,
+                  entrance_distance = $9, map_version = $10, requires_keys = $11, facing = $12, is_active = true,
                   reserved_plan_id = CASE WHEN $3 = 'HOURLY' THEN NULL ELSE reserved_plan_id END
             WHERE id = $1`,
           [existing.id, ...values],
         );
       } else {
         await client.query(
-          `INSERT INTO parking_spaces (site_id, zone_id, code, space_type, usage, covered, row, col, width, height, entrance_distance, map_version)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+          `INSERT INTO parking_spaces (site_id, zone_id, code, space_type, usage, covered, row, col, width, height, entrance_distance,
+                                       map_version, requires_keys, facing)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
           [zone.site_id, zone.id, sp.code, ...values],
         );
       }
@@ -184,11 +184,11 @@ async function publishDraft(req, rawZoneId) {
       );
     }
     await client.query("UPDATE zone_maps SET status = 'ARCHIVED' WHERE zone_id = $1 AND status = 'PUBLISHED'", [zone.id]);
-    await client.query("UPDATE zone_maps SET status = 'PUBLISHED', published_at = now(), published_by = $2 WHERE id = $1", [draft.id, req.user.id]);
+    await client.query("UPDATE zone_maps SET status = 'PUBLISHED', published_at = now(), published_by = $2 WHERE id = $1", [draft.id, userId]);
     await recordAudit(
       {
         req,
-        userId: req.user.id,
+        userId,
         siteId: zone.site_id,
         action: 'MAP_PUBLISHED',
         entityType: 'zone',
@@ -198,6 +198,17 @@ async function publishDraft(req, rawZoneId) {
       client,
     );
     return { version: draft.version };
+  }
+}
+
+async function publishDraft(req, rawZoneId) {
+  const zone = await loadZone(req, rawZoneId);
+  const result = await withTransaction(async (client) => {
+    await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [`zone-map-${zone.id}`]);
+    const { rows } = await client.query("SELECT * FROM zone_maps WHERE zone_id = $1 AND status = 'DRAFT' FOR UPDATE", [zone.id]);
+    const draft = rows[0];
+    if (!draft) throw new HttpError(404, 'No hay borrador para publicar', { code: 'NOT_FOUND' });
+    return applyPublication(client, zone, draft, { userId: req.user.id, req });
   });
   publish(zone.site_id, 'map:published', { zoneId: zone.id, version: result.version });
   return zoneMaps(req, zone.id);
@@ -212,7 +223,7 @@ async function liveZone(req, rawZoneId) {
   const [map, spaces] = await Promise.all([
     query("SELECT * FROM zone_maps WHERE zone_id = $1 AND status = 'PUBLISHED'", [zone.id]),
     query(
-      `SELECT ps.*, e.id AS entry_id, e.plate, e.entry_at, e.vehicle_type, e.receipt_prefix || e.receipt_number AS receipt,
+      `SELECT ps.*, e.id AS entry_id, e.plate, e.entry_at, e.vehicle_type, e.receipt_prefix || e.receipt_number AS receipt, e.keys_received,
               floor(extract(epoch FROM now() - e.entry_at) / 60)::int AS minutes, now() AS server_now
          FROM parking_spaces ps
          LEFT JOIN entries e ON e.space_id = ps.id AND e.status = 'OPEN'
@@ -237,7 +248,9 @@ async function liveZone(req, rawZoneId) {
       state,
       reserved: Boolean(s?.reserved_plan_id),
       blockedReason: s?.blocked_reason ?? null,
-      entry: s?.entry_id ? { id: Number(s.entry_id), plate: s.plate, vehicleType: s.vehicle_type, receipt: s.receipt, entryAt: s.entry_at, minutes: s.minutes } : null,
+      entry: s?.entry_id
+        ? { id: Number(s.entry_id), plate: s.plate, vehicleType: s.vehicle_type, receipt: s.receipt, entryAt: s.entry_at, minutes: s.minutes, keysReceived: s.keys_received }
+        : null,
     };
   });
   return {
@@ -371,4 +384,4 @@ async function heatmap(req, rawZoneId, filters = {}) {
   };
 }
 
-module.exports = { zoneMaps, saveDraft, discardDraft, copyFrom, publishDraft, liveZone, siteMaps, indicators, hourlyHistory, heatmap };
+module.exports = { applyPublication, zoneMaps, saveDraft, discardDraft, copyFrom, publishDraft, liveZone, siteMaps, indicators, hourlyHistory, heatmap };

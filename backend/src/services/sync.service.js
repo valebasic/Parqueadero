@@ -177,20 +177,26 @@ async function applyEntry(client, user, op, deviceId, { force = false } = {}) {
   // Puesto (RF50, sin conexión): el que eligió el equipo si sigue libre; si no, el sugerido ahora.
   // Nunca genera conflicto: el mapa se corrige al sincronizar.
   const { assignForEntry } = require('./spaces.service');
-  const spaceId = await assignForEntry(client, {
+  const { keysFields } = require('./spaces.service');
+  const space = await assignForEntry(client, {
     siteId, zoneId: shift.zone_id, plate, vehicleType, requestedSpaceId: d.spaceId ? Number(d.spaceId) : null, lenient: true,
   });
+  const spaceId = space?.id ?? null;
+  // Las llaves se respetan solo si quedó en el puesto que eligió el equipo
+  const keys = keysFields(space?.requiresKeys, space?.id === Number(d.spaceId) ? d.keysReceived : undefined, user.id);
 
   const { rows: site } = await client.query('SELECT receipt_prefix FROM sites WHERE id = $1', [siteId]);
   const prefix = site[0].receipt_prefix;
   const number = await nextReceiptNumber(client, siteId, prefix);
   const { rows } = await client.query(
     `INSERT INTO entries (site_id, zone_id, plate, vehicle_type, receipt_prefix, receipt_number, entry_at,
-                          entry_by, entry_shift_id, monthly_plan_id, origin, provisional_receipt, space_id)
-     SELECT $1, sh.zone_id, $2, $3, $4, $5, $6, $7, sh.id, $8, 'OFFLINE', $9, $11 FROM shifts sh WHERE sh.id = $10
+                          entry_by, entry_shift_id, monthly_plan_id, origin, provisional_receipt, space_id,
+                          keys_received, keys_received_by, keys_received_at)
+     SELECT $1, sh.zone_id, $2, $3, $4, $5, $6, $7, sh.id, $8, 'OFFLINE', $9, $11, $12, $13, $14 FROM shifts sh WHERE sh.id = $10
      RETURNING id`,
     [siteId, plate, vehicleType, prefix, number, entryAt, user.id,
-      monthly && !monthly.blocksEntry ? monthly.id : null, op.provisionalReceipt ?? null, shift.id, spaceId],
+      monthly && !monthly.blocksEntry ? monthly.id : null, op.provisionalReceipt ?? null, shift.id, spaceId,
+      keys.received, keys.by, keys.at],
   );
   return { siteId, entryId: rows[0].id, receipt: `${prefix}${number}`, event: { type: 'entry:created', payload: { entryId: rows[0].id, plate, receipt: `${prefix}${number}`, offline: true, spaceId } } };
 }

@@ -26,6 +26,8 @@ spacesRouter.post('/:id/block', async (req, res) => ok(res, await spaces.blockSp
 spacesRouter.post('/:id/unblock', async (req, res) => ok(res, await spaces.unblockSpace(req, req.params.id, req.body)));
 spacesRouter.put('/:id/reservation', admins, async (req, res) => ok(res, await spaces.reserveSpace(req, req.params.id, req.body)));
 // Mover un vehículo de puesto (RF51)
+// Llaves del vehículo en un puesto que las pide
+spacesRouter.post('/keys/:entryId', async (req, res) => ok(res, await spaces.recordKeys(req, req.params.entryId, req.body)));
 spacesRouter.post('/move/:entryId', async (req, res) => ok(res, await spaces.moveEntry(req, req.params.entryId, req.body)));
 
 module.exports = { mapsRouter, spacesRouter };

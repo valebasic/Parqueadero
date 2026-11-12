@@ -13,7 +13,7 @@ const { calculateFare } = require('./tariff.service');
 const { requireOpenShift } = require('./shifts.service');
 const { nextReceiptNumber, buildReceipt } = require('./receipts.service');
 const { publish } = require('../realtime/bus');
-const { assignForEntry } = require('./spaces.service');
+const { assignForEntry, keysFields } = require('./spaces.service');
 
 const VEHICLE_TYPES = ['CAR', 'MOTORCYCLE', 'BICYCLE'];
 const MONTHLY_GRACE_DAYS = 3;
@@ -45,6 +45,7 @@ function toDto(e) {
     exitAt: e.exit_at,
     monthlyPlanId: e.monthly_plan_id,
     spaceId: e.space_id ?? null,
+    keysReceived: e.keys_received ?? null,
     calculatedAmount: e.calculated_amount,
     discountAmount: e.discount_amount,
     discountReason: e.discount_reason,
@@ -255,7 +256,10 @@ async function createEntry(req, body) {
 
     // RF50: puesto (el elegido en el mapa o el sugerido). Sin plano en la zona → sin puesto, como antes.
     const requestedSpaceId = body?.spaceId ? Number.parseInt(body.spaceId, 10) : null;
-    const spaceId = await assignForEntry(client, { siteId, zoneId: shift.zoneId, plate, vehicleType, requestedSpaceId });
+    const space = await assignForEntry(client, { siteId, zoneId: shift.zoneId, plate, vehicleType, requestedSpaceId });
+    const spaceId = space?.id ?? null;
+    // Puesto que pide llaves: se guarda si se recibieron y quién las recibió
+    const keys = keysFields(space?.requiresKeys, body?.keysReceived, req.user.id);
 
     const { rows: site } = await client.query('SELECT receipt_prefix FROM sites WHERE id = $1', [siteId]);
     const prefix = site[0].receipt_prefix;
@@ -264,10 +268,10 @@ async function createEntry(req, body) {
     try {
       const { rows } = await client.query(
         `INSERT INTO entries (site_id, zone_id, plate, vehicle_type, receipt_prefix, receipt_number,
-                              entry_by, entry_shift_id, monthly_plan_id, space_id)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id`,
+                              entry_by, entry_shift_id, monthly_plan_id, space_id, keys_received, keys_received_by, keys_received_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id`,
         [siteId, shift.zoneId, plate, vehicleType, prefix, number, req.user.id, shift.shiftId,
-          monthly && !monthly.blocksEntry ? monthly.id : null, spaceId],
+          monthly && !monthly.blocksEntry ? monthly.id : null, spaceId, keys.received, keys.by, keys.at],
       );
       return rows[0].id;
     } catch (err) {

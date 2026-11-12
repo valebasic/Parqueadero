@@ -488,3 +488,19 @@ en auditoría (`SPACE_*`, `ENTRY_SPACE_MOVED`, `MAP_*`) y se publican en tiempo 
 entrada abierta; el equipo sugiere puesto con el mismo criterio (sin reservas) y lo envía en la
 operación. Al sincronizar, si ese puesto ya no está libre se asigna otro (o ninguno): nunca genera
 conflicto.
+
+### Plano de Facaparking (seed) y puestos que piden llaves
+
+- `npm run db:seed` / `db:reset` crea y publica el plano de la zona **Principal** de Facaparking
+  ([`src/db/seed-data/facaparking-map.js`](src/db/seed-data/facaparking-map.js), con el croquis en
+  comentarios) solo si la zona todavía no tiene plano: no pisa lo que se edite después en el editor.
+  `SEED_SITE_MAP=0` lo omite (las pruebas parten de zonas sin plano; `tests/db/facaparking-map.test.js`
+  prueba el seed con `SEED_SITE_MAP=1`).
+- Atributos nuevos del puesto: `requiresKeys` (pide llaves: puestos de isla que bloquean puestos de
+  pared), `facing` (lado que mira a la vía; parqueo en reversa) y el tipo `MOTORCYCLE_BICYCLE` (moto y cicla).
+- Sugerencia: primero los puestos que **no** piden llaves, del más cercano a la entrada al más lejano
+  (empates por número de puesto); los que piden llaves solo cuando no quedan otros del tipo.
+- Llaves: `POST /api/entries` acepta `keysReceived`; si el puesto pide llaves la entrada guarda
+  `keys_received` (sí/no), quién y cuándo. `POST /api/spaces/keys/:entryId { received }` las registra
+  después (auditado `ENTRY_KEYS_RECORDED`). La cotización, el mapa en vivo y el recibo traen
+  `keysReceived` para recordar devolverlas en la salida. Mover un vehículo conserva el registro.

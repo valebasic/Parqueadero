@@ -8,7 +8,9 @@
 //   - Un puesto reservado para un titular solo lo ocupa ese titular (y se le sugiere primero).
 //   - Bloqueado o ya ocupado → no se asigna. Dos entradas nunca quedan en el mismo puesto (índice
 //     único parcial + bloqueo de fila; la sugerencia salta los puestos que otra caja está tomando).
-//   - Sugerencia: el puesto libre adecuado más cercano a la entrada del plano.
+//   - Sugerencia: primero los que NO piden llaves, del más cercano a la entrada al más lejano; los que
+//     piden llaves (islas que bloquean puestos de pared) solo cuando no quedan otros del tipo.
+//   - Puesto que pide llaves: la entrada guarda si se recibieron (keys_received) y quién las recibió.
 const { query, withTransaction } = require('../db/pool');
 const HttpError = require('../middlewares/httpError');
 const { assertSiteAccess, canAccessSite } = require('../middlewares/authorize');
@@ -16,10 +18,15 @@ const { normalizePlate, detectVehicleType, plateError, VEHICLE_LABELS } = requir
 const { recordAudit } = require('./audit.service');
 const { publish } = require('../realtime/bus');
 
-const SPACE_LABELS = { CAR: 'carro', MOTORCYCLE: 'moto', BICYCLE: 'cicla', REDUCED_MOBILITY: 'movilidad reducida' };
-// Tipos de puesto que puede ocupar cada vehículo (el primero es el que se sugiere)
-const ALLOWED_TYPES = { CAR: ['CAR', 'REDUCED_MOBILITY'], MOTORCYCLE: ['MOTORCYCLE'], BICYCLE: ['BICYCLE'] };
-const SUGGESTED_TYPES = { CAR: ['CAR'], MOTORCYCLE: ['MOTORCYCLE'], BICYCLE: ['BICYCLE'] };
+const { SPACE_TYPE_FOR_VEHICLE: SUGGESTED_TYPES } = require('../lib/maplayout');
+
+const SPACE_LABELS = { CAR: 'carro', MOTORCYCLE: 'moto', BICYCLE: 'cicla', MOTORCYCLE_BICYCLE: 'moto y cicla', REDUCED_MOBILITY: 'movilidad reducida' };
+// Tipos de puesto que puede ocupar cada vehículo (movilidad reducida: un carro, si el operador lo elige)
+const ALLOWED_TYPES = {
+  CAR: ['CAR', 'REDUCED_MOBILITY'],
+  MOTORCYCLE: ['MOTORCYCLE', 'MOTORCYCLE_BICYCLE'],
+  BICYCLE: ['BICYCLE', 'MOTORCYCLE_BICYCLE'],
+};
 
 const OCCUPIED = "EXISTS (SELECT 1 FROM entries e WHERE e.space_id = ps.id AND e.status = 'OPEN')";
 
@@ -83,7 +90,7 @@ async function zoneHasMap(client, zoneId) {
  */
 async function bestSpace(client, zoneId, { vehicleType, planIds, lock = false }) {
   const { rows } = await client.query(
-    `SELECT ps.id, ps.code, ps.space_type, ps.usage, ps.entrance_distance, ps.reserved_plan_id
+    `SELECT ps.id, ps.code, ps.space_type, ps.usage, ps.entrance_distance, ps.reserved_plan_id, ps.requires_keys
        FROM parking_spaces ps
       WHERE ps.zone_id = $1 AND ps.is_active AND ps.blocked_at IS NULL
         AND (
@@ -92,7 +99,7 @@ async function bestSpace(client, zoneId, { vehicleType, planIds, lock = false })
               AND (ps.usage <> 'MONTHLY' OR cardinality($3::bigint[]) > 0))
         )
         AND NOT ${OCCUPIED}
-      ORDER BY (ps.reserved_plan_id IS NOT NULL) DESC, ps.entrance_distance NULLS LAST, ps.code
+      ORDER BY (ps.reserved_plan_id IS NOT NULL) DESC, ps.requires_keys, ps.entrance_distance NULLS LAST, length(ps.code), ps.code
       LIMIT 1
       ${lock ? 'FOR UPDATE OF ps SKIP LOCKED' : ''}`,
     [zoneId, SUGGESTED_TYPES[vehicleType] ?? [], planIds],
@@ -101,7 +108,7 @@ async function bestSpace(client, zoneId, { vehicleType, planIds, lock = false })
 }
 
 /**
- * Puesto para una entrada nueva, dentro de su transacción.
+ * Puesto para una entrada nueva, dentro de su transacción. Devuelve { id, code, requiresKeys } o null.
  *   requestedSpaceId: el que eligió el operador (se valida y si no sirve → 409, salvo `lenient`)
  *   sin elegir: el sugerido. Sin plano en la zona → null (la entrada sigue sin puesto).
  */
@@ -116,12 +123,12 @@ async function assignForEntry(client, { siteId, zoneId, plate, vehicleType, requ
       if (!lenient) throw spaceError('SPACE_OTHER_ZONE', space);
     } else {
       const why = whyNotAssignable(space, { vehicleType, planIds });
-      if (!why) return Number(space.id);
+      if (!why) return { id: Number(space.id), code: space.code, requiresKeys: space.requires_keys };
       if (!lenient) throw spaceError(why, space, ` y el vehículo es ${VEHICLE_LABELS[vehicleType].toLowerCase()}`);
     }
   }
   const best = await bestSpace(client, zoneId, { vehicleType, planIds, lock: true });
-  return best ? Number(best.id) : null;
+  return best ? { id: Number(best.id), code: best.code, requiresKeys: best.requires_keys } : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -158,7 +165,9 @@ async function suggest(req, filters) {
     hasMap: true,
     zoneId,
     vehicleType,
-    suggested: best ? { id: Number(best.id), code: best.code, reserved: best.reserved_plan_id != null, entranceDistance: best.entrance_distance } : null,
+    suggested: best
+      ? { id: Number(best.id), code: best.code, reserved: best.reserved_plan_id != null, requiresKeys: best.requires_keys, entranceDistance: best.entrance_distance }
+      : null,
   };
 }
 
@@ -261,8 +270,12 @@ async function moveEntry(req, rawEntryId, body) {
     const why = whyNotAssignable(target, { vehicleType: e.vehicle_type, planIds });
     if (why) throw spaceError(why, target, ` y el vehículo es ${VEHICLE_LABELS[e.vehicle_type].toLowerCase()}`);
     const { rows: prev } = e.space_id ? await client.query('SELECT code FROM parking_spaces WHERE id = $1', [e.space_id]) : { rows: [] };
+    const keys = keysFields(target.requires_keys, body?.keysReceived, req.user.id, e);
     try {
-      await client.query('UPDATE entries SET space_id = $2 WHERE id = $1', [entryId, target.id]);
+      await client.query(
+        'UPDATE entries SET space_id = $2, keys_received = $3, keys_received_by = $4, keys_received_at = $5 WHERE id = $1',
+        [entryId, target.id, keys.received, keys.by, keys.at],
+      );
     } catch (err) {
       if (err.constraint === 'entries_one_open_per_space') throw spaceError('SPACE_TAKEN', target);
       throw err;
@@ -279,13 +292,55 @@ async function moveEntry(req, rawEntryId, body) {
       },
       client,
     );
-    return { siteId: e.site_id, zoneId: target.zone_id, plate: e.plate, from: prev[0]?.code ?? null, to: target.code };
+    return { siteId: e.site_id, zoneId: target.zone_id, plate: e.plate, from: prev[0]?.code ?? null, to: target.code, requiresKeys: target.requires_keys, keysReceived: keys.received };
   });
   publish(out.siteId, 'space:changed', { entryId, zoneId: out.zoneId, action: 'moved', to: out.to });
-  return { entryId, plate: out.plate, from: out.from, to: out.to };
+  return { entryId, plate: out.plate, from: out.from, to: out.to, requiresKeys: out.requiresKeys, keysReceived: out.keysReceived };
+}
+
+/**
+ * Campos de llaves de una entrada según el puesto: si no pide llaves → NULL (salvo que ya las tuviera
+ * recibidas); si pide, si se recibieron (true/false) y quién.
+ */
+function keysFields(requiresKeys, keysReceived, userId, previous = null) {
+  if (!requiresKeys) {
+    if (previous?.keys_received) return { received: true, by: previous.keys_received_by, at: previous.keys_received_at };
+    return { received: null, by: null, at: null };
+  }
+  if (keysReceived === true) return { received: true, by: userId, at: new Date() };
+  if (previous?.keys_received && keysReceived !== false) return { received: true, by: previous.keys_received_by, at: previous.keys_received_at };
+  return { received: false, by: null, at: null };
+}
+
+// Registrar (o corregir) si se recibieron las llaves de un vehículo
+async function recordKeys(req, rawEntryId, body) {
+  const entryId = Number.parseInt(rawEntryId, 10);
+  if (typeof body?.received !== 'boolean') throw new HttpError(400, 'Indique si se recibieron las llaves', { code: 'VALIDATION_ERROR' });
+  const out = await withTransaction(async (client) => {
+    const { rows } = await client.query(
+      'SELECT e.*, ps.requires_keys, ps.code AS space_code FROM entries e LEFT JOIN parking_spaces ps ON ps.id = e.space_id WHERE e.id = $1 FOR UPDATE OF e',
+      [entryId],
+    );
+    const e = rows[0];
+    if (!e) throw new HttpError(404, 'Entrada no encontrada', { code: 'NOT_FOUND' });
+    await assertSiteAccess(req, e.site_id);
+    if (e.status !== 'OPEN') throw new HttpError(409, 'El vehículo ya salió', { code: 'ENTRY_NOT_OPEN' });
+    if (!e.requires_keys) throw new HttpError(409, 'El puesto de este vehículo no pide llaves', { code: 'KEYS_NOT_REQUIRED' });
+    const keys = keysFields(true, body.received, req.user.id);
+    await client.query('UPDATE entries SET keys_received = $2, keys_received_by = $3, keys_received_at = $4 WHERE id = $1', [entryId, keys.received, keys.by, keys.at]);
+    await recordAudit(
+      { req, userId: req.user.id, siteId: e.site_id, action: 'ENTRY_KEYS_RECORDED', entityType: 'entry', entityId: entryId, details: { plate: e.plate, space: e.space_code, received: body.received } },
+      client,
+    );
+    return { siteId: e.site_id, zoneId: e.zone_id, plate: e.plate };
+  });
+  publish(out.siteId, 'space:changed', { entryId, zoneId: out.zoneId, action: 'keys' });
+  return { entryId, plate: out.plate, keysReceived: body.received };
 }
 
 module.exports = {
+  keysFields,
+  recordKeys,
   assignForEntry,
   suggest,
   blockSpace,

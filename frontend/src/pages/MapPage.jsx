@@ -14,7 +14,7 @@ import MapGrid, { MapLegend, MapViewport } from '../components/map/MapGrid.jsx';
 //   reloj. Al tocar un puesto: placa, hora de entrada y tiempo transcurrido, y las acciones
 //   (bloquear/liberar con motivo, mover el vehículo; reservar para una mensualidad: AS/AG).
 //   Se actualiza con los eventos de tiempo real de la sede. Sin conexión usa la copia local.
-const TYPE = { CAR: 'Carro', MOTORCYCLE: 'Moto', BICYCLE: 'Cicla', REDUCED_MOBILITY: 'Movilidad reducida' };
+const TYPE = { CAR: 'Carro', MOTORCYCLE: 'Moto', BICYCLE: 'Cicla', MOTORCYCLE_BICYCLE: 'Moto y cicla', REDUCED_MOBILITY: 'Movilidad reducida' };
 const USAGE = { MONTHLY: 'Solo mensualidad', HOURLY: 'Por hora', MIXED: 'Mixto (hora y mensualidad)' };
 const STATE = { FREE: 'Libre', OCCUPIED: 'Ocupado', BLOCKED: 'Bloqueado' };
 
@@ -161,6 +161,14 @@ export default function MapPage() {
                 onBlock={() => setDialog({ kind: space.state === 'BLOCKED' ? 'unblock' : 'block', space })}
                 onMove={() => { setMoving(space); setSelected(null); }}
                 onReserve={() => setDialog({ kind: 'reserve', space })}
+                onKeys={async () => {
+                  try {
+                    await apiPost(`/spaces/keys/${space.entry.id}`, { received: true });
+                    load();
+                  } catch (e) {
+                    setError(e.message);
+                  }
+                }}
               />
             )}
           </aside>
@@ -182,7 +190,7 @@ export default function MapPage() {
   );
 }
 
-function SpaceDetail({ space, online, admin, onClose, onBlock, onMove, onReserve }) {
+function SpaceDetail({ space, online, admin, onClose, onBlock, onMove, onReserve, onKeys }) {
   return (
     <div className="nx-stack nx-stack--tight">
       <header className="nx-card__header">
@@ -194,12 +202,19 @@ function SpaceDetail({ space, online, admin, onClose, onBlock, onMove, onReserve
         <div><dt>Tipo</dt><dd>{TYPE[space.spaceType]}</dd></div>
         <div><dt>Uso</dt><dd>{USAGE[space.usage]}{space.reserved ? ' · reservado' : ''}</dd></div>
         <div><dt>Techado</dt><dd>{space.covered ? 'Sí' : 'No'}</dd></div>
+        {space.requiresKeys && <div><dt>Pide llaves</dt><dd>Sí: bloquea puestos de pared</dd></div>}
         {space.entry && (
           <>
             <div><dt>Placa</dt><dd><strong>{space.entry.plate}</strong>{space.entry.offline ? ' (sin sincronizar)' : ''}</dd></div>
             <div><dt>Entrada</dt><dd>{formatTime12h(space.entry.entryAt)}<small className="nx-muted"> · {formatDateTime(space.entry.entryAt).split(' ')[0]}</small></dd></div>
             <div><dt>Tiempo</dt><dd>{formatDuration(Math.floor((Date.now() - new Date(space.entry.entryAt)) / 60000))}</dd></div>
             {space.entry.receipt && <div><dt>Recibo</dt><dd>{space.entry.receipt}</dd></div>}
+            {space.requiresKeys && (
+              <div>
+                <dt>Llaves</dt>
+                <dd className={space.entry.keysReceived ? '' : 'is-danger'}>{space.entry.keysReceived ? 'Recibidas' : 'No recibidas: solicitarlas'}</dd>
+              </div>
+            )}
           </>
         )}
         {space.state === 'BLOCKED' && space.blockedReason && <div><dt>Motivo</dt><dd>{space.blockedReason}</dd></div>}
@@ -210,6 +225,9 @@ function SpaceDetail({ space, online, admin, onClose, onBlock, onMove, onReserve
             <button type="button" className="nx-btn nx-btn--ghost nx-btn--sm" onClick={onBlock}>{space.state === 'BLOCKED' ? 'Liberar' : 'Bloquear'}</button>
           )}
           {space.state === 'OCCUPIED' && <button type="button" className="nx-btn nx-btn--ghost nx-btn--sm" onClick={onMove}>Mover vehículo</button>}
+          {space.state === 'OCCUPIED' && space.requiresKeys && space.entry?.id && !space.entry.keysReceived && (
+            <button type="button" className="nx-btn nx-btn--accent nx-btn--sm" onClick={onKeys}>Llaves recibidas</button>
+          )}
           {admin && space.usage !== 'HOURLY' && <button type="button" className="nx-btn nx-btn--ghost nx-btn--sm" onClick={onReserve}>{space.reserved ? 'Cambiar reserva' : 'Reservar'}</button>}
         </div>
       ) : (

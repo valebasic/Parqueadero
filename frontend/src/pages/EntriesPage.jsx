@@ -59,6 +59,9 @@ export default function EntriesPage() {
   const [suggestion, setSuggestion] = useState(null); // { hasMap, suggested: { id, code, reserved } | null }
   const [spaceChoice, setSpaceChoice] = useState(null); // { id, code }
   const [picking, setPicking] = useState(false);
+  // Puesto que pide llaves (isla): se avisa "Solicitar llaves" y se marca si se recibieron
+  const [keysOk, setKeysOk] = useState(false);
+  const spaceNeedsKeys = Boolean(spaceChoice ? spaceChoice.requiresKeys : suggestion?.suggested?.requiresKeys);
 
   const plate = normalizePlate(plateInput);
   const selectedRef = useRef(null);
@@ -190,6 +193,7 @@ export default function EntriesPage() {
     setSelected(null);
     setSpaceChoice(null);
     setSuggestion(null);
+    setKeysOk(false);
     setQuote(null);
     setPlateInput('');
     setLookup(null);
@@ -212,8 +216,8 @@ export default function EntriesPage() {
     setMessage(null);
     try {
       const receipt = offline
-        ? await registerEntryOffline({ user, shift, snapshot, plate, vehicleType, spaceId: spaceChoice?.id ?? null })
-        : await apiPost('/entries', { siteId, plate, vehicleType: vehicleType || undefined, spaceId: spaceChoice?.id });
+        ? await registerEntryOffline({ user, shift, snapshot, plate, vehicleType, spaceId: spaceChoice?.id ?? null, keysReceived: keysOk })
+        : await apiPost('/entries', { siteId, plate, vehicleType: vehicleType || undefined, spaceId: spaceChoice?.id, keysReceived: keysOk });
       reset(true);
       setMessage({
         type: 'ok',
@@ -222,6 +226,9 @@ export default function EntriesPage() {
           : `Entrada de ${receipt.plate} registrada (recibo ${receipt.receipt}).`,
       });
       if (receipt.space) setMessage((m) => ({ ...m, text: `${m.text} Puesto ${receipt.space.code}.` }));
+      if (receipt.space?.requiresKeys && !receipt.keysReceived) {
+        setMessage({ type: 'warn', text: `Solicitar las llaves de ${receipt.plate}: el puesto ${receipt.space.code} bloquea a otros. Cuando las reciba, márquelo en el Mapa.` });
+      }
       if (offline) notifyQueued();
       loadOpen();
       showReceipt(receipt);
@@ -359,7 +366,19 @@ export default function EntriesPage() {
               )}
               <button type="button" className="nx-linkbtn" onClick={() => setPicking(true)}>{spaceChoice ? 'Cambiar' : 'Elegir en el mapa'}</button>
               {spaceChoice && <> · <button type="button" className="nx-linkbtn" onClick={() => setSpaceChoice(null)}>Usar el sugerido</button></>}
+              {spaceNeedsKeys && (
+                <div className="nx-keys-alert" role="alert">
+                  <strong>Solicitar llaves:</strong> este puesto bloquea a otros.{' '}
+                  <label className="nx-check">
+                    <input type="checkbox" checked={keysOk} onChange={(e) => setKeysOk(e.target.checked)} />
+                    <span>Llaves recibidas</span>
+                  </label>
+                </div>
+              )}
             </div>
+          )}
+          {selected?.keysReceived && (
+            <div className="nx-keys-alert" role="status"><strong>Devolver las llaves</strong> del vehículo antes de que salga.</div>
           )}
         </div>
         <div className={`nx-bigtotal${goesToPending && selected ? ' is-pending' : ''}`} aria-live="polite">

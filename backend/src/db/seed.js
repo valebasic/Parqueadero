@@ -1,8 +1,12 @@
 // Datos iniciales: sede Facaparking, su zona, tarifas de la v1.0 (mvc/model.js), consecutivos
-// de recibos y el usuario AG inicial "Felipe". Se puede ejecutar varias veces sin duplicar nada.
+// de recibos, el plano publicado de la zona "Principal" (seed-data/facaparking-map.js) y el usuario
+// AG inicial "Felipe". Se puede ejecutar varias veces sin duplicar nada.
+// El plano solo se crea si la zona todavía no tiene ninguno (no pisa lo que se edite después).
+// SEED_SITE_MAP=0 lo omite (las pruebas parten de una zona sin plano).
 // La contraseña de Felipe sale de SEED_ADMIN_PASSWORD (.env); nunca está en el código.
 const bcrypt = require('bcrypt');
 const { withTransaction } = require('./pool');
+const facaparkingMap = require('./seed-data/facaparking-map');
 
 const BCRYPT_COST = 12;
 const MIN_PASSWORD_LENGTH = 8;
@@ -67,6 +71,10 @@ async function seed({ log = console.log } = {}) {
       [siteId, DEFAULT_ZONE.name, DEFAULT_ZONE.description, SITE.capacity],
     );
 
+    // Plano de la zona Principal (publicado, versión 1)
+    let mapCreated = false;
+    if (process.env.SEED_SITE_MAP !== '0') mapCreated = await seedMap(client, siteId);
+
     // Tarifas (solo si ese tipo de vehículo aún no tiene ninguna)
     for (const r of RATES) {
       await client.query(
@@ -104,12 +112,31 @@ async function seed({ log = console.log } = {}) {
     }
 
     log(`Seed aplicado: sede ${SITE.name} (id ${siteId}), ${RATES.length} tarifas, ` +
-      `usuario ${ADMIN.username} ${adminCreated ? 'creado' : 'ya existía (contraseña sin cambios)'}.`);
-    return { siteId, adminCreated };
+      `usuario ${ADMIN.username} ${adminCreated ? 'creado' : 'ya existía (contraseña sin cambios)'}, ` +
+      `plano de ${DEFAULT_ZONE.name} ${mapCreated ? 'publicado' : 'sin cambios'}.`);
+    return { siteId, adminCreated, mapCreated };
   });
 }
 
-module.exports = { seed, RATES, SITE };
+async function seedMap(client, siteId) {
+  const { validateLayout } = require('../lib/maplayout');
+  const { applyPublication } = require('../services/maps.service');
+  const { rows: zone } = await client.query('SELECT id, site_id, name FROM zones WHERE site_id = $1 AND name = $2', [siteId, facaparkingMap.zoneName]);
+  if (!zone[0]) return false;
+  const { rows: existing } = await client.query('SELECT 1 FROM zone_maps WHERE zone_id = $1 LIMIT 1', [zone[0].id]);
+  if (existing[0]) return false;
+  const layout = validateLayout(facaparkingMap.layout);
+  if (layout.errors.length) throw new Error(`El plano de Facaparking no es válido: ${layout.errors.join('; ')}`);
+  const { rows } = await client.query(
+    `INSERT INTO zone_maps (site_id, zone_id, version, status, rows, cols, elements, notes)
+     VALUES ($1, $2, 1, 'DRAFT', $3, $4, $5, $6) RETURNING *`,
+    [siteId, zone[0].id, layout.rows, layout.cols, JSON.stringify(layout.elements), facaparkingMap.notes],
+  );
+  await applyPublication(client, zone[0], rows[0], {});
+  return true;
+}
+
+module.exports = { seed, seedMap, RATES, SITE };
 
 if (require.main === module) {
   const { closePool } = require('./pool');

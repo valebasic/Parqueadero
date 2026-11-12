@@ -6,3 +6,5 @@ process.env.SEED_ADMIN_PASSWORD ||= 'ClaveSeed2026';
 process.env.LOGIN_RATE_LIMIT_MAX ||= '100000';
 // URL del portal del cliente para el QR de los recibos
 process.env.PORTAL_URL ||= 'https://portal.ejemplo.com';
+// Las pruebas parten de zonas sin plano (el plano de Facaparking se prueba aparte con SEED_SITE_MAP=1)
+process.env.SEED_SITE_MAP = '0';

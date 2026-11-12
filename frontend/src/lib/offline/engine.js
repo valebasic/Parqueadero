@@ -7,7 +7,7 @@
 import { apiGet } from '../api.js';
 import { calculateFare } from '../tariff.js';
 import { detectVehicleType, normalizePlate, plateError, VEHICLE_LABELS } from '../plates.js';
-import { entranceDistance } from '../maplayout.js';
+import { entranceDistance, SPACE_TYPE_FOR_VEHICLE } from '../maplayout.js';
 import { PAYMENT_LABELS } from '../format.js';
 import {
   decryptOfflineToken,
@@ -147,19 +147,20 @@ export function localMap(snapshot, zoneId, openEntries) {
   return { ...m, elements, counts, offline: true };
 }
 
-const SUGGESTED_TYPES = { CAR: ['CAR'], MOTORCYCLE: ['MOTORCYCLE'], BICYCLE: ['BICYCLE'] };
-// Mismo criterio que el servidor, sin reservas (sin conexión no se sabe de quién es cada mensualidad)
+// Mismo criterio que el servidor (primero los que no piden llaves, del más cercano a la entrada al más
+// lejano), sin reservas: sin conexión no se sabe de quién es cada mensualidad
+const SUGGESTED_TYPES = SPACE_TYPE_FOR_VEHICLE;
 export function suggestSpaceOffline(map, vehicleType) {
   if (!map) return null;
   const free = map.elements.filter(
     (el) => el.kind === 'SPACE' && el.state === 'FREE' && !el.reserved && el.usage !== 'MONTHLY' && (SUGGESTED_TYPES[vehicleType] ?? []).includes(el.spaceType),
   );
   const dist = (el) => entranceDistance(el, map.elements) ?? Number.MAX_SAFE_INTEGER;
-  free.sort((a, b) => dist(a) - dist(b) || a.code.localeCompare(b.code));
+  free.sort((a, b) => Number(Boolean(a.requiresKeys)) - Number(Boolean(b.requiresKeys)) || dist(a) - dist(b) || a.code.length - b.code.length || a.code.localeCompare(b.code));
   return free[0] ?? null;
 }
 
-export async function registerEntryOffline({ user, shift, snapshot, plate: rawPlate, vehicleType, spaceId = null }) {
+export async function registerEntryOffline({ user, shift, snapshot, plate: rawPlate, vehicleType, spaceId = null, keysReceived }) {
   const plate = normalizePlate(rawPlate);
   const err = plateError(plate);
   if (err) throw new OfflineError(err, 'INVALID_PLATE');
@@ -178,7 +179,7 @@ export async function registerEntryOffline({ user, shift, snapshot, plate: rawPl
   const map = localMap(snapshot, shift.zone?.id, open);
   const chosen = spaceId && map?.elements.find((e) => e.spaceId === spaceId && e.state === 'FREE');
   const space = chosen || suggestSpaceOffline(map, type);
-  op.data = { siteId: snapshot.site.id, plate, vehicleType: type, shiftId: shift.id, monthlyLinked: Boolean(monthly), spaceId: space?.spaceId ?? null };
+  op.data = { siteId: snapshot.site.id, plate, vehicleType: type, shiftId: shift.id, monthlyLinked: Boolean(monthly), spaceId: space?.spaceId ?? null, keysReceived: space?.requiresKeys ? keysReceived === true : undefined };
   await enqueue(user.id, op);
   return {
     ...receiptBase(snapshot),
@@ -190,7 +191,8 @@ export async function registerEntryOffline({ user, shift, snapshot, plate: rawPl
     vehicleLabel: VEHICLE_LABELS[type],
     entryAt: op.clientTs,
     operator: user.fullName,
-    space: space ? { id: space.spaceId, code: space.code } : null,
+    space: space ? { id: space.spaceId, code: space.code, requiresKeys: Boolean(space.requiresKeys) } : null,
+    keysReceived: space?.requiresKeys ? keysReceived === true : null,
   };
 }
 

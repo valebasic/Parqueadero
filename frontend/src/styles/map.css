@@ -69,3 +69,7 @@
   .nx-map-layout { grid-template-columns: 1fr; }
   .nx-map-detail { position: static; }
 }
+.nx-keys-alert {
+  margin-top: 6px; padding: 6px 10px; border-radius: var(--nx-radius-sm); background: #fff4d6; color: #7a5600;
+  font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center;
+}

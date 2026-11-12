@@ -1,12 +1,14 @@
 // Plano de una zona (RF47): cuadrícula filas × columnas con elementos rectangulares.
-//   SPACE    puesto: código único en la zona, tipo (CAR, MOTORCYCLE, BICYCLE, REDUCED_MOBILITY),
-//            uso (MONTHLY, HOURLY, MIXED), techado, tamaño 1×1 o 1×2 con orientación H/V
-//   ROAD     vía · ENTRANCE entrada · EXIT salida · BLOCKED área no disponible (con etiqueta)
+//   SPACE    puesto: código único en la zona, tipo (CAR, MOTORCYCLE, BICYCLE, MOTORCYCLE_BICYCLE,
+//            REDUCED_MOBILITY), uso (MONTHLY, HOURLY, MIXED), techado, tamaño 1×1 o 1×2 con orientación
+//            H/V, si pide llaves (bloquea a otros puestos) y lado que mira hacia la vía (N, S, E, W)
+//   ROAD     vía · ENTRANCE entrada · EXIT salida (etiqueta opcional) · BLOCKED área no disponible (con etiqueta)
 // Reglas: todo dentro de la cuadrícula, sin superposiciones y códigos de puesto únicos.
 // El mismo archivo se usa en el frontend (frontend/src/lib/maplayout.js; prueba de paridad).
 
 const KINDS = ['SPACE', 'ROAD', 'ENTRANCE', 'EXIT', 'BLOCKED'];
-const SPACE_TYPES = ['CAR', 'MOTORCYCLE', 'BICYCLE', 'REDUCED_MOBILITY'];
+const SPACE_TYPES = ['CAR', 'MOTORCYCLE', 'BICYCLE', 'MOTORCYCLE_BICYCLE', 'REDUCED_MOBILITY'];
+const FACINGS = ['N', 'S', 'E', 'W'];
 const USAGES = ['MONTHLY', 'HOURLY', 'MIXED'];
 const MAX_SIDE = 80;
 const CODE_RE = /^[A-Z0-9-]{1,10}$/;
@@ -58,13 +60,24 @@ function validateLayout(input) {
       const orientation = e.orientation === 'V' ? 'V' : 'H';
       if (!SPACE_TYPES.includes(e.spaceType)) errors.push(`Puesto ${code || i + 1}: tipo inválido`);
       if (!USAGES.includes(e.usage)) errors.push(`Puesto ${code || i + 1}: uso inválido`);
-      Object.assign(out, { code, spaceType: e.spaceType, usage: e.usage, covered: e.covered === true, size, orientation, ...spaceSize(size, orientation) });
+      Object.assign(out, {
+        code,
+        spaceType: e.spaceType,
+        usage: e.usage,
+        covered: e.covered === true,
+        requiresKeys: e.requiresKeys === true,
+        facing: FACINGS.includes(e.facing) ? e.facing : null,
+        size,
+        orientation,
+        ...spaceSize(size, orientation),
+      });
     } else {
       const width = Number(e.width ?? 1);
       const height = Number(e.height ?? 1);
       if (!isInt(width) || width < 1 || !isInt(height) || height < 1) errors.push(`${where}: tamaño inválido`);
       Object.assign(out, { width, height });
       if (kind === 'BLOCKED') out.label = String(e.label ?? '').trim().slice(0, 40) || 'No disponible';
+      if ((kind === 'ENTRANCE' || kind === 'EXIT') && String(e.label ?? '').trim()) out.label = String(e.label).trim().slice(0, 40);
     }
     if (!isInt(row) || !isInt(col) || row < 0 || col < 0 || row + out.height > rows || col + out.width > cols) {
       errors.push(`${kind === 'SPACE' ? `Puesto ${out.code}` : where}: queda fuera de la cuadrícula`);
@@ -104,7 +117,7 @@ function entranceDistance(space, elements) {
   return Math.min(...entrances.map((e) => rectDistance(space, e)));
 }
 
-// Tipo de puesto que corresponde a cada tipo de vehículo
-const SPACE_TYPE_FOR_VEHICLE = { CAR: ['CAR'], MOTORCYCLE: ['MOTORCYCLE'], BICYCLE: ['BICYCLE'] };
+// Tipos de puesto que se le sugieren a cada tipo de vehículo (movilidad reducida solo si se elige)
+const SPACE_TYPE_FOR_VEHICLE = { CAR: ['CAR'], MOTORCYCLE: ['MOTORCYCLE', 'MOTORCYCLE_BICYCLE'], BICYCLE: ['BICYCLE', 'MOTORCYCLE_BICYCLE'] };
 
-module.exports = { validateLayout, spaceSize, rectDistance, entranceDistance, KINDS, SPACE_TYPES, USAGES, MAX_SIDE, SPACE_TYPE_FOR_VEHICLE };
+module.exports = { validateLayout, spaceSize, rectDistance, entranceDistance, KINDS, SPACE_TYPES, USAGES, FACINGS, MAX_SIDE, SPACE_TYPE_FOR_VEHICLE };

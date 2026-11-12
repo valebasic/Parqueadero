@@ -238,7 +238,7 @@ describe('RF51 cambios manuales', () => {
     // Sale el de A2 y se mueve el de A1 a A2
     await api(opFaca).post(`/api/entries/${ids.e2}/exit`, { paymentMethod: 'CASH' });
     const moved = await api(opFaca).post(`/api/spaces/move/${ids.e1}`, { spaceId: await spaceId('A2'), reason: 'Cliente lo pidió' });
-    expect(moved.body.data).toEqual({ entryId: ids.e1, plate: 'CAR001', from: 'A1', to: 'A2' });
+    expect(moved.body.data).toMatchObject({ entryId: ids.e1, plate: 'CAR001', from: 'A1', to: 'A2', requiresKeys: false, keysReceived: null });
     expect(await auditCount('ENTRY_SPACE_MOVED')).toBe(1);
     // Al quedar libre A1, el vehículo sin puesto puede pasarse ahí
     expect((await api(opFaca).post(`/api/spaces/move/${moto}`, { spaceId: await spaceId('A1'), reason: 'Ya hay cupo' })).body.data.to).toBe('A1');
