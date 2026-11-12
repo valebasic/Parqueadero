@@ -270,17 +270,22 @@ describe('RF52 indicadores', () => {
     expect((await api(opFaca).get('/api/maps/indicators')).status).toBe(403);
     expect((await api(asNorte).get(`/api/maps/indicators?siteId=${faca}`)).status).toBe(403);
 
-    // Un vehículo lleva un rato dentro (desde el inicio de esta hora, o 20 min)
-    await query("UPDATE entries SET entry_at = GREATEST(date_trunc('hour', now()), now() - interval '20 minutes') WHERE plate = 'CAR001'");
-    const hist = await api(asFaca).get(`/api/maps/zones/${zPrincipal}/history`);
+    // Histórico sobre un día fijo del pasado (no depende de la hora en que corra la prueba): el único
+    // vehículo de ese día entró a las 10:20 y sigue dentro, así que ocupa 40 min de las 10 y las horas
+    // completas hasta la medianoche. Las demás entradas de la prueba son de hoy y no cuentan.
+    const { rows: days } = await query("SELECT to_char(CURRENT_DATE - 7, 'YYYY-MM-DD') AS past, to_char(CURRENT_DATE, 'YYYY-MM-DD') AS today");
+    const { past, today } = days[0];
+    const { rows: before } = await query("SELECT entry_at FROM entries WHERE plate = 'CAR001'");
+    await query("UPDATE entries SET entry_at = ($1::date + time '10:20')::timestamp WHERE plate = 'CAR001'", [past]);
+    const hist = await api(asFaca).get(`/api/maps/zones/${zPrincipal}/history?from=${past}&to=${past}`);
     expect(hist.body.data.hours).toHaveLength(24);
     expect(hist.body.data.spaces).toBe(6);
-    // Todas las entradas de la prueba son de esta hora: las horas anteriores quedan en 0 y ninguna es negativa
-    const nowHour = new Date(Date.now() - 5 * 3600000).getUTCHours();
-    expect(hist.body.data.hours.every((h) => h.occupiedMinutes >= 0)).toBe(true);
-    expect(hist.body.data.hours.filter((h) => h.hour < nowHour).every((h) => h.occupiedMinutes === 0)).toBe(true);
-    expect(hist.body.data.hours.find((h) => h.hour === nowHour).occupiedMinutes).toBeGreaterThan(0);
-    const heat = await api(asFaca).get(`/api/maps/zones/${zPrincipal}/heatmap`);
+    const minutes = hist.body.data.hours.map((h) => h.occupiedMinutes);
+    expect(minutes.slice(0, 10)).toEqual(Array(10).fill(0));
+    expect(minutes[10]).toBe(40);
+    expect(minutes.slice(11)).toEqual(Array(13).fill(60));
+    await query("UPDATE entries SET entry_at = $1 WHERE plate = 'CAR001'", [before[0].entry_at]);
+    const heat = await api(asFaca).get(`/api/maps/zones/${zPrincipal}/heatmap?from=${past}&to=${today}`);
     const a2 = heat.body.data.elements.find((e) => e.code === 'A2');
     expect(a2.heat.entries).toBeGreaterThanOrEqual(2);
     expect(a2.heat.utilization).toBeGreaterThanOrEqual(0);
