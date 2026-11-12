@@ -58,6 +58,11 @@ describe('seed del plano de Facaparking', () => {
     expect(pos['28']).toBe(pos['18'] + 1);
     expect(pos['19']).toBe(pos['28'] + 1);
     expect(pos['27']).toBe(pos['25']);
+    // Isla izquierda: 30 a la altura del 10, 31 a la del 8 y frente al 9 vía libre
+    expect(pos['30']).toBe(pos['10']);
+    expect(pos['31']).toBe(pos['8']);
+    const roads = res.body.data.published.elements.filter((e) => e.kind === 'ROAD');
+    expect(roads.some((r) => r.col <= 5 && r.col + r.width > 5 && r.row <= pos['9'] && r.row + r.height >= pos['9'] + 2)).toBe(true);
     // Caseta, estructuras y entrada única
     const labels = res.body.data.published.elements.filter((e) => e.kind !== 'SPACE' && e.kind !== 'ROAD').map((e) => `${e.kind}:${e.label}`);
     expect(labels.sort()).toEqual(['BLOCKED:Caseta', 'BLOCKED:Estructura', 'BLOCKED:Estructura', 'ENTRANCE:Entrada y salida']);
@@ -97,13 +102,13 @@ describe('sugerencia de puesto', () => {
     );
     const s = await suggest('ISL001');
     expect(s).toMatchObject({ code: '27', requiresKeys: true });
-    // Orden de las islas por cercanía: 27 (10), 31 (19), 30 (21), 28 (23), 29 (27)
+    // Orden de las islas por cercanía: 27 (10), 31 (19), 28 (23), 30 (23; empate, va después por código), 29 (27)
     const order = [];
     for (const plate of ['ISL001', 'ISL002', 'ISL003', 'ISL004', 'ISL005']) {
       const res = await api(op).post('/api/entries', { siteId: faca, plate, keysReceived: plate === 'ISL001' });
       order.push(res.body.data.space.code);
     }
-    expect(order).toEqual(['27', '31', '30', '28', '29']);
+    expect(order).toEqual(['27', '31', '28', '30', '29']);
     expect(await suggest('ISL006')).toBeNull();
   });
 });

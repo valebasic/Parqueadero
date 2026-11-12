@@ -13,10 +13,10 @@
 //     3  | 12  |  ·  | 14  | 15  | M4  | ### | ###
 //     4  | 11  |  ·  | 14  | 15  | M5  | ### | ###
 //     5  | 11  |  ·  |  ·  |  ·  |  ·  |  ·  | 16
-//     6  | 10  |  ·  |  ·  |  ·  |  ·  | 29  | 16
-//     7  | 10  |  ·  |  ·  |  ·  |  ·  | 29  | 17
-//     8  |  9  | 30  |  ·  |  ·  |  ·  |  ·  | 17
-//     9  |  9  | 30  |  ·  |  ·  |  ·  |  ·  | 18
+//     6  | 10  | 30  |  ·  |  ·  |  ·  | 29  | 16
+//     7  | 10  | 30  |  ·  |  ·  |  ·  | 29  | 17
+//     8  |  9  |  ·  |  ·  |  ·  |  ·  |  ·  | 17
+//     9  |  9  |  ·  |  ·  |  ·  |  ·  |  ·  | 18
 //    10  |  8  | 31  |  ·  |  ·  |  ·  | 28  | 18
 //    11  |  8  | 31  |  ·  |  ·  |  ·  | 28  | 19
 //    12  |  7  |  ·  |  ·  |  ·  |  ·  |  ·  | 19
@@ -40,7 +40,8 @@
 // - Parqueo en reversa: el frente mira hacia la vía (pared e isla izquierdas → E; pared e isla
 //   derechas → W; 14, 15 y motos → S).
 // - Piden llaves (bloquean puestos de pared): 27, 28, 29, 30 y 31.
-//   29 queda a la altura de 16-17, 28 a la de 18-19 y 27 a la del 25.
+//   30 queda a la altura del 10 y 31 a la del 8 (frente al 9 queda vía libre);
+//   29 a la altura de 16-17, 28 a la de 18-19 y 27 a la del 25.
 
 const CAR_W = 2; // ancho de un carro (celdas)
 const CAR_D = 5; // fondo de un carro (celdas)
@@ -95,14 +96,15 @@ const elements = [
   { id: 'estructura-arriba', kind: 'BLOCKED', row: 0, col: 16, width: 10, height: 5, label: 'Estructura' },
   // Pared derecha: 16 (arriba) … 26, seguidos
   ...Array.from({ length: 11 }, (_, i) => side(16 + i, 5 + i * CAR_W, 21, 'W', { covered: true })),
-  // Isla izquierda (frente a 9 y 8) e isla derecha (piden llaves)
-  side(30, 8, 5, 'E', { requiresKeys: true }),
+  // Isla izquierda (30 frente al 10, 31 frente al 8; frente al 9 queda libre) e isla derecha (piden llaves)
+  side(30, 6, 5, 'E', { requiresKeys: true }),
   side(31, 10, 5, 'E', { requiresKeys: true }),
   side(29, 6, 16, 'W', { requiresKeys: true }), // a la altura de 16-17
   side(28, 10, 16, 'W', { requiresKeys: true }), // a la altura de 18-19
   side(27, 23, 16, 'W', { requiresKeys: true }), // a la altura del 25
   // Vías y pasillos
-  road('pasillo-izq-1', 0, 5, 5, 8),
+  road('pasillo-izq-1', 0, 5, 5, 6),
+  road('pasillo-izq-paso', 8, 5, 5, 2),
   road('pasillo-izq-2', 12, 5, 5, 15),
   road('via-central', 5, 10, 6, 22),
   road('pasillo-der-1', 5, 16, 5, 1),
