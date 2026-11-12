@@ -4,6 +4,7 @@ import Sidebar from '../components/Sidebar.jsx';
 import Topbar from '../components/Topbar.jsx';
 import IdleGuard from '../components/IdleGuard.jsx';
 import { LockScreen } from '../components/OfflineGuards.jsx';
+import NexoIA from '../components/NexoIA.jsx';
 import { useSession } from '../context/SessionContext.jsx';
 import { MENU } from '../lib/roles.js';
 
@@ -29,6 +30,8 @@ export default function AppLayout() {
         </main>
       </div>
       <IdleGuard />
+      {/* Asistente NexoIA (no se muestra con la pantalla bloqueada) */}
+      {!locked && <NexoIA />}
       {locked && <LockScreen />}
     </div>
   );

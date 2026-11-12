@@ -410,3 +410,41 @@ La API revisa las alertas cada minuto (`PANEL_ALERTS_EVERY_MS`) y las publica en
 
 **Egresos por categoría**: `cash_movements.category` (Insumos, Servicios públicos, Nómina,
 Mantenimiento, Arriendo, Impuestos, Otros); un egreso sin categoría cuenta como "Otros".
+
+## NexoIA (asistente con Gemini)
+
+Porta a la web el agente de la v1.0 (`AGENTE.md` y `agente/` en `main`): mismos prompts por rol,
+reglas de alertas y herramientas, pero todo corre en el servidor ([`src/ai/`](src/ai)).
+
+- **Configuración**: `GEMINI_API_KEY` y `GEMINI_MODEL` en `.env` (por defecto `gemini-3.5-flash-lite`,
+  el de la v1.0). Sin clave, `GET /api/ai/status` responde `available: false` y `POST /api/ai/ask` 503
+  `AI_NO_KEY`. Límite por usuario: `AI_RATE_LIMIT_MAX` preguntas cada `AI_RATE_LIMIT_WINDOW_MIN` min
+  (`createRateLimiter` con clave por usuario).
+- **`POST /api/ai/ask`** `{ question, history: [{ role, text }] }` → `{ text, rawText, proposals, tools, denied }`.
+  El rol (AG/AS = administrador, OP = empleado) y las sedes salen de la **sesión**; el cuerpo no los trae.
+  El servidor hace el ciclo pregunta → herramientas → respuesta (máx. 6 rondas).
+- **Herramientas de solo lectura** (servicios y permisos por sede existentes):
+
+  | Herramienta | Rol | Reutiliza |
+  | --- | --- | --- |
+  | `resumen_periodo`, `comparar_periodos` | AS/AG | Contabilidad (RF29), Comparativo (RF33), Reportes |
+  | `ocupacion_por_franja` | AS/AG | Comparativo (ocupación promedio) + entradas por hora/día |
+  | `actividad_por_empleado` | AS/AG | Horas trabajadas y reporte de turnos (RF44/RF45) |
+  | `buscar_alertas` | AS/AG | Alertas del panel (RF32) + reglas de la v1.0 (`src/ai/alertRules.js`) |
+  | `vehiculos_activos`, `consultar_placa`, `calcular_cobro`, `consultar_tarifas` | todos | Entradas y Configuración |
+
+  Si la IA pide una herramienta que el rol no tiene, **no se ejecuta**: recibe un error y queda
+  `AI_TOOL_DENIED` en auditoría.
+- **Privacidad**: las herramientas devuelven solo campos permitidos (placas, montos, horas, códigos).
+  Los empleados van como `E<id>` y el backend los cambia por el nombre en `text` después de la
+  respuesta (solo para AS/AG); `rawText` conserva los códigos para el historial. Pregunta, historial y
+  resultados pasan además por un redactor (`src/ai/privacy.js`) que tapa nombres, teléfonos y correos
+  conocidos de las sedes del usuario y los patrones de correo, celular, fijo y documento. La auditoría
+  (`AI_ASK`) no guarda el texto de la pregunta.
+- **Acciones (solo se proponen)**: `proponer_entrada` (todos); `proponer_movimiento`, `proponer_informe`,
+  `proponer_ajuste_tarifa`, `proponer_renovar_mensualidad` (AS/AG). Se guardan en `ai_proposals` con la
+  petición exacta (`method`, `path`, `body`); el frontend muestra una tarjeta y, si la persona confirma,
+  llama al **endpoint normal** (mismas validaciones y permisos) y luego
+  `POST /api/ai/proposals/:id/resolve` `{ outcome: CONFIRMED | CANCELLED | FAILED }`. Vencen a los 30 min.
+  Auditoría: `AI_PROPOSAL_CREATED`, `AI_PROPOSAL_CONFIRMED|CANCELLED|FAILED`. Cierre de caja (exige
+  el conteo por denominación), novedades y salidas no se proponen: la IA explica el procedimiento.

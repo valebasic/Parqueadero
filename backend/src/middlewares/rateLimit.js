@@ -18,17 +18,21 @@ function minutesText(ms) {
  * @param {number} options.windowMs    duración de la ventana en ms
  * @param {string} [options.message]   texto antes de "Intente de nuevo en N minutos."
  * @param {boolean} [options.skipSuccessfulRequests]  no contar las respuestas 2xx (p. ej. logins correctos)
+ * @param {(req) => string} [options.keyGenerator]  clave del contador (por defecto la IP)
  */
 function createRateLimiter({
   limit,
   windowMs,
   message = 'Demasiados intentos desde esta conexión.',
   skipSuccessfulRequests = false,
+  keyGenerator,
 }) {
   return rateLimit({
     limit,
     windowMs,
     skipSuccessfulRequests,
+    // Por defecto por IP; p. ej. NexoIA limita por usuario: keyGenerator: (req) => `user:${req.user.id}`
+    ...(keyGenerator ? { keyGenerator } : {}),
     standardHeaders: 'draft-7', // encabezado RateLimit con cupo y reinicio
     legacyHeaders: false,
     handler(req, res, next, options) {

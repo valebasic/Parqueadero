@@ -114,3 +114,11 @@ fechas `05/03/2026` y hora `2:05 p. m.`.
 - **Sincronización** automática al volver la conexión, en orden, con progreso en la barra superior
   ("Sin conexión · N operaciones por sincronizar" / "Sincronizando X de Y"). Cada envío lleva la hora
   del equipo (`deviceTime`) para detectar relojes desfasados.
+
+## NexoIA
+
+[`NexoIA`](src/components/NexoIA.jsx): botón flotante en todas las pantallas (menos con la pantalla
+bloqueada). AS/AG ven el "Asistente del administrador" (y las alertas abiertas al abrirlo); el OP, el
+"Asistente operativo". Sin internet o sin clave de Gemini en el servidor muestra "No disponible".
+Las acciones llegan como tarjetas (título, riesgo, detalle): solo se ejecutan con un clic real en
+**Confirmar**, contra el endpoint normal de la API; luego se informa el resultado para la auditoría.

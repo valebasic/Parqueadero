@@ -1,0 +1,62 @@
+/* NexoIA: botón flotante y chat (estilo de la v1.0, agente/cliente/asistente.js) */
+.nxai-btn {
+  position: fixed; right: 22px; bottom: 22px; z-index: 900; display: flex; align-items: center; gap: 8px;
+  background: #0b2748; color: #fff; border: 0; border-radius: 28px; padding: 10px 18px 10px 14px;
+  font: 700 15px var(--nx-font); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3); cursor: pointer;
+}
+.nxai-btn:hover { background: #12355f; }
+.nxai-btn:focus-visible { outline: 3px solid var(--nx-accent); outline-offset: 2px; }
+.nxai-bot { animation: nxai-float 3s ease-in-out infinite; }
+.nxai-bot .nxai-eyes { transform-origin: 16px 16px; animation: nxai-blink 4s infinite; }
+.nxai-bot .nxai-ant { animation: nxai-ping 1.6s infinite; }
+@keyframes nxai-float { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-2px) rotate(6deg); } }
+@keyframes nxai-blink { 0%, 92%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.1); } }
+@keyframes nxai-ping { 50% { opacity: 0.25; } }
+@media (prefers-reduced-motion: reduce) { .nxai-bot, .nxai-bot .nxai-eyes, .nxai-bot .nxai-ant { animation: none; } }
+.nxai-badge { background: #e0452b; color: #fff; border-radius: 10px; padding: 0 7px; font-size: 12px; }
+
+.nxai-panel {
+  position: fixed; right: 22px; bottom: 80px; z-index: 900; width: 390px; max-width: calc(100vw - 24px);
+  height: 540px; max-height: calc(100vh - 110px); background: #fff; border: 1px solid var(--nx-gray-300);
+  border-radius: 16px; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.3); display: flex; flex-direction: column; overflow: hidden;
+}
+.nxai-head { background: #0b2748; color: #fff; padding: 12px 14px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.nxai-head > span:first-child { flex: 1; }
+.nxai-head button { background: none; border: 0; color: #fff; font-size: 22px; line-height: 1; cursor: pointer; }
+.nxai-state { font-size: 11px; border-radius: 999px; padding: 2px 8px; }
+.nxai-state.is-on { background: #1d5b33; }
+.nxai-state.is-off { background: #8a2b20; }
+.nxai-msgs { flex: 1; overflow: auto; padding: 12px; background: #f7f8fa; font-size: 14px; }
+.nxai-msg { margin: 0 0 10px; padding: 9px 12px; border-radius: 12px; max-width: 88%; white-space: pre-wrap; line-height: 1.4; }
+.nxai-msg--me { background: #0b2748; color: #fff; margin-left: auto; }
+.nxai-msg--ai { background: #fff; border: 1px solid #e1e5ea; color: #30343b; }
+.nxai-msg--busy { color: var(--nx-muted); font-style: italic; }
+.nxai-msg--error { background: #fdecea; color: #b3261e; }
+.nxai-msg--warn { background: #fff6e0; border: 1px solid #f0d9a0; color: #5b4300; max-width: 100%; }
+.nxai-msg--ok { background: #e9f7ee; border: 1px solid #b9e2c6; color: #1d5b33; }
+.nxai-sugs { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 12px 8px; background: #f7f8fa; }
+.nxai-sugs button { border: 1px solid #c9d8ea; background: #eef4fb; color: #0b2748; border-radius: 14px; padding: 4px 10px; font: 12px var(--nx-font); cursor: pointer; }
+.nxai-form { display: flex; gap: 8px; padding: 10px; border-top: 1px solid #e1e5ea; }
+.nxai-form input { flex: 1; min-width: 0; border: 1px solid var(--nx-gray-300); border-radius: 10px; padding: 8px 10px; font: 14px var(--nx-font); }
+.nxai-form button { background: #0b2748; color: #fff; border: 0; border-radius: 10px; padding: 0 14px; font: 700 14px var(--nx-font); cursor: pointer; }
+.nxai-form button:disabled { opacity: 0.5; cursor: default; }
+
+.nxai-card { background: #fff; border: 1px solid #c9d8ea; border-left: 4px solid #0b2748; border-radius: 12px; padding: 10px 12px; margin: 0 0 10px; font-size: 13px; }
+.nxai-card__head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; color: #0b2748; }
+.nxai-card ul { margin: 4px 0 8px; padding-left: 18px; color: #30343b; }
+.nxai-risk { font-size: 11px; font-weight: 700; border-radius: 10px; padding: 2px 8px; white-space: nowrap; }
+.nxai-risk--bajo { background: #e9f7ee; color: #1d5b33; }
+.nxai-risk--medio { background: #fff4d6; color: #7a5600; }
+.nxai-risk--alto { background: #fdecea; color: #b3261e; }
+.nxai-card__actions { display: flex; gap: 8px; }
+.nxai-card__actions button { border: 0; border-radius: 8px; padding: 6px 14px; font: 700 13px var(--nx-font); cursor: pointer; }
+.nxai-ok { background: #0b2748; color: #fff; }
+.nxai-ok:disabled { opacity: 0.5; cursor: default; }
+.nxai-no { background: #eef1f5; color: #30343b; }
+.nxai-card__state { font-size: 12px; color: #5f6670; font-weight: 700; }
+.nxai-consent { font-size: 12px; margin-bottom: 8px; }
+@media (max-width: 560px) {
+  .nxai-btn { right: 12px; bottom: 12px; }
+  .nxai-panel { right: 8px; bottom: 66px; height: calc(100vh - 90px); }
+}
+@media print { .nxai-btn, .nxai-panel { display: none !important; } }
