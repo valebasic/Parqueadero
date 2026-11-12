@@ -59,6 +59,7 @@ frontend/src/
 | `/transacciones` | Ingresos, egresos y base (verde/rojo/naranja); edición el mismo día | Todos (OP con tope) |
 | `/reportes` | KPIs, gráficas, efectivo vs electrónico, cierres, fidelidad, Excel/PDF | AG, AS |
 | `/reportes-mensualidades` | Pagos FM, totales y cartera | AG, AS |
+| `/conflictos` | Bandeja de conflictos de sincronización: aplicar o descartar con nota | AG, AS |
 | `/configuracion` | Tarifas con vigencia, datos del local, recibos con vista previa, respaldos (AG) | AG, AS |
 
 ## Sesión

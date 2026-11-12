@@ -15,6 +15,7 @@ import MonthlyReportPage from './pages/MonthlyReportPage.jsx';
 import TransactionsPage from './pages/TransactionsPage.jsx';
 import ReportsPage from './pages/ReportsPage.jsx';
 import ConfigPage from './pages/ConfigPage.jsx';
+import ConflictsPage from './pages/ConflictsPage.jsx';
 import { RequireAuth, RequireRole } from './components/RequireAuth.jsx';
 import { OnlineOnly } from './components/OfflineGuards.jsx';
 
@@ -33,6 +34,7 @@ const PAGE_BY_PATH = {
   '/reportes': ReportsPage,
   '/reportes-mensualidades': MonthlyReportPage,
   '/configuracion': ConfigPage,
+  '/conflictos': ConflictsPage,
   '/entradas': EntriesPage,
   '/caja': CashPage,
   '/ventas': SalesPage,

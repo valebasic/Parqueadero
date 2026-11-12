@@ -204,3 +204,5 @@
 .nx-lock {
   background: rgba(7, 26, 51, 0.85);
 }
+.nx-left { text-align: left; white-space: normal; }
+.nx-badge--wrap { white-space: normal; display: inline; line-height: 1.6; }

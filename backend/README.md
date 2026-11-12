@@ -292,3 +292,10 @@ Solo para Entradas, en una sede con el turno **ya abierto** antes de perder inte
   - **Conflictos** (se guardan con `status = CONFLICT`, se auditan y nunca se descartan en silencio):
     `PLATE_OPEN_ELSEWHERE`, `PLATE_ALREADY_INSIDE`, `MONTHLY_ACTIVE`, `ALREADY_EXITED`,
     `ENTRY_IN_CONFLICT`, `REGISTER_CLOSED`, `SHIFT_INVALID`, `INVALID`.
+- **Bandeja de conflictos** (AS y AG): `GET /api/sync/conflicts?siteId=&status=open|resolved` y
+  `POST /api/sync/conflicts/:id/resolve` `{ action: 'apply' | 'discard', note, shiftId? }`. La nota es
+  obligatoria y todo queda en auditoría (`OFFLINE_CONFLICT_RESOLVED`). Aplicar se hace a nombre del
+  operador que hizo la operación: anula la otra entrada abierta (placa duplicada), registra la entrada
+  normal (mensualidad), reintenta una salida cuya entrada ya se resolvió o lleva el cobro a la caja del
+  turno abierto indicado (caja cerrada). `ALREADY_EXITED`, `INVALID` y `SHIFT_INVALID` solo se
+  descartan. Dos administradores no pueden resolver el mismo conflicto.

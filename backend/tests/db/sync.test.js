@@ -195,4 +195,3 @@ test('lote inválido → 400; sede ajena → 403', async () => {
   expect((await sync(op, [{ ...entryOp('BAD001'), id: 'no-es-uuid' }])).status).toBe(400);
   expect((await sync(op, [entryOp('BAD002', { siteId: siteB, shift: shiftB })])).status).toBe(403);
 });
-

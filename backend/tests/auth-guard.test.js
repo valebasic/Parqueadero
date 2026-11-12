@@ -50,6 +50,10 @@ const PROTECTED_ROUTES = [
   ['patch', '/api/config/1/settings'],
   ['get', '/api/backups'],
   ['post', '/api/backups'],
+  ['post', '/api/sync/operations'],
+  ['get', '/api/sync/snapshot'],
+  ['get', '/api/sync/conflicts'],
+  ['post', '/api/sync/conflicts/1/resolve'],
   ['get', '/api/auth/me'],
   ['put', '/api/auth/password'],
 ];

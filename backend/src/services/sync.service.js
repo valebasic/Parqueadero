@@ -313,13 +313,18 @@ async function processOperation(user, op, deviceId, req, options = {}) {
 
       const payload = { ...op.data, clientTs: op.clientTs };
       if (options.resolving) {
-        await client.query(
-          `UPDATE offline_operations
-              SET status = $2, entry_id = COALESCE($3, entry_id), resolved_at = now(), resolved_by = $4, resolution_note = $5
-            WHERE id = $1`,
-          [op.id, 'RESOLVED_APPLIED', applied?.entryId ?? null, user.id, options.note],
-        );
         if (conflict) throw new HttpError(409, `No se pudo aplicar: ${conflict.message}`, { code: conflict.code, details: conflict.detail });
+        // Solo si sigue en conflicto: dos administradores no pueden resolver la misma operación
+        const upd = await client.query(
+          `UPDATE offline_operations
+              SET status = 'RESOLVED_APPLIED', entry_id = COALESCE($2, entry_id), resolved_at = now(),
+                  resolved_by = $3, resolution_note = $4
+            WHERE id = $1 AND status = 'CONFLICT'`,
+          [op.id, applied?.entryId ?? null, options.resolvedBy ?? user.id, options.note],
+        );
+        if (upd.rowCount === 0) {
+          throw new HttpError(409, 'Este conflicto ya fue resuelto', { code: 'ALREADY_RESOLVED' });
+        }
       } else {
         await client.query(
           `INSERT INTO offline_operations (id, site_id, user_id, device_id, seq, kind, client_ts, provisional_receipt,
