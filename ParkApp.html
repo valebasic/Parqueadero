@@ -2344,7 +2344,7 @@ function calcularTarifaServidor(){
     const tarifaId=value('idTarifa'); if(!tarifaId){ showServiceSelector(true); fpAlert('No se reconoció el tipo de vehículo por la placa. Seleccione el servicio.','error'); return; }
     const db=readDB();
     const recibo=nextReceipt(), fecha=nowString();
-    const entry={id:Date.now(),idParqueadero:value('idParqueadero')||'1',idCliente:value('idCliente')||'2',idTarifa:tarifaId,idUsuario:value('idUsuario')||'3',placa,descripcion:value('descripcion')||'NA',nota:value('nota')||'NA',entradaFecha:fecha,entradaHora:new Date().toTimeString().slice(0,8),reciboPrefijo:value('reciboPrefijo')||'FA',reciboNumero:recibo,salidaFecha:null,salidaHora:null,codigoBarras:value('codigoBarras')||'NA',local:true};
+    const entry={id:Date.now(),idParqueadero:value('idParqueadero')||'1',idCliente:value('idCliente')||'2',idTarifa:tarifaId,idUsuario:value('idUsuario')||'3',placa,descripcion:value('descripcion')||'NA',nota:value('nota')||'NA',entradaFecha:fecha,registradoPor:(function(){try{return String((JSON.parse(localStorage.getItem('fp_user')||'{}')||{}).username||'')}catch(e){return ''}})(),entradaHora:new Date().toTimeString().slice(0,8),reciboPrefijo:value('reciboPrefijo')||'FA',reciboNumero:recibo,salidaFecha:null,salidaHora:null,codigoBarras:value('codigoBarras')||'NA',local:true};
     if(monthlyInfo.monthly && !monthlyInfo.blocked){
       // Mensualidad nocturna fuera de su horario cubierto: se cobra como entrada normal y
       // queda asociada a la mensualidad para que el cobro se sume a su historial.
@@ -2957,5 +2957,5 @@ function calcularTarifaServidor(){
   });
 })();
 </script>
-<script src="mvc/validators.js"></script><script src="mvc/model.js"></script><script src="mvc/view.js"></script><script src="mvc/app-controller.js"></script>
+<script src="mvc/validators.js"></script><script src="mvc/model.js"></script><script src="mvc/view.js"></script><script src="mvc/app-controller.js"></script><script src="agente/alertas/reglas.js"></script><script src="agente/cliente/herramientas.js"></script><script src="agente/cliente/acciones.js"></script><script src="agente/cliente/asistente.js"></script>
 <link rel="stylesheet" href="./assets/nexo-theme.css"></body></html>

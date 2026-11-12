@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "start": "electron .",
+    "pruebas": "electron agente/pruebas/arrancar-con-datos.js",
     "dist": "electron-builder --win nsis"
   },
   "devDependencies": {
@@ -20,6 +21,9 @@
     },
     "files": [
       "main.js",
+      "preload.js",
+      "agente/**/*",
+      "!agente/pruebas/**",
       "icon.ico",
       "icon.png",
       "login.html",
