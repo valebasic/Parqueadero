@@ -63,26 +63,27 @@ function toDto(e) {
  * Vigente = activa, ya empezó y hoy <= fin (o plazo del 2.º abono quincenal) + 3 días de gracia.
  * Franja nocturna [inicio, fin): a la hora de fin en punto ya está fuera; cruza la medianoche.
  */
-async function findActiveMonthly(client, siteId, plate) {
+// `at`: momento a evaluar (por defecto ahora). Las operaciones sin conexión se evalúan a su hora real.
+async function findActiveMonthly(client, siteId, plate, at = null) {
   const { rows } = await client.query(
     `SELECT id, client_name, schedule, night_start, night_end, end_date, payment_status,
             CASE
               WHEN schedule = 'DAY' THEN true
-              WHEN night_start < night_end THEN LOCALTIME >= night_start AND LOCALTIME < night_end
-              WHEN night_start > night_end THEN LOCALTIME >= night_start OR LOCALTIME < night_end
+              WHEN night_start < night_end THEN COALESCE($4::timestamptz, now())::time >= night_start AND COALESCE($4::timestamptz, now())::time < night_end
+              WHEN night_start > night_end THEN COALESCE($4::timestamptz, now())::time >= night_start OR COALESCE($4::timestamptz, now())::time < night_end
               ELSE true
             END AS inside_window
        FROM monthly_plans
       WHERE site_id = $1 AND plate = $2 AND is_active AND deleted_at IS NULL
         AND payment_status <> 'PENDING_CONFIRMATION'
-        AND start_date <= CURRENT_DATE
-        AND CURRENT_DATE <= GREATEST(
+        AND start_date <= COALESCE($4::timestamptz, now())::date
+        AND COALESCE($4::timestamptz, now())::date <= GREATEST(
               COALESCE(CASE WHEN payment_status = 'PARTIAL' THEN installment_due_date END, end_date),
               COALESCE(next_period_end, end_date)
             ) + $3::int
       ORDER BY end_date DESC, updated_at DESC
       LIMIT 1`,
-    [siteId, plate, MONTHLY_GRACE_DAYS],
+    [siteId, plate, MONTHLY_GRACE_DAYS, at],
   );
   const m = rows[0];
   if (!m) return null;

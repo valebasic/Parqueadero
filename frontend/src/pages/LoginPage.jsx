@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useSession } from '../context/SessionContext.jsx';
+import { useOffline } from '../context/OfflineContext.jsx';
 
 // Mensaje que se muestra al volver al login según por qué terminó la sesión anterior
 const END_MESSAGES = {
@@ -19,6 +20,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const { online } = useOffline();
 
   if (status === 'authenticated') return <Navigate to="/" replace />;
 
@@ -53,6 +55,12 @@ export default function LoginPage() {
         <h1>Iniciar sesión</h1>
         <p className="nx-login__sub">Ingresa tus credenciales para continuar</p>
 
+        {!online && (
+          <div className="nx-login__msg is-error" role="alert">
+            Sin conexión: no se puede iniciar una sesión nueva. Si tenía una sesión abierta en este equipo, recargue la
+            página para continuar sin conexión.
+          </div>
+        )}
         <form onSubmit={handleSubmit} noValidate>
           <label className="nx-field">
             <span className="nx-sr-only">Usuario</span>
@@ -91,7 +99,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          <button className="nx-btn nx-btn--accent nx-btn--block" type="submit" disabled={submitting}>
+          <button className="nx-btn nx-btn--accent nx-btn--block" type="submit" disabled={submitting || !online}>
             {submitting ? 'Ingresando…' : 'Iniciar sesión'}
           </button>
         </form>

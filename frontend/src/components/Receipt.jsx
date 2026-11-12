@@ -89,6 +89,7 @@ export function ReceiptTicket({ data, qr }) {
         {isMonthly && data.balance > 0 && <Row label="Saldo" value={formatCOP(data.balance)} />}
         {isMonthly && <Row label="Fecha" value={dateTime(data.paidAt)} />}
         <Row label={L.receipt} value={data.receipt} className="rc-receiptno" />
+        {data.provisional && <div className="rc-provisional">Recibo provisional: el definitivo se asigna al sincronizar</div>}
         {data.operator && show('operator') && <Row label={L.operator} value={data.operator} />}
       </div>
       {qr && show('qr') && (

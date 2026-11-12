@@ -21,6 +21,12 @@ let accessToken = null;
 let sessionLostHandler = null;
 let refreshInFlight = null;
 let lastServerActivity = 0;
+let networkListener = null;
+
+// Avisa si el servidor responde o no (lo usa el modo sin conexión)
+export function onNetworkChange(handler) {
+  networkListener = handler;
+}
 
 export function setAccessToken(token) {
   accessToken = token;
@@ -52,10 +58,17 @@ async function rawRequest(method, path, { body, background = false, signal } = {
     });
   } catch (err) {
     if (err.name === 'AbortError') throw err;
+    networkListener?.(false);
     throw new ApiError(0, 'No se pudo conectar con el servidor. Revise su conexión.', { code: 'NETWORK' });
   }
 
   const data = await res.json().catch(() => null);
+  // Un proxy sin servidor detrás (502/504, o 503 sin respuesta de la API) también es "sin conexión"
+  if ([502, 504].includes(res.status) || (res.status === 503 && !data)) {
+    networkListener?.(false);
+    throw new ApiError(0, 'No se pudo conectar con el servidor. Revise su conexión.', { code: 'NETWORK' });
+  }
+  networkListener?.(true);
   if (!res.ok || data?.ok === false) {
     throw new ApiError(res.status, data?.error || `Error ${res.status} del servidor`, {
       code: data?.code,

@@ -5,7 +5,7 @@ const HttpError = require('../middlewares/httpError');
 const { security, idleTimeoutSecondsFor } = require('../config/security');
 const { recordAudit, requestMeta } = require('./audit.service');
 const { hashPassword, verifyPassword, burnPasswordCheck, passwordPolicyError } = require('./password.service');
-const { signAccessToken, generateRefreshToken, hashRefreshToken } = require('./token.service');
+const { signAccessToken, signOfflineToken, generateRefreshToken, hashRefreshToken } = require('./token.service');
 const { sessionEnded } = require('../realtime/bus');
 
 const INVALID_CREDENTIALS = 'Usuario o contraseña incorrectos';
@@ -91,6 +91,19 @@ async function touchSession(sessionId, { force = false } = {}) {
       WHERE id = $1 AND ($2 OR last_activity_at < now() - make_interval(secs => $3))`,
     [sessionId, force, security.activityTouchSeconds],
   );
+}
+
+// Sesión para sincronizar lo hecho sin conexión: debe existir, no estar revocada y el usuario activo.
+// No se exige la inactividad ni la duración máxima: el token de sincronización ya vence a las 8 h.
+async function resolveOfflineSession({ userId, sessionId }) {
+  const { rows } = await query(`${SESSION_SELECT} WHERE s.id = $1 AND s.user_id = $2 GROUP BY s.id, u.id`, [
+    sessionId,
+    userId,
+  ]);
+  const row = rows[0];
+  if (!row || row.revoked_at) throw new HttpError(401, 'La sesión ya no es válida. Inicie sesión de nuevo.', { code: 'SESSION_REVOKED' });
+  if (!row.is_active) throw new HttpError(401, 'El usuario está desactivado', { code: 'USER_INACTIVE' });
+  return toAuthUser(row);
 }
 
 // Usado por el middleware authenticate en cada petición
@@ -227,6 +240,7 @@ async function login({ username, password }, req) {
   const { user, session } = outcome;
   return {
     accessToken: signAccessToken({ userId: user.id, sessionId: session.sessionId }),
+    offlineToken: signOfflineToken({ userId: user.id, sessionId: session.sessionId }),
     refreshToken: session.refreshToken,
     user: await getProfile(user.id),
     session: sessionInfo(user.role, session.expiresAt),
@@ -314,6 +328,7 @@ async function refresh(refreshToken, req) {
   await touchSession(row.session_id, { force: true });
   return {
     accessToken: signAccessToken({ userId: row.user_id, sessionId: row.session_id }),
+    offlineToken: signOfflineToken({ userId: row.user_id, sessionId: row.session_id }),
     user: await getProfile(row.user_id),
     session: sessionInfo(row.role, row.expires_at),
   };
@@ -374,6 +389,7 @@ module.exports = {
   changeOwnPassword,
   confirmUserPassword,
   resolveSession,
+  resolveOfflineSession,
   getProfile,
   sessionInfo,
   revokeUserSessions,

@@ -15,7 +15,7 @@ const WARN_BEFORE_MS = 60 * 1000;
 const KEEPALIVE_EVERY_MS = 2 * 60 * 1000;
 
 export default function IdleGuard() {
-  const { session, logout, keepAlive } = useSession();
+  const { session, logout, keepAlive, offline, locked, lock } = useSession();
   const [secondsLeft, setSecondsLeft] = useState(null);
   const keepAliveRunning = useRef(false);
   const timeoutMs = (session?.idleTimeoutSeconds ?? 15 * 60) * 1000;
@@ -33,14 +33,17 @@ export default function IdleGuard() {
       const idleMs = now - lastActivity();
 
       if (idleMs >= timeoutMs) {
-        logout('idle');
+        // Sin conexión no se puede cerrar la sesión en el servidor: se bloquea localmente
+        if (offline) {
+          if (!locked) lock();
+        } else logout('idle');
         return;
       }
       setSecondsLeft(idleMs >= timeoutMs - WARN_BEFORE_MS ? Math.ceil((timeoutMs - idleMs) / 1000) : null);
 
       // Activo desde la última vez que el servidor supo de él y hace rato que no le avisa
       const serverTouch = getLastServerActivity();
-      if (lastActivity() > serverTouch && now - serverTouch >= KEEPALIVE_EVERY_MS && !keepAliveRunning.current) {
+      if (!offline && lastActivity() > serverTouch && now - serverTouch >= KEEPALIVE_EVERY_MS && !keepAliveRunning.current) {
         keepAliveRunning.current = true;
         keepAlive().finally(() => {
           keepAliveRunning.current = false;
@@ -48,9 +51,9 @@ export default function IdleGuard() {
       }
     }, CHECK_EVERY_MS);
     return () => clearInterval(id);
-  }, [timeoutMs, logout, keepAlive]);
+  }, [timeoutMs, logout, keepAlive, offline, locked, lock]);
 
-  if (secondsLeft === null) return null;
+  if (secondsLeft === null || locked) return null;
 
   return (
     <div className="nx-modal-backdrop" role="presentation">

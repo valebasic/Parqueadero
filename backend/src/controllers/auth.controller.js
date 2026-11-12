@@ -18,9 +18,9 @@ function clearRefreshCookie(res) {
 
 // POST /api/auth/login  { username, password }
 async function login(req, res) {
-  const { accessToken, refreshToken, user, session } = await authService.login(req.body ?? {}, req);
+  const { accessToken, offlineToken, refreshToken, user, session } = await authService.login(req.body ?? {}, req);
   res.cookie(security.refreshCookieName, refreshToken, refreshCookieOptions());
-  res.json({ ok: true, data: { accessToken, user, session } });
+  res.json({ ok: true, data: { accessToken, offlineToken, user, session } });
 }
 
 // POST /api/auth/refresh  (usa la cookie httpOnly)

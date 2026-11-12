@@ -179,3 +179,28 @@
 @media (prefers-reduced-motion: reduce) {
   .nx-live--live i { animation: none; }
 }
+
+/* Sin conexión */
+.nx-live--offline {
+  background: #fdeeee;
+  color: var(--nx-red-600);
+}
+.nx-live--syncing {
+  background: #eaf2fd;
+  color: #2f6fd6;
+}
+.nx-live--syncing i {
+  animation: nx-pulse 1s ease-in-out infinite;
+}
+.nx-banner--offline {
+  background: #fff1e6;
+  border-color: #ffb27a;
+  color: #8a3b00;
+}
+.nx-tag--offline {
+  background: #fff1e6;
+  color: #c25400;
+}
+.nx-lock {
+  background: rgba(7, 26, 51, 0.85);
+}

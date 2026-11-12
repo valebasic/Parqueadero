@@ -4,6 +4,7 @@ import Icon from './Icon.jsx';
 import { useSession } from '../context/SessionContext.jsx';
 import { useShift } from '../context/ShiftContext.jsx';
 import { useRealtime } from '../context/RealtimeContext.jsx';
+import { useOffline } from '../context/OfflineContext.jsx';
 import { ROLES } from '../lib/roles.js';
 import { formatDate, formatTime12h } from '../lib/format.js';
 
@@ -19,6 +20,7 @@ export default function Topbar({ title, onToggleMenu }) {
   const { user } = useSession();
   const { shift } = useShift();
   const { status: live } = useRealtime();
+  const { online, pending, sync } = useOffline();
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -55,10 +57,23 @@ export default function Topbar({ title, onToggleMenu }) {
       </dl>
 
       <div className="nx-topbar__right">
-        <span className={`nx-live nx-live--${live}`} role="status" title="Actualización en tiempo real">
-          <i aria-hidden="true" />
-          {live === 'live' ? 'En vivo' : live === 'off' ? 'Sin conexión' : 'Reconectando…'}
-        </span>
+        {!online ? (
+          <span className="nx-live nx-live--offline" role="status">
+            <i aria-hidden="true" />
+            Sin conexión{pending ? ` · ${pending} ${pending === 1 ? 'operación' : 'operaciones'} por sincronizar` : ''}
+          </span>
+        ) : sync ? (
+          <span className="nx-live nx-live--syncing" role="status">
+            <i aria-hidden="true" />
+            Sincronizando {sync.done} de {sync.total}
+          </span>
+        ) : (
+          <span className={`nx-live nx-live--${live}`} role="status" title="Actualización en tiempo real">
+            <i aria-hidden="true" />
+            {live === 'live' ? 'En vivo' : live === 'off' ? 'Sin conexión' : 'Reconectando…'}
+            {pending ? ` · ${pending} por sincronizar` : ''}
+          </span>
+        )}
         <span className="nx-topbar__clock">
           {formatDate(now)} · {formatTime12h(now)}
         </span>

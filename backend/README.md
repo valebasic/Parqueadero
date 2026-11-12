@@ -269,3 +269,26 @@ Socket.IO en el mismo servidor y puerto (`/socket.io`; en desarrollo lo reenvía
   `sales:changed`, `pending:changed`, `monthly:alerts` (al cambiar una mensualidad y cada 30 min).
 - Los servicios publican en un bus en memoria (`src/realtime/bus.js`) **después** de confirmar la
   transacción. Con varias instancias de la API hay que agregar el adaptador de Redis de Socket.IO.
+
+## Operación sin conexión (RF60, RF62, RNF12)
+
+Solo para Entradas, en una sede con el turno **ya abierto** antes de perder internet.
+
+- `GET /api/sync/snapshot?siteId=`: copia local (tarifas vigentes y futuras, mensualidades vigentes
+  con su cobertura + 3 días de gracia, entradas abiertas y datos del recibo). El frontend la guarda
+  cifrada y la refresca con cada evento de tiempo real, al abrir turno y cada 5 min.
+- `POST /api/sync/operations` `{ deviceId, operations: [{ id (UUID), seq, kind: ENTRY|EXIT, clientTs,
+  provisionalReceipt?, data }] }`. Acepta el JWT de acceso o el **token de sincronización** (8 h, se
+  entrega en login y refresh, solo sirve aquí y no depende de la inactividad; deja de servir si la
+  sesión se revoca o el usuario se desactiva).
+  - **Idempotente**: el UUID es la clave primaria de `offline_operations`; repetirlo devuelve el
+    resultado guardado (`duplicate: true`), también si llegan dos envíos a la vez.
+  - Se aplican en orden, cada una en su transacción. Entrada y salida usan la **hora del dispositivo**
+    (si está en el futuro, la del servidor).
+  - **Consecutivo**: el FA definitivo se asigna al sincronizar, en orden y sin huecos (un conflicto no
+    consume número); el provisional `FA-P-<dispositivo>-0001` queda en `entries.provisional_receipt`.
+  - **Tarifa**: el servidor la recalcula; si difiere de la del dispositivo registra
+    `OFFLINE_TARIFF_DIFFERENCE` en auditoría y **no cambia lo cobrado**.
+  - **Conflictos** (se guardan con `status = CONFLICT`, se auditan y nunca se descartan en silencio):
+    `PLATE_OPEN_ELSEWHERE`, `PLATE_ALREADY_INSIDE`, `MONTHLY_ACTIVE`, `ALREADY_EXITED`,
+    `ENTRY_IN_CONFLICT`, `REGISTER_CLOSED`, `SHIFT_INVALID`, `INVALID`.

@@ -7,6 +7,7 @@ const { Router } = require('express');
 const authenticate = require('../middlewares/authenticate');
 const healthRoutes = require('./health.routes');
 const authRoutes = require('./auth.routes');
+const syncRoutes = require('./sync.routes');
 const sitesRoutes = require('./sites.routes');
 const usersRoutes = require('./users.routes');
 const { shiftsRouter, entriesRouter, salesRouter, pendingRouter } = require('./operation.routes');
@@ -17,6 +18,8 @@ const router = Router();
 // --- Públicas ---
 router.use('/health', healthRoutes);
 router.use('/auth', authRoutes);
+// Con su propia autenticación (acepta el token de sincronización sin conexión)
+router.use('/sync', syncRoutes);
 
 // --- Protegidas ---
 router.use(authenticate);

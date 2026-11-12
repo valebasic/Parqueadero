@@ -135,3 +135,10 @@
     box-shadow: none;
   }
 }
+.rc-provisional {
+  margin-top: 3px;
+  text-align: center;
+  font-size: 11px;
+  border: 1px dashed #000;
+  padding: 2px;
+}

@@ -3,6 +3,8 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from '../components/Sidebar.jsx';
 import Topbar from '../components/Topbar.jsx';
 import IdleGuard from '../components/IdleGuard.jsx';
+import { LockScreen } from '../components/OfflineGuards.jsx';
+import { useSession } from '../context/SessionContext.jsx';
 import { MENU } from '../lib/roles.js';
 
 const EXTRA_TITLES = { '/cuenta': 'Mi cuenta' };
@@ -11,6 +13,7 @@ const EXTRA_TITLES = { '/cuenta': 'Mi cuenta' };
 // En pantallas angostas el menú se vuelve un panel deslizable.
 export default function AppLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { locked } = useSession();
   const { pathname } = useLocation();
   const title = MENU.find((m) => m.path === pathname)?.label || EXTRA_TITLES[pathname] || 'Nexo.app';
 
@@ -21,10 +24,12 @@ export default function AppLayout() {
       <div className="nx-main">
         <Topbar title={title} onToggleMenu={() => setMenuOpen((v) => !v)} />
         <main className="nx-content">
-          <Outlet />
+          {/* Bloqueada: no se muestra ningún dato detrás */}
+          {locked ? null : <Outlet />}
         </main>
       </div>
       <IdleGuard />
+      {locked && <LockScreen />}
     </div>
   );
 }

@@ -133,3 +133,24 @@ test('fechas que cruzan el cambio de mes y de año dan lo mismo que en la v1.0',
     );
   }
 });
+
+// La copia del frontend (cobro sin conexión) da exactamente lo mismo que el servidor
+describe('frontend/src/lib/tariff.js = servidor', () => {
+  const vm = require('vm');
+  const code = fs.readFileSync(path.join(__dirname, '../../frontend/src/lib/tariff.js'), 'utf8').replace(/^export /gm, '');
+  const sandbox = {};
+  vm.createContext(sandbox);
+  vm.runInContext(`${code}\nthis.calculateFare = calculateFare;`, sandbox);
+
+  test.each([
+    ['carro', RATES.carro.v2],
+    ['moto', RATES.moto.v2],
+    ['cicla por bloques', { fractionAmount: 0, hourAmount: 0, full12hAmount: 10000, pricingMode: 'block12h' }],
+  ])('%s, minuto a minuto durante 3 días', (_n, rate) => {
+    for (let m = 0; m <= 3 * 24 * 60; m += 1) {
+      const a = calculateFare({ entryAt: ENTRY, exitAt: at(m), rate });
+      const b = sandbox.calculateFare({ entryAt: ENTRY, exitAt: at(m), rate });
+      if (a.total !== b.total || a.minutes !== b.minutes) throw new Error(`difiere en ${m} min: ${a.total} vs ${b.total}`);
+    }
+  });
+});

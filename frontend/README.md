@@ -87,3 +87,23 @@ define `@page { size: 50mm auto }` y en `@media print` solo deja visible el reci
 
 Todo en español de Colombia, en [`src/lib/format.js`](src/lib/format.js): montos `$ 130.000`,
 fechas `05/03/2026` y hora `2:05 p. m.`.
+
+## PWA y operación sin conexión
+
+- **Service worker** (vite-plugin-pwa, `npm run build`): la app abre sin internet. La API nunca se
+  guarda en el service worker. Para probarlo: `npm run build && npm run preview` (puerto 4173, con
+  proxy a la API) y en DevTools → Network → "Offline".
+- **Almacén local cifrado** ([`src/lib/offline/secureStore.js`](src/lib/offline/secureStore.js)):
+  IndexedDB con la cola de operaciones y la copia local cifradas con AES-GCM. La clave se deriva de la
+  contraseña con PBKDF2-SHA256 (310.000 iteraciones) al iniciar sesión; vive en memoria y en
+  `sessionStorage` (sobrevive a recargar, no a cerrar el navegador). La contraseña nunca se guarda:
+  solo un verificador PBKDF2 para desbloquear.
+- **Sin conexión** ([`src/lib/offline/engine.js`](src/lib/offline/engine.js)): entradas y salidas
+  (efectivo, electrónico o pendiente) contra la copia local; tarifa con
+  [`src/lib/tariff.js`](src/lib/tariff.js) (igual a la del servidor); recibo provisional
+  `FA-P-<dispositivo>-0001`. El resto de pantallas se deshabilita con un aviso.
+- **Sesión**: si se cae internet con la sesión abierta, se sigue trabajando hasta 8 h. La inactividad
+  bloquea la pantalla y se desbloquea con la contraseña (verificada en el equipo). Sin conexión no se
+  puede iniciar una sesión nueva.
+- **Sincronización** automática al volver la conexión, en orden, con progreso en la barra superior
+  ("Sin conexión · N operaciones por sincronizar" / "Sincronizando X de Y").

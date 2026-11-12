@@ -4,6 +4,17 @@ import { apiGet, apiPost } from '../lib/api.js';
 import { useShift, useWorkingSite } from '../context/ShiftContext.jsx';
 import { useReceipt } from '../components/Receipt.jsx';
 import { useSiteEvents } from '../context/RealtimeContext.jsx';
+import { useSession } from '../context/SessionContext.jsx';
+import { useOffline } from '../context/OfflineContext.jsx';
+import {
+  loadSnapshot,
+  localMonthly,
+  localOpenEntries,
+  OfflineError,
+  quoteOffline,
+  registerEntryOffline,
+  registerExitOffline,
+} from '../lib/offline/engine.js';
 import { formatCOP, formatDate, formatDuration, formatTime12h } from '../lib/format.js';
 import { detectVehicleType, normalizePlate, plateError, PLATE_MAX_LENGTH, VEHICLE_LABELS } from '../lib/plates.js';
 
@@ -23,6 +34,10 @@ export default function EntriesPage() {
   const { shift } = useShift();
   const { siteId } = useWorkingSite();
   const { showReceipt } = useReceipt();
+  const { user } = useSession();
+  const { online, pending, notifyQueued } = useOffline();
+  const offline = !online;
+  const [snapshot, setSnapshot] = useState(null);
   const plateRef = useRef(null);
 
   const [openEntries, setOpenEntries] = useState([]);
@@ -48,11 +63,17 @@ export default function EntriesPage() {
   const loadOpen = useCallback(async () => {
     if (!siteId) return;
     try {
-      setOpenEntries(await apiGet(`/entries/open?siteId=${siteId}`, { background: true }));
+      if (offline) {
+        const snap = await loadSnapshot(siteId);
+        setSnapshot(snap);
+        setOpenEntries(snap ? await localOpenEntries(snap, user.id) : []);
+      } else {
+        setOpenEntries((await apiGet(`/entries/open?siteId=${siteId}`, { background: true })).map((e) => ({ ...e, key: `s${e.id}` })));
+      }
     } catch (err) {
-      setMessage({ type: 'error', text: err.message });
+      if (err.code !== 'NETWORK') setMessage({ type: 'error', text: err.message });
     }
-  }, [siteId]);
+  }, [siteId, offline, user.id]);
 
   useEffect(() => {
     loadOpen();
@@ -74,18 +95,25 @@ export default function EntriesPage() {
   useEffect(() => {
     setLookup(null);
     if (!siteId || plateError(plate)) return undefined;
+    if (offline) {
+      if (!snapshot) return undefined;
+      const inside = openEntries.find((e) => e.plate === plate);
+      setLookup({ plate, valid: true, vehicleType: detectVehicleType(plate), openEntry: inside ? { ...inside, inThisSite: true } : null, monthly: localMonthly(snapshot, plate) });
+      if (inside && selectedRef.current?.key !== inside.key) selectEntry(inside);
+      return undefined;
+    }
     const t = setTimeout(() => {
       apiGet(`/entries/lookup?siteId=${siteId}&plate=${encodeURIComponent(plate)}`, { background: true })
         .then((data) => {
           setLookup(data);
           if (data.vehicleType) setVehicleType(data.vehicleType);
-          if (data.openEntry?.inThisSite) selectEntry(data.openEntry);
+          if (data.openEntry?.inThisSite) selectEntry({ ...data.openEntry, key: `s${data.openEntry.id}` });
         })
         .catch(() => {});
     }, 250);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [plate, siteId]);
+  }, [plate, siteId, offline, snapshot, openEntries]);
 
   // Tipo deducido al instante (sin esperar a la API)
   useEffect(() => {
@@ -99,17 +127,26 @@ export default function EntriesPage() {
       return undefined;
     }
     let cancelled = false;
-    const load = () =>
-      apiGet(`/entries/${selected.id}/quote`, { background: true })
+    const load = () => {
+      if (offline) {
+        try {
+          setQuote(snapshot ? quoteOffline(snapshot, selected) : null);
+        } catch (err) {
+          setMessage({ type: 'error', text: err.message });
+        }
+        return Promise.resolve();
+      }
+      return apiGet(`/entries/${selected.id}/quote`, { background: true })
         .then((q) => !cancelled && setQuote(q))
-        .catch((err) => !cancelled && setMessage({ type: 'error', text: err.message }));
+        .catch((err) => !cancelled && err.code !== 'NETWORK' && setMessage({ type: 'error', text: err.message }));
+    };
     load();
     const id = setInterval(load, 30000);
     return () => {
       cancelled = true;
       clearInterval(id);
     };
-  }, [selected]);
+  }, [selected, offline, snapshot]);
 
   function selectEntry(entry) {
     setSelected(entry);
@@ -145,9 +182,17 @@ export default function EntriesPage() {
     setBusy(true);
     setMessage(null);
     try {
-      const receipt = await apiPost('/entries', { siteId, plate, vehicleType: vehicleType || undefined });
+      const receipt = offline
+        ? await registerEntryOffline({ user, shift, snapshot, plate, vehicleType })
+        : await apiPost('/entries', { siteId, plate, vehicleType: vehicleType || undefined });
       reset(true);
-      setMessage({ type: 'ok', text: `Entrada de ${receipt.plate} registrada (recibo ${receipt.receipt}).` });
+      setMessage({
+        type: 'ok',
+        text: offline
+          ? `Entrada de ${receipt.plate} guardada sin conexión (recibo provisional ${receipt.receipt}). Se sincroniza al volver internet.`
+          : `Entrada de ${receipt.plate} registrada (recibo ${receipt.receipt}).`,
+      });
+      if (offline) notifyQueued();
       loadOpen();
       showReceipt(receipt);
     } catch (err) {
@@ -168,7 +213,18 @@ export default function EntriesPage() {
         body.discountReason = reason;
       }
       if (method === 'MIXED') body.cashAmount = Number(cashAmount);
-      const receipt = await apiPost(`/entries/${selected.id}/exit`, body);
+      const receipt = offline
+        ? await registerExitOffline({
+            user,
+            shift,
+            snapshot,
+            entry: selected,
+            method,
+            chargedAmount: charged !== '' ? Number(charged) : undefined,
+            discountReason: reason,
+          })
+        : await apiPost(`/entries/${selected.id}/exit`, body);
+      if (offline) notifyQueued();
       reset(true);
       setMessage(
         receipt.status === 'PENDING_CHARGE'
@@ -178,7 +234,7 @@ export default function EntriesPage() {
       loadOpen();
       showReceipt(receipt);
     } catch (err) {
-      setMessage({ type: 'error', text: err.message });
+      setMessage({ type: 'error', text: err instanceof OfflineError || err.code !== 'NETWORK' ? err.message : 'Se perdió la conexión: intente de nuevo (se guardará sin conexión).' });
       if (err.code === 'ENTRY_NOT_OPEN') {
         reset(true);
         loadOpen();
@@ -207,21 +263,30 @@ export default function EntriesPage() {
   const discount = selected ? Math.max(0, calculated - total) : 0;
   const cash = Number(cashAmount) || 0;
   const noShift = !shift;
+  const noLocalCopy = offline && !snapshot;
+  const blocked = noShift || noLocalCopy;
   const insideElsewhere = lookup?.openEntry && !lookup.openEntry.inThisSite;
   const monthly = lookup?.monthly;
 
   const canFinish =
     selected &&
     quote &&
-    !noShift &&
+    !blocked &&
     total <= calculated &&
     (discount === 0 || reason.trim().length >= 3) &&
     (method !== 'MIXED' || goesToPending || (cash > 0 && cash < total));
-  const canRegister = !selected && !noShift && !plateError(plate) && !(monthly?.blocksEntry) && !lookup?.openEntry;
+  const canRegister = !selected && !blocked && !plateError(plate) && !(monthly?.blocksEntry) && !lookup?.openEntry;
 
   return (
     <div className="nx-entries">
-      {noShift && (
+      {offline && (
+        <div className="nx-banner nx-banner--offline" role="status">
+          <strong>Sin conexión.</strong> Las entradas y salidas se guardan cifradas en este equipo con recibo provisional
+          {pending ? ` · ${pending} ${pending === 1 ? 'operación' : 'operaciones'} por sincronizar` : ''}. Se envían solas al volver internet.
+          {noLocalCopy && ' No hay copia local de tarifas y vehículos: no se puede operar sin conexión.'}
+        </div>
+      )}
+      {noShift && !offline && (
         <div className="nx-banner nx-banner--warn" role="alert">
           No tiene un turno abierto: no puede registrar entradas ni salidas. <Link to="/caja">Abrir turno</Link>
         </div>
@@ -286,8 +351,8 @@ export default function EntriesPage() {
               <tbody>
                 {filtered.map((e) => (
                   <tr
-                    key={e.id}
-                    className={selected?.id === e.id ? 'is-selected' : ''}
+                    key={e.key}
+                    className={selected?.key === e.key ? 'is-selected' : ''}
                     onClick={() => selectEntry(e)}
                     tabIndex={0}
                     onKeyDown={(ev) => ev.key === 'Enter' && selectEntry(e)}
@@ -295,6 +360,7 @@ export default function EntriesPage() {
                     <td>
                       <strong>{e.plate}</strong>
                       {e.monthlyPlanId && <span className="nx-tag" title="Mensualidad nocturna fuera de horario">M</span>}
+                      {e.offline && <span className="nx-tag nx-tag--offline" title="Registrada sin conexión, pendiente de sincronizar">sin sincronizar</span>}
                     </td>
                     <td>{formatDate(e.entryAt)}</td>
                     <td>{formatTime12h(e.entryAt)}</td>
@@ -385,7 +451,7 @@ export default function EntriesPage() {
                 <div className="nx-paypanel">
                   <div className="nx-paypanel__title">Método de pago</div>
                   <div className="nx-paymethods" role="radiogroup" aria-label="Método de pago">
-                    {METHODS.map((m) => (
+                    {METHODS.filter((m) => !offline || m.id !== 'MIXED').map((m) => (
                       <button
                         key={m.id}
                         type="button"
