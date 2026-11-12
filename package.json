@@ -1,6 +1,6 @@
 {
   "name": "nexoapp",
-  "version": "2.6.51",
+  "version": "2.6.52",
   "description": "Nexo.app - Sistema de parqueadero (offline)",
   "main": "main.js",
   "private": true,

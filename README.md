@@ -1,6 +1,6 @@
 # Nexo.app (antes FacaParking) — Sistema de parqueadero offline
 
-**Versión actual: 2.6.51** (la fuente de verdad es `"version"` en `package.json`;
+**Versión actual: 2.6.52** (la fuente de verdad es `"version"` en `package.json`;
 `APP_VERSION` en `mvc/app-controller.js` y `package-lock.json` deben coincidir).
 
 Aplicación de escritorio (Electron) para gestionar un parqueadero: entradas y
@@ -323,6 +323,11 @@ Jerarquía: **Superadmin > Administrador > Empleado**.
   solo para el usuario `Felipe`.
 - **Historial de ingresos** (quién entró y cuándo, máx. 300): solo Superadmin,
   que además puede limpiarlo.
+- **Exportar datos para Nexo v2.0** (solo Superadmin): botón "Exportar todo a JSON"
+  (`initExportSection` / `buildFullExport`). Descarga una copia literal de todas las claves de
+  `localStorage` (menos `fp_session`) en `{ format: 'nexo-v1-export', formatVersion: 1, appVersion,
+  exportedAt, exportedBy, keys }`. No modifica nada. Si hay una caja abierta avisa (sus ventas y
+  movimientos no se migran). El archivo lleva los hashes de las contraseñas: guardarlo con cuidado.
 - **Zona de peligro** (solo Superadmin): borra **todos** los datos del equipo
   (`localStorage.clear()`) tras dos confirmaciones (la segunda, escribir
   `BORRAR`); los usuarios vuelven a los valores de fábrica.
@@ -546,4 +551,5 @@ histórica.
 - **2.6.48**: Reportes › gráfica de Ingresos y egresos — se resaltan con un marcador y una etiqueta la venta mayor (verde, "Mayor: $X") y la venta menor (naranja, "Menor: $X") del período graficado (hora, día, semana o mes). La menor se toma entre los períodos con ventas (> $0). Se activa con `highlight:true` en la serie de `drawLineChart` (mvc/app-controller.js).
 - **2.6.49**: Reportes › Fidelidad de clientes — con "Todos" la tabla muestra los 40 clientes con mayor puntaje (antes 20), paginados de a 10 con el paginador único (`#loyaltyPager`, `LOYALTY_TABLE_LIMIT`/`LOYALTY_PAGE_SIZE` en mvc/app-controller.js). Con un nivel elegido se siguen listando todos los clientes de ese nivel, también de a 10 por página. Al cambiar el selector "Ver" vuelve a la página 1.
 - **2.6.50**: Limpieza del paquete — se quitó `Iniciar FacaParking Offline.bat` (falso positivo de antivirus; abría la app en el navegador con otra base de datos), se eliminó `jquery.dataTables.min.js` (~2 MB, cargado en Entradas y Ventas pero sin uso: las tablas usan el paginador propio `fpPager`) y se actualizaron las cifras del README. Sin cambios de lógica ni de diseño.
+- **2.6.52**: Configuración → **Exportar todo a JSON** (solo Superadmin) para migrar los datos a Nexo v2.0 (web). Solo lectura: no cambia ningún dato.
 - **2.6.51**: Diseño — más acentos naranja en toda la app (solo `assets/nexo-theme.css`, sin cambios de estructura ni lógica): línea naranja bajo el logo y marca al pasar el mouse en el menú, barrita junto al título de pantalla, subrayado en los títulos de tarjeta, borde superior en tarjetas de cifras y modales, línea naranja bajo el encabezado de las tablas con fila resaltada al pasar el mouse, botones `btn-warning`/pagar/hover en naranja, casillas y radios naranja. El rojo de ventas con descuento y el azul de los paginadores se mantienen.
