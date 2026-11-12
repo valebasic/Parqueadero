@@ -13,6 +13,7 @@ const { calculateFare } = require('./tariff.service');
 const { requireOpenShift } = require('./shifts.service');
 const { nextReceiptNumber, buildReceipt } = require('./receipts.service');
 const { publish } = require('../realtime/bus');
+const { assignForEntry, keysFields } = require('./spaces.service');
 
 const VEHICLE_TYPES = ['CAR', 'MOTORCYCLE', 'BICYCLE'];
 const MONTHLY_GRACE_DAYS = 3;
@@ -43,6 +44,8 @@ function toDto(e) {
     entryAt: e.entry_at,
     exitAt: e.exit_at,
     monthlyPlanId: e.monthly_plan_id,
+    spaceId: e.space_id ?? null,
+    keysReceived: e.keys_received ?? null,
     calculatedAmount: e.calculated_amount,
     discountAmount: e.discount_amount,
     discountReason: e.discount_reason,
@@ -251,6 +254,13 @@ async function createEntry(req, body) {
     const monthly = await findActiveMonthly(client, siteId, plate);
     if (monthly?.blocksEntry) throw monthlyBlockedError(plate, monthly);
 
+    // RF50: puesto (el elegido en el mapa o el sugerido). Sin plano en la zona → sin puesto, como antes.
+    const requestedSpaceId = body?.spaceId ? Number.parseInt(body.spaceId, 10) : null;
+    const space = await assignForEntry(client, { siteId, zoneId: shift.zoneId, plate, vehicleType, requestedSpaceId });
+    const spaceId = space?.id ?? null;
+    // Puesto que pide llaves: se guarda si se recibieron y quién las recibió
+    const keys = keysFields(space?.requiresKeys, body?.keysReceived, req.user.id);
+
     const { rows: site } = await client.query('SELECT receipt_prefix FROM sites WHERE id = $1', [siteId]);
     const prefix = site[0].receipt_prefix;
     const number = await nextReceiptNumber(client, siteId, prefix);
@@ -258,15 +268,19 @@ async function createEntry(req, body) {
     try {
       const { rows } = await client.query(
         `INSERT INTO entries (site_id, zone_id, plate, vehicle_type, receipt_prefix, receipt_number,
-                              entry_by, entry_shift_id, monthly_plan_id)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
+                              entry_by, entry_shift_id, monthly_plan_id, space_id, keys_received, keys_received_by, keys_received_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id`,
         [siteId, shift.zoneId, plate, vehicleType, prefix, number, req.user.id, shift.shiftId,
-          monthly && !monthly.blocksEntry ? monthly.id : null],
+          monthly && !monthly.blocksEntry ? monthly.id : null, spaceId, keys.received, keys.by, keys.at],
       );
       return rows[0].id;
     } catch (err) {
       if (err.constraint === 'entries_one_open_per_plate' || err.constraint === 'entries_one_open_bicycle_per_site') {
         throw await alreadyInsideError(plate, siteId);
+      }
+      // Dos operadores tomaron el mismo puesto a la vez: gana el primero
+      if (err.constraint === 'entries_one_open_per_space') {
+        throw new HttpError(409, 'Ese puesto acaba de ocuparse. Elija otro.', { code: 'SPACE_TAKEN', details: { spaceId } });
       }
       throw err;
     }
@@ -280,6 +294,7 @@ async function createEntry(req, body) {
     receipt: receipt.receipt,
     zone: receipt.zone,
     entryAt: receipt.entryAt,
+    spaceId: receipt.space?.id ?? null,
   });
   return receipt;
 }

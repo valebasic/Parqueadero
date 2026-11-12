@@ -12,6 +12,7 @@ const sitesRoutes = require('./sites.routes');
 const usersRoutes = require('./users.routes');
 const adminRoutes = require('./admin.routes');
 const aiRoutes = require('./ai.routes');
+const { mapsRouter, spacesRouter } = require('./maps.routes');
 const { shiftsRouter, entriesRouter, salesRouter, pendingRouter } = require('./operation.routes');
 const { monthlyRouter, movementsRouter, reportsRouter, configRouter, backupsRouter } = require('./management.routes');
 
@@ -38,5 +39,7 @@ router.use('/config', configRouter);
 router.use('/backups', backupsRouter);
 router.use('/admin', adminRoutes);
 router.use('/ai', aiRoutes);
+router.use('/maps', mapsRouter);
+router.use('/spaces', spacesRouter);
 
 module.exports = router;

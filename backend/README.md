@@ -448,3 +448,59 @@ reglas de alertas y herramientas, pero todo corre en el servidor ([`src/ai/`](sr
   `POST /api/ai/proposals/:id/resolve` `{ outcome: CONFIRMED | CANCELLED | FAILED }`. Vencen a los 30 min.
   Auditoría: `AI_PROPOSAL_CREATED`, `AI_PROPOSAL_CONFIRMED|CANCELLED|FAILED`. Cierre de caja (exige
   el conteo por denominación), novedades y salidas no se proponen: la IA explica el procedimiento.
+
+## Mapa de espacios (RF47-RF52)
+
+Cada zona tiene un plano en cuadrícula (filas × columnas) con elementos: **puesto** (código único
+en la zona; tipo carro / moto / cicla / movilidad reducida; uso solo mensualidad / por hora / mixto;
+techado; tamaño 1×1 o 1×2 con orientación), **vía**, **entrada**, **salida** y **área no disponible**
+(con etiqueta). Reglas de validación en [`src/lib/maplayout.js`](src/lib/maplayout.js) (la misma copia
+usa el editor del frontend): dentro de la cuadrícula, sin superposiciones y códigos únicos.
+
+| Endpoint | Rol | Qué hace |
+| --- | --- | --- |
+| `GET /api/maps/sites/:siteId` | todos | Zonas de la sede con su versión publicada y si tienen borrador |
+| `GET /api/maps/zones/:zoneId/live` | todos | Plano publicado con el estado de cada puesto (FREE / OCCUPIED / BLOCKED), reserva y vehículo (placa, entrada, minutos) |
+| `GET /api/maps/zones/:zoneId` | AG/AS | Publicada, borrador y versiones |
+| `PUT /api/maps/zones/:zoneId/draft` · `DELETE …/draft` | AG/AS | Guardar (valida) o descartar el borrador |
+| `POST /api/maps/zones/:zoneId/copy` `{ sourceZoneId, replace? }` | AG/AS | Duplicar como plantilla el plano de otra zona |
+| `POST /api/maps/zones/:zoneId/publish` | AG/AS | Publica el borrador como versión nueva (la anterior queda archivada). Los puestos pasan a `parking_spaces` por código; no se publica si quita o cambia de tipo un puesto ocupado (409 `SPACE_IN_USE`) |
+| `GET /api/maps/indicators?siteId=` | AG/AS | Ocupación por zona y tipo (total, ocupados, libres, bloqueados, reservados) |
+| `GET /api/maps/zones/:zoneId/history?from&to` | AG/AS | Ocupación promedio por hora del día |
+| `GET /api/maps/zones/:zoneId/heatmap?from&to` | AG/AS | Uso de cada puesto (% del tiempo ocupado y entradas) |
+| `GET /api/spaces/suggest?siteId&plate` | todos | Puesto sugerido para una placa en la zona del turno |
+| `POST /api/spaces/:id/block` · `/unblock` `{ reason }` | todos | Bloquear (solo libres) / liberar, con motivo |
+| `POST /api/spaces/move/:entryId` `{ spaceId, reason }` | todos | Mover un vehículo a otro puesto |
+| `PUT /api/spaces/:id/reservation` `{ monthlyPlanId \| null }` | AG/AS | Reservar un puesto para el titular de una mensualidad |
+
+**Asignación (RF50)**: al registrar una entrada (`POST /api/entries`, `spaceId` opcional) en una zona con
+plano publicado se usa el puesto elegido o, si no, el sugerido: el libre del tipo correcto más
+cercano a la entrada del plano (distancia en celdas). Carro → puesto de carro (movilidad reducida
+solo si el operador lo elige); "solo mensualidad" únicamente para placas con mensualidad; un puesto
+reservado solo lo ocupa su titular (y se le sugiere primero); bloqueado u ocupado no se asigna. El
+índice único parcial `entries_one_open_per_space` impide dos entradas abiertas en el mismo puesto
+aunque lleguen a la vez (409 `SPACE_TAKEN`). Sin plano, o sin puestos libres del tipo, la entrada se
+registra sin puesto como antes. Bloqueos, liberaciones, movimientos, reservas y publicaciones quedan
+en auditoría (`SPACE_*`, `ENTRY_SPACE_MOVED`, `MAP_*`) y se publican en tiempo real
+(`space:changed`, `map:published`; las entradas/salidas traen `spaceId`).
+
+**Sin conexión**: la copia local (`/api/sync/snapshot`) trae los planos publicados y el puesto de cada
+entrada abierta; el equipo sugiere puesto con el mismo criterio (sin reservas) y lo envía en la
+operación. Al sincronizar, si ese puesto ya no está libre se asigna otro (o ninguno): nunca genera
+conflicto.
+
+### Plano de Facaparking (seed) y puestos que piden llaves
+
+- `npm run db:seed` / `db:reset` crea y publica el plano de la zona **Principal** de Facaparking
+  ([`src/db/seed-data/facaparking-map.js`](src/db/seed-data/facaparking-map.js), con el croquis en
+  comentarios) solo si la zona todavía no tiene plano: no pisa lo que se edite después en el editor.
+  `SEED_SITE_MAP=0` lo omite (las pruebas parten de zonas sin plano; `tests/db/facaparking-map.test.js`
+  prueba el seed con `SEED_SITE_MAP=1`).
+- Atributos nuevos del puesto: `requiresKeys` (pide llaves: puestos de isla que bloquean puestos de
+  pared), `facing` (lado que mira a la vía; parqueo en reversa) y el tipo `MOTORCYCLE_BICYCLE` (moto y cicla).
+- Sugerencia: primero los puestos que **no** piden llaves, del más cercano a la entrada al más lejano
+  (empates por número de puesto); los que piden llaves solo cuando no quedan otros del tipo.
+- Llaves: `POST /api/entries` acepta `keysReceived`; si el puesto pide llaves la entrada guarda
+  `keys_received` (sí/no), quién y cuándo. `POST /api/spaces/keys/:entryId { received }` las registra
+  después (auditado `ENTRY_KEYS_RECORDED`). La cotización, el mapa en vivo y el recibo traen
+  `keysReceived` para recordar devolverlas en la salida. Mover un vehículo conserva el registro.

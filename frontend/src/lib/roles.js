@@ -17,6 +17,8 @@ export const MENU = [
   { path: '/', label: 'Inicio', icon: 'dashboard', roles: ALL },
   { path: '/panel', label: 'Panel multisede', icon: 'building', roles: ADMINS },
   { path: '/entradas', label: 'Entradas', icon: 'marker', roles: ALL },
+  // Mapa de espacios en vivo (RF48): todos los roles
+  { path: '/mapa', label: 'Mapa', icon: 'map', roles: ALL },
   { path: '/mensualidades', label: 'Mensualidades', icon: 'calendar', roles: ADMINS },
   { path: '/pendientes', label: 'Pendientes', icon: 'clock', roles: ADMINS },
   { path: '/caja', label: 'Cierre de caja', icon: 'money', roles: ALL },
@@ -27,11 +29,13 @@ export const MENU = [
   { path: '/reportes-mensualidades', label: 'Rep. Mensualidades', icon: 'wallet', roles: ADMINS },
   { path: '/contabilidad', label: 'Contabilidad', icon: 'money', roles: ADMINS },
   { path: '/comparativo', label: 'Comparativo', icon: 'chart', roles: ADMINS },
+  { path: '/ocupacion', label: 'Ocupación por puesto', icon: 'map', roles: ADMINS },
   { path: '/horarios', label: 'Horarios', icon: 'calendar', roles: ADMINS },
   { path: '/personal', label: 'Personal y turnos', icon: 'clock', roles: ADMINS },
   { path: '/conflictos', label: 'Conflictos', icon: 'alert', roles: ADMINS },
   { path: '/usuarios', label: 'Usuarios', icon: 'users', roles: ADMINS },
   { path: '/sedes', label: 'Sedes y zonas', icon: 'building', roles: ADMINS },
+  { path: '/mapa-editor', label: 'Editor de mapas', icon: 'grid', roles: ADMINS },
   { path: '/configuracion', label: 'Configuración', icon: 'cog', roles: ADMINS },
 ];
 

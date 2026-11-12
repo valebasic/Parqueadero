@@ -7,6 +7,7 @@
 import { apiGet } from '../api.js';
 import { calculateFare } from '../tariff.js';
 import { detectVehicleType, normalizePlate, plateError, VEHICLE_LABELS } from '../plates.js';
+import { entranceDistance, SPACE_TYPE_FOR_VEHICLE } from '../maplayout.js';
 import { PAYMENT_LABELS } from '../format.js';
 import {
   decryptOfflineToken,
@@ -98,6 +99,7 @@ export async function localOpenEntries(snapshot, userId) {
       receipt: o.provisionalReceipt,
       entryAt: o.clientTs,
       monthlyPlanId: o.data.monthlyLinked ? 1 : null,
+      spaceId: o.data.spaceId ?? null,
       offline: true,
     }));
   return [...local, ...server]
@@ -119,7 +121,46 @@ function receiptBase(snapshot) {
   return { business: snapshot.site.business, config: snapshot.site.config, qrUrl: null };
 }
 
-export async function registerEntryOffline({ user, shift, snapshot, plate: rawPlate, vehicleType }) {
+// ---------------------------------------------------------------------------
+// Mapa de espacios sin conexión (RF48, RF50): el plano de la copia local con la ocupación que dicen
+// las entradas abiertas locales (servidor + cola). Al sincronizar, el servidor corrige el puesto.
+// ---------------------------------------------------------------------------
+
+export function localMap(snapshot, zoneId, openEntries) {
+  const m = snapshot?.maps?.find((x) => x.zone.id === zoneId);
+  if (!m?.published) return null;
+  const bySpace = new Map(openEntries.filter((e) => e.spaceId).map((e) => [e.spaceId, e]));
+  const counts = { total: 0, free: 0, occupied: 0, blocked: 0 };
+  const now = Date.now();
+  const elements = m.elements.map((el) => {
+    if (el.kind !== 'SPACE') return el;
+    const e = bySpace.get(el.spaceId);
+    const state = el.state === 'BLOCKED' ? 'BLOCKED' : e ? 'OCCUPIED' : 'FREE';
+    counts.total += 1;
+    counts[state.toLowerCase()] += 1;
+    return {
+      ...el,
+      state,
+      entry: e ? { plate: e.plate, entryAt: e.entryAt, receipt: e.receipt, minutes: Math.floor((now - new Date(e.entryAt)) / 60000), offline: e.offline } : null,
+    };
+  });
+  return { ...m, elements, counts, offline: true };
+}
+
+// Mismo criterio que el servidor (primero los que no piden llaves, del más cercano a la entrada al más
+// lejano), sin reservas: sin conexión no se sabe de quién es cada mensualidad
+const SUGGESTED_TYPES = SPACE_TYPE_FOR_VEHICLE;
+export function suggestSpaceOffline(map, vehicleType) {
+  if (!map) return null;
+  const free = map.elements.filter(
+    (el) => el.kind === 'SPACE' && el.state === 'FREE' && !el.reserved && el.usage !== 'MONTHLY' && (SUGGESTED_TYPES[vehicleType] ?? []).includes(el.spaceType),
+  );
+  const dist = (el) => entranceDistance(el, map.elements) ?? Number.MAX_SAFE_INTEGER;
+  free.sort((a, b) => Number(Boolean(a.requiresKeys)) - Number(Boolean(b.requiresKeys)) || dist(a) - dist(b) || a.code.length - b.code.length || a.code.localeCompare(b.code));
+  return free[0] ?? null;
+}
+
+export async function registerEntryOffline({ user, shift, snapshot, plate: rawPlate, vehicleType, spaceId = null, keysReceived }) {
   const plate = normalizePlate(rawPlate);
   const err = plateError(plate);
   if (err) throw new OfflineError(err, 'INVALID_PLATE');
@@ -134,7 +175,11 @@ export async function registerEntryOffline({ user, shift, snapshot, plate: rawPl
   const op = await baseOp('ENTRY', user);
   const device = op.deviceId;
   op.provisionalReceipt = `${snapshot.site.receiptPrefix}-P-${device}-${pad4(await nextCounter('provisional'))}`;
-  op.data = { siteId: snapshot.site.id, plate, vehicleType: type, shiftId: shift.id, monthlyLinked: Boolean(monthly) };
+  // Puesto: el elegido si sigue libre en la copia local, si no el sugerido
+  const map = localMap(snapshot, shift.zone?.id, open);
+  const chosen = spaceId && map?.elements.find((e) => e.spaceId === spaceId && e.state === 'FREE');
+  const space = chosen || suggestSpaceOffline(map, type);
+  op.data = { siteId: snapshot.site.id, plate, vehicleType: type, shiftId: shift.id, monthlyLinked: Boolean(monthly), spaceId: space?.spaceId ?? null, keysReceived: space?.requiresKeys ? keysReceived === true : undefined };
   await enqueue(user.id, op);
   return {
     ...receiptBase(snapshot),
@@ -146,6 +191,8 @@ export async function registerEntryOffline({ user, shift, snapshot, plate: rawPl
     vehicleLabel: VEHICLE_LABELS[type],
     entryAt: op.clientTs,
     operator: user.fullName,
+    space: space ? { id: space.spaceId, code: space.code, requiresKeys: Boolean(space.requiresKeys) } : null,
+    keysReceived: space?.requiresKeys ? keysReceived === true : null,
   };
 }
 

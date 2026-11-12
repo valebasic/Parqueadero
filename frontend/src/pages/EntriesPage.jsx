@@ -9,14 +9,17 @@ import { useOffline } from '../context/OfflineContext.jsx';
 import {
   loadSnapshot,
   localMonthly,
+  localMap,
   localOpenEntries,
   OfflineError,
+  suggestSpaceOffline,
   quoteOffline,
   registerEntryOffline,
   registerExitOffline,
 } from '../lib/offline/engine.js';
 import { formatCOP, formatDate, formatDuration, formatTime12h } from '../lib/format.js';
 import { detectVehicleType, normalizePlate, plateError, PLATE_MAX_LENGTH, VEHICLE_LABELS } from '../lib/plates.js';
+import SpacePicker from '../components/map/SpacePicker.jsx';
 
 // Entradas (RF07-RF11), con el flujo de ParkApp.html de la v1.0:
 //   ENTRADA (≤ 3 acciones): escribir la placa → Enter (registra) → Enter (imprime el tiquete).
@@ -52,6 +55,13 @@ export default function EntriesPage() {
   const [cashAmount, setCashAmount] = useState('');
   const [message, setMessage] = useState(null); // { type: 'error' | 'ok' | 'warn', text }
   const [busy, setBusy] = useState(false);
+  // RF50: puesto sugerido para la entrada y el que el operador elija en el mapa
+  const [suggestion, setSuggestion] = useState(null); // { hasMap, suggested: { id, code, reserved } | null }
+  const [spaceChoice, setSpaceChoice] = useState(null); // { id, code }
+  const [picking, setPicking] = useState(false);
+  // Puesto que pide llaves (isla): se avisa "Solicitar llaves" y se marca si se recibieron
+  const [keysOk, setKeysOk] = useState(false);
+  const spaceNeedsKeys = Boolean(spaceChoice ? spaceChoice.requiresKeys : suggestion?.suggested?.requiresKeys);
 
   const plate = normalizePlate(plateInput);
   const selectedRef = useRef(null);
@@ -115,6 +125,26 @@ export default function EntriesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plate, siteId, offline, snapshot, openEntries]);
 
+  // Puesto sugerido para una entrada nueva (si la zona del turno tiene mapa)
+  useEffect(() => {
+    setSuggestion(null);
+    if (!siteId || !shift || selected || plateError(plate) || lookup?.openEntry) return undefined;
+    const type = vehicleType || detectVehicleType(plate);
+    if (offline) {
+      if (!snapshot) return undefined;
+      const map = localMap(snapshot, shift.zone.id, openEntries);
+      const sp = suggestSpaceOffline(map, type);
+      setSuggestion({ hasMap: Boolean(map), suggested: sp ? { id: sp.spaceId, code: sp.code } : null, offline: true });
+      return undefined;
+    }
+    const t = setTimeout(() => {
+      apiGet(`/spaces/suggest?siteId=${siteId}&plate=${encodeURIComponent(plate)}${type ? `&vehicleType=${type}` : ''}`, { background: true })
+        .then(setSuggestion)
+        .catch(() => {});
+    }, 300);
+    return () => clearTimeout(t);
+  }, [plate, siteId, shift, selected, lookup?.openEntry, vehicleType, offline, snapshot, openEntries]);
+
   // Tipo deducido al instante (sin esperar a la API)
   useEffect(() => {
     if (!selected) setVehicleType(detectVehicleType(plate) ?? '');
@@ -161,6 +191,9 @@ export default function EntriesPage() {
 
   function reset(keepMessage = false) {
     setSelected(null);
+    setSpaceChoice(null);
+    setSuggestion(null);
+    setKeysOk(false);
     setQuote(null);
     setPlateInput('');
     setLookup(null);
@@ -183,8 +216,8 @@ export default function EntriesPage() {
     setMessage(null);
     try {
       const receipt = offline
-        ? await registerEntryOffline({ user, shift, snapshot, plate, vehicleType })
-        : await apiPost('/entries', { siteId, plate, vehicleType: vehicleType || undefined });
+        ? await registerEntryOffline({ user, shift, snapshot, plate, vehicleType, spaceId: spaceChoice?.id ?? null, keysReceived: keysOk })
+        : await apiPost('/entries', { siteId, plate, vehicleType: vehicleType || undefined, spaceId: spaceChoice?.id, keysReceived: keysOk });
       reset(true);
       setMessage({
         type: 'ok',
@@ -192,6 +225,10 @@ export default function EntriesPage() {
           ? `Entrada de ${receipt.plate} guardada sin conexión (recibo provisional ${receipt.receipt}). Se sincroniza al volver internet.`
           : `Entrada de ${receipt.plate} registrada (recibo ${receipt.receipt}).`,
       });
+      if (receipt.space) setMessage((m) => ({ ...m, text: `${m.text} Puesto ${receipt.space.code}.` }));
+      if (receipt.space?.requiresKeys && !receipt.keysReceived) {
+        setMessage({ type: 'warn', text: `Solicitar las llaves de ${receipt.plate}: el puesto ${receipt.space.code} bloquea a otros. Cuando las reciba, márquelo en el Mapa.` });
+      }
       if (offline) notifyQueued();
       loadOpen();
       showReceipt(receipt);
@@ -318,6 +355,31 @@ export default function EntriesPage() {
             spellCheck={false}
           />
           <PlateHint plate={plate} lookup={lookup} selected={selected} insideElsewhere={insideElsewhere} />
+          {suggestion?.hasMap && !selected && (
+            <div className="nx-space-hint" aria-live="polite">
+              {spaceChoice ? (
+                <>Puesto elegido: <strong>{spaceChoice.code}</strong> · </>
+              ) : suggestion.suggested ? (
+                <>Puesto sugerido: <strong>{suggestion.suggested.code}</strong>{suggestion.suggested.reserved ? ' (reservado para esta mensualidad)' : ''} · </>
+              ) : (
+                <>Sin puestos libres de este tipo: se registra sin puesto · </>
+              )}
+              <button type="button" className="nx-linkbtn" onClick={() => setPicking(true)}>{spaceChoice ? 'Cambiar' : 'Elegir en el mapa'}</button>
+              {spaceChoice && <> · <button type="button" className="nx-linkbtn" onClick={() => setSpaceChoice(null)}>Usar el sugerido</button></>}
+              {spaceNeedsKeys && (
+                <div className="nx-keys-alert" role="alert">
+                  <strong>Solicitar llaves:</strong> este puesto bloquea a otros.{' '}
+                  <label className="nx-check">
+                    <input type="checkbox" checked={keysOk} onChange={(e) => setKeysOk(e.target.checked)} />
+                    <span>Llaves recibidas</span>
+                  </label>
+                </div>
+              )}
+            </div>
+          )}
+          {selected?.keysReceived && (
+            <div className="nx-keys-alert" role="status"><strong>Devolver las llaves</strong> del vehículo antes de que salga.</div>
+          )}
         </div>
         <div className={`nx-bigtotal${goesToPending && selected ? ' is-pending' : ''}`} aria-live="polite">
           {formatCOP(total)}
@@ -497,6 +559,23 @@ export default function EntriesPage() {
           )}
         </section>
       </div>
+      {picking && shift && (
+        <SpacePicker
+          siteId={siteId}
+          zoneId={shift.zone.id}
+          vehicleType={vehicleType || detectVehicleType(plate)}
+          plate={plate}
+          offline={offline}
+          snapshot={snapshot}
+          openEntries={openEntries}
+          suggestedId={suggestion?.suggested?.id}
+          onClose={(choice) => {
+            setPicking(false);
+            if (choice) setSpaceChoice(choice);
+            setTimeout(() => plateRef.current?.focus(), 0);
+          }}
+        />
+      )}
     </div>
   );
 }

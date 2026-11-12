@@ -114,7 +114,7 @@ function clampTs(clientTs, now) {
 
 async function loadShift(client, user, siteId, shiftId) {
   const { rows } = await client.query(
-    `SELECT sh.id, sh.site_id, sh.user_id, sh.opened_at, cr.id AS cash_register_id, (cr.closed_at IS NOT NULL) AS register_closed
+    `SELECT sh.id, sh.site_id, sh.zone_id, sh.user_id, sh.opened_at, cr.id AS cash_register_id, (cr.closed_at IS NOT NULL) AS register_closed
        FROM shifts sh JOIN cash_registers cr ON cr.shift_id = sh.id
       WHERE sh.id = $1`,
     [shiftId],
@@ -174,18 +174,31 @@ async function applyEntry(client, user, op, deviceId, { force = false } = {}) {
     throw new Conflict('MONTHLY_ACTIVE', { plate, monthlyPlanId: monthly.id, clientName: monthly.clientName, schedule: monthly.schedule });
   }
 
+  // Puesto (RF50, sin conexión): el que eligió el equipo si sigue libre; si no, el sugerido ahora.
+  // Nunca genera conflicto: el mapa se corrige al sincronizar.
+  const { assignForEntry } = require('./spaces.service');
+  const { keysFields } = require('./spaces.service');
+  const space = await assignForEntry(client, {
+    siteId, zoneId: shift.zone_id, plate, vehicleType, requestedSpaceId: d.spaceId ? Number(d.spaceId) : null, lenient: true,
+  });
+  const spaceId = space?.id ?? null;
+  // Las llaves se respetan solo si quedó en el puesto que eligió el equipo
+  const keys = keysFields(space?.requiresKeys, space?.id === Number(d.spaceId) ? d.keysReceived : undefined, user.id);
+
   const { rows: site } = await client.query('SELECT receipt_prefix FROM sites WHERE id = $1', [siteId]);
   const prefix = site[0].receipt_prefix;
   const number = await nextReceiptNumber(client, siteId, prefix);
   const { rows } = await client.query(
     `INSERT INTO entries (site_id, zone_id, plate, vehicle_type, receipt_prefix, receipt_number, entry_at,
-                          entry_by, entry_shift_id, monthly_plan_id, origin, provisional_receipt)
-     SELECT $1, sh.zone_id, $2, $3, $4, $5, $6, $7, sh.id, $8, 'OFFLINE', $9 FROM shifts sh WHERE sh.id = $10
+                          entry_by, entry_shift_id, monthly_plan_id, origin, provisional_receipt, space_id,
+                          keys_received, keys_received_by, keys_received_at)
+     SELECT $1, sh.zone_id, $2, $3, $4, $5, $6, $7, sh.id, $8, 'OFFLINE', $9, $11, $12, $13, $14 FROM shifts sh WHERE sh.id = $10
      RETURNING id`,
     [siteId, plate, vehicleType, prefix, number, entryAt, user.id,
-      monthly && !monthly.blocksEntry ? monthly.id : null, op.provisionalReceipt ?? null, shift.id],
+      monthly && !monthly.blocksEntry ? monthly.id : null, op.provisionalReceipt ?? null, shift.id, spaceId,
+      keys.received, keys.by, keys.at],
   );
-  return { siteId, entryId: rows[0].id, receipt: `${prefix}${number}`, event: { type: 'entry:created', payload: { entryId: rows[0].id, plate, receipt: `${prefix}${number}`, offline: true } } };
+  return { siteId, entryId: rows[0].id, receipt: `${prefix}${number}`, event: { type: 'entry:created', payload: { entryId: rows[0].id, plate, receipt: `${prefix}${number}`, offline: true, spaceId } } };
 }
 
 // ---------------------------------------------------------------------------
@@ -478,7 +491,7 @@ async function snapshot(req, rawSiteId) {
       [siteId],
     ),
     query(
-      `SELECT id, plate, vehicle_type, receipt_prefix || receipt_number AS receipt, entry_at, monthly_plan_id, zone_id
+      `SELECT id, plate, vehicle_type, receipt_prefix || receipt_number AS receipt, entry_at, monthly_plan_id, zone_id, space_id
          FROM entries WHERE site_id = $1 AND status = 'OPEN' ORDER BY entry_at DESC`,
       [siteId],
     ),
@@ -522,8 +535,24 @@ async function snapshot(req, rawSiteId) {
       receipt: e.receipt,
       entryAt: e.entry_at,
       monthlyPlanId: e.monthly_plan_id,
+      zoneId: e.zone_id,
+      spaceId: e.space_id ? Number(e.space_id) : null,
     })),
+    // Mapas publicados de la sede (RF48 sin conexión): plano y estado de cada puesto
+    maps: await siteMapsSnapshot(req, siteId),
   };
+}
+
+async function siteMapsSnapshot(req, siteId) {
+  const maps = require('./maps.service');
+  const { rows } = await query("SELECT zone_id FROM zone_maps WHERE site_id = $1 AND status = 'PUBLISHED'", [siteId]);
+  const out = [];
+  for (const r of rows) {
+    const live = await maps.liveZone(req, r.zone_id);
+    // Sin datos del vehículo: el equipo los cruza con sus entradas abiertas
+    out.push({ ...live, elements: live.elements.map((e) => (e.kind === 'SPACE' ? { ...e, entry: e.entry ? { id: e.entry.id } : null } : e)) });
+  }
+  return out;
 }
 
 module.exports = {

@@ -49,11 +49,14 @@ frontend/src/
 | `/login` | Inicio de sesión contra la API | Todos |
 | `/usuarios` | Usuarios: listar, crear, editar, desactivar y restablecer contraseña | AG, AS |
 | `/cuenta` | Mi cuenta: datos y cambio de contraseña propia (desde el usuario en la barra superior) | Todos |
-| `/entradas` | Entradas y salidas (como ParkApp.html): placa + Enter registra; cobro con descuento y forma de pago | Todos |
+| `/entradas` | Entradas y salidas (como ParkApp.html): placa + Enter registra (con el puesto sugerido o el elegido en el mapa); cobro con descuento y forma de pago | Todos |
 | `/caja` | Abrir, entregar o cerrar el turno con arqueo por denominación | Todos |
 | `/ventas` | Ventas con filtros, reimpresión y cambio de forma de pago | Todos |
 | `/pendientes` | Cobros pendientes y confirmación de pago | AG, AS |
 | `/sedes` | Sedes (crear, editar, activar/desactivar: AG) y zonas con capacidad y tipos admitidos (AG, AS) | AG, AS |
+| `/mapa` | Mapa de espacios en vivo por zona (libre/ocupado/bloqueado, mensualidad, por hora, moto, movilidad reducida), leyenda, detalle del puesto, bloquear/liberar, mover vehículo y reservar (AS/AG). Funciona sin conexión con la copia local | Todos |
+| `/mapa-editor` | Editor de planos: poner, arrastrar, redimensionar, rotar, duplicar y editar elementos; validación en vivo; borrador, publicación y versiones; copiar el plano de otra zona | AG, AS |
+| `/ocupacion` | Ocupación por zona y tipo en tiempo real, histórico por hora y mapa de calor de uso | AG, AS |
 | `/panel` | Panel multisede en tiempo real: consolidado, alertas (atender/descartar, configuración), sedes con su conexión y quién está a cargo de cada zona | AG, AS |
 | `/contabilidad` | Estado de resultados por sede y consolidado, flujo de caja diario, diferencias de arqueo; Excel | AG, AS |
 | `/comparativo` | Comparativo entre sedes con gráfica de barras por indicador | AG, AS |

@@ -35,12 +35,13 @@ function portalUrlFor(siteCode, receipt) {
 async function buildReceipt(client, entryId) {
   const { rows } = await client.query(
     `SELECT e.*, s.code AS site_code, s.name AS site_name, s.legal_id, s.address, s.phone, s.city, s.business_hours, s.receipt_config,
-            z.name AS zone_name, ue.full_name AS entry_by_name, ux.full_name AS exit_by_name,
+            z.name AS zone_name, ps.code AS space_code, ps.requires_keys AS space_requires_keys, ue.full_name AS entry_by_name, ux.full_name AS exit_by_name,
             mp.client_name AS monthly_client,
             extract(epoch FROM (COALESCE(e.exit_at, now()) - e.entry_at))::bigint / 60 AS minutes
        FROM entries e
        JOIN sites s ON s.id = e.site_id
        LEFT JOIN zones z ON z.id = e.zone_id
+       LEFT JOIN parking_spaces ps ON ps.id = e.space_id
        LEFT JOIN users ue ON ue.id = e.entry_by
        LEFT JOIN users ux ON ux.id = e.exit_by
        LEFT JOIN monthly_plans mp ON mp.id = e.monthly_plan_id
@@ -59,6 +60,8 @@ async function buildReceipt(client, entryId) {
     // Campos visibles, etiquetas y mensajes de Configuración → Recibos
     config: e.receipt_config ?? {},
     zone: e.zone_name,
+    space: e.space_id ? { id: Number(e.space_id), code: e.space_code, requiresKeys: e.space_requires_keys } : null,
+    keysReceived: e.keys_received ?? null,
     receipt,
     plate: e.plate,
     vehicleType: e.vehicle_type,
