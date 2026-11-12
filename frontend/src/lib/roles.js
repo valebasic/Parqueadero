@@ -20,7 +20,8 @@ export const MENU = [
   { path: '/pendientes', label: 'Pendientes', icon: 'clock', roles: ADMINS },
   { path: '/caja', label: 'Cierre de caja', icon: 'money', roles: ALL },
   { path: '/ventas', label: 'Ventas', icon: 'cart', roles: ALL },
-  { path: '/transacciones', label: 'Transacciones', icon: 'exchange', roles: ADMINS },
+  // El OP registra ingresos y egresos de su caja (con tope); el resto de reglas, en la API
+  { path: '/transacciones', label: 'Transacciones', icon: 'exchange', roles: ALL },
   { path: '/reportes', label: 'Reportes', icon: 'chart', roles: ADMINS },
   { path: '/reportes-mensualidades', label: 'Rep. Mensualidades', icon: 'wallet', roles: ADMINS },
   { path: '/usuarios', label: 'Usuarios', icon: 'users', roles: ADMINS },

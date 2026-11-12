@@ -9,21 +9,26 @@ import EntriesPage from './pages/EntriesPage.jsx';
 import CashPage from './pages/CashPage.jsx';
 import SalesPage from './pages/SalesPage.jsx';
 import PendingPage from './pages/PendingPage.jsx';
+import DashboardPage from './pages/DashboardPage.jsx';
+import MonthlyPage from './pages/MonthlyPage.jsx';
+import MonthlyReportPage from './pages/MonthlyReportPage.jsx';
+import TransactionsPage from './pages/TransactionsPage.jsx';
+import ReportsPage from './pages/ReportsPage.jsx';
+import ConfigPage from './pages/ConfigPage.jsx';
 import { RequireAuth, RequireRole } from './components/RequireAuth.jsx';
 import { MENU } from './lib/roles.js';
 
-// Fase en la que se construye cada pantalla (texto provisional)
-const PHASE_BY_PATH = {
-  '/': 'Fase 5',
-  '/mensualidades': 'Fase 5',
-  '/transacciones': 'Fase 5',
-  '/reportes': 'Fase 5',
-  '/reportes-mensualidades': 'Fase 5',
-  '/configuracion': 'Fase 5',
-};
+// Todas las pantallas del menú ya están construidas; el aviso provisional queda como respaldo
+const PHASE_BY_PATH = {};
 
 // Pantallas ya construidas; el resto muestra el aviso provisional
 const PAGE_BY_PATH = {
+  '/': DashboardPage,
+  '/mensualidades': MonthlyPage,
+  '/transacciones': TransactionsPage,
+  '/reportes': ReportsPage,
+  '/reportes-mensualidades': MonthlyReportPage,
+  '/configuracion': ConfigPage,
   '/entradas': EntriesPage,
   '/caja': CashPage,
   '/ventas': SalesPage,

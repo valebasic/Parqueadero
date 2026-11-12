@@ -118,3 +118,31 @@ export async function logoutRequest() {
     setAccessToken(null);
   }
 }
+
+export const apiDelete = (path, options) => apiRequest('DELETE', path, options);
+
+// Descarga un archivo de la API (Excel, PDF, CSV, respaldo) con la sesión actual
+export async function apiDownload(path, fallbackName) {
+  const doFetch = () =>
+    fetch(`/api${path}`, {
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+      credentials: 'same-origin',
+    });
+  let res = await doFetch();
+  if (res.status === 401) {
+    await refreshSession();
+    res = await doFetch();
+  }
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    throw new ApiError(res.status, body?.error || `Error ${res.status} al descargar`, { code: body?.code });
+  }
+  const blob = await res.blob();
+  const name = /filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') || '')?.[1] || fallbackName;
+  const url = URL.createObjectURL(blob);
+  const a = Object.assign(document.createElement('a'), { href: url, download: name });
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}

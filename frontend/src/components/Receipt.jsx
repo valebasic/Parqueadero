@@ -19,43 +19,79 @@ function Row({ label, value, className = '' }) {
   );
 }
 
+// Etiquetas por defecto (Configuración → Recibos puede cambiarlas)
+const DEFAULT_LABELS = {
+  plate: 'Placa',
+  vehicle: 'Servicio',
+  entry: 'Entrada',
+  exit: 'Salida',
+  duration: 'Tiempo',
+  total: 'Total',
+  payment: 'Pago',
+  receipt: 'Recibo',
+  operator: 'Atendió',
+};
+// Campos que se pueden ocultar, por tipo de recibo (por defecto todos visibles)
+const SECTION = { ENTRY: 'entry', EXIT: 'exit', MONTHLY: 'monthly' };
+
 export function ReceiptTicket({ data, qr }) {
-  const isExit = data.type === 'EXIT';
+  const type = data.type;
+  const isExit = type === 'EXIT';
+  const isMonthly = type === 'MONTHLY';
   const b = data.business ?? {};
+  const cfg = data.config ?? {};
+  const L = { ...DEFAULT_LABELS, ...(cfg.labels ?? {}) };
+  const show = (field) => cfg[SECTION[type]]?.show?.[field] !== false;
+  const message =
+    (type === 'ENTRY' && cfg.entryMessage) || (isMonthly && cfg.monthlyMessage) || cfg.message ||
+    (isExit ? '¡Gracias por su visita!' : isMonthly ? 'Gracias por su pago' : 'Conserve este tiquete para retirar su vehículo');
+  const title = isExit ? 'RECIBO DE PAGO' : isMonthly ? 'PAGO DE MENSUALIDAD' : 'TIQUETE DE ENTRADA';
+  const paid = isExit || isMonthly;
+
   return (
     <div className="rc-ticket">
-      <div className="rc-business">
-        <span className="rc-business__name">{b.name}</span>
-        {b.legalId && <span>NIT {b.legalId}</span>}
-        {b.address && <span>{b.address}</span>}
-        {b.phone && <span>Tel. {b.phone}</span>}
-      </div>
-      <hr className="rc-divider" />
+      {show('business') && (
+        <>
+          <div className="rc-business">
+            <span className="rc-business__name">{b.name}</span>
+            {b.legalId && <span>NIT {b.legalId}</span>}
+            {b.address && <span>{b.address}</span>}
+            {b.phone && <span>Tel. {b.phone}</span>}
+          </div>
+          <hr className="rc-divider" />
+        </>
+      )}
       <div className="rc-main">
-        <div className="rc-title">{isExit ? 'RECIBO DE PAGO' : 'TIQUETE DE ENTRADA'}</div>
-        <Row label="Placa" value={data.plate} className="rc-plate" />
-        <Row label="Servicio" value={data.vehicleLabel} />
-        <Row label="Entrada" value={dateTime(data.entryAt)} />
-        {isExit && <Row label="Salida" value={dateTime(data.exitAt)} />}
-        {isExit && <Row label="Tiempo" value={formatDuration(data.minutes)} />}
-        {isExit && data.discountAmount > 0 && (
+        <div className="rc-title">{title}</div>
+        <Row label={L.plate} value={data.plate} className="rc-plate" />
+        {show('vehicle') && <Row label={L.vehicle} value={data.vehicleLabel} />}
+        {isMonthly && <Row label="Titular" value={data.clientName} />}
+        {isMonthly && <Row label="Período" value={`${formatDate(`${data.periodStart}T12:00:00`)} a ${formatDate(`${data.periodEnd}T12:00:00`)}`} />}
+        {isMonthly && data.installmentNumber && <Row label="Abono" value={`${data.installmentNumber} de 2`} />}
+        {isMonthly && data.isAdvance && <Row label="Tipo" value="Pago adelantado" />}
+        {!isMonthly && <Row label={L.entry} value={dateTime(data.entryAt)} />}
+        {isExit && <Row label={L.exit} value={dateTime(data.exitAt)} />}
+        {isExit && show('duration') && <Row label={L.duration} value={formatDuration(data.minutes)} />}
+        {paid && data.discountAmount > 0 && (
           <>
-            <Row label="Subtotal" value={formatCOP(data.calculatedAmount)} />
+            <Row label="Subtotal" value={formatCOP(isExit ? data.calculatedAmount : data.baseAmount)} />
             <Row label="Descuento" value={`-${formatCOP(data.discountAmount)}`} />
           </>
         )}
-        {isExit && <Row label="Total" value={formatCOP(data.chargedAmount)} className="rc-total" />}
-        {isExit && <Row label="Pago" value={data.paymentLabel} />}
-        {isExit && data.paymentMethod === 'MIXED' && (
+        {paid && <Row label={L.total} value={formatCOP(data.chargedAmount)} className="rc-total" />}
+        {paid && <Row label={L.payment} value={data.paymentLabel} />}
+        {paid && data.paymentMethod === 'MIXED' && (
           <>
             <Row label="Efectivo" value={formatCOP(data.cashAmount)} />
             <Row label="Electrónico" value={formatCOP(data.electronicAmount)} />
           </>
         )}
-        <Row label="Recibo" value={data.receipt} className="rc-receiptno" />
-        {data.operator && <Row label="Atendió" value={data.operator} />}
+        {isMonthly && data.balance > 0 && <Row label="Saldo" value={formatCOP(data.balance)} />}
+        {isMonthly && <Row label="Fecha" value={dateTime(data.paidAt)} />}
+        <Row label={L.receipt} value={data.receipt} className="rc-receiptno" />
+        {data.operator && show('operator') && <Row label={L.operator} value={data.operator} />}
       </div>
-      {qr && (
+      {qr && show('qr') && (
         <>
           <hr className="rc-divider" />
           <div className="rc-qr">
@@ -64,8 +100,17 @@ export function ReceiptTicket({ data, qr }) {
           </div>
         </>
       )}
+      {b.hours && show('hours') && (
+        <>
+          <hr className="rc-divider" />
+          <div className="rc-hours">
+            <strong>Horario de atención</strong>
+            <span>{b.hours}</span>
+          </div>
+        </>
+      )}
       <hr className="rc-divider" />
-      <div className="rc-footer">{isExit ? '¡Gracias por su visita!' : 'Conserve este tiquete para retirar su vehículo'}</div>
+      <div className="rc-footer">{message}</div>
     </div>
   );
 }
@@ -108,7 +153,7 @@ export function ReceiptProvider({ children }) {
       {data && (
         <>
           <Modal
-            title={data.type === 'EXIT' ? 'Recibo de pago' : 'Tiquete de entrada'}
+            title={data.type === 'EXIT' ? 'Recibo de pago' : data.type === 'MONTHLY' ? 'Recibo de mensualidad' : 'Tiquete de entrada'}
             onClose={close}
             actions={
               <>

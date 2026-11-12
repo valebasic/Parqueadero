@@ -1,0 +1,150 @@
+import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { apiGet } from '../lib/api.js';
+import { useSession } from '../context/SessionContext.jsx';
+import { useShift, useWorkingSite } from '../context/ShiftContext.jsx';
+import { formatCOP, formatDate, formatTime12h } from '../lib/format.js';
+
+// Inicio. AG y AS: tablero de la sede (se actualiza cada minuto). OP: accesos rápidos de su turno.
+export default function DashboardPage() {
+  const { user } = useSession();
+  return user.role === 'OP' ? <OperatorHome /> : <AdminDashboard />;
+}
+
+function OperatorHome() {
+  const { user } = useSession();
+  const { shift } = useShift();
+  return (
+    <section className="nx-card">
+      <h2 className="nx-card__title">Hola, {user.fullName}</h2>
+      {shift ? (
+        <p>
+          Turno abierto en <strong>{shift.zone.name}</strong> desde {formatTime12h(shift.openedAt)} · ventas{' '}
+          {formatCOP(shift.summary.totalSales)}.
+        </p>
+      ) : (
+        <p className="nx-muted">No tiene turno abierto.</p>
+      )}
+      <div className="nx-form__actions nx-form__actions--start">
+        <Link className="nx-btn nx-btn--accent" to="/entradas">Ir a Entradas</Link>
+        <Link className="nx-btn nx-btn--ghost" to="/caja">{shift ? 'Ver turno y caja' : 'Abrir turno'}</Link>
+      </div>
+    </section>
+  );
+}
+
+function Kpi({ label, value, sub, tone }) {
+  return (
+    <div className={`nx-stat${tone ? ` nx-stat--${tone}` : ''}`}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+      {sub && <small className="nx-muted">{sub}</small>}
+    </div>
+  );
+}
+
+function AdminDashboard() {
+  const { siteId, sites, setSiteId } = useWorkingSite();
+  const [data, setData] = useState(null);
+  const [error, setError] = useState('');
+
+  const load = useCallback(async () => {
+    if (!siteId) return;
+    try {
+      setData(await apiGet(`/reports/dashboard?siteId=${siteId}`, { background: true }));
+      setError('');
+    } catch (err) {
+      setError(err.message);
+    }
+  }, [siteId]);
+
+  useEffect(() => {
+    load();
+    const id = setInterval(load, 60000);
+    return () => clearInterval(id);
+  }, [load]);
+
+  if (error) return <div className="nx-banner nx-banner--error">{error}</div>;
+  if (!data) return <p className="nx-muted">Cargando…</p>;
+  const maxHour = Math.max(1, ...data.entriesByHour.map((h) => h.count));
+
+  return (
+    <div className="nx-stack">
+      {sites.length > 1 && (
+        <section className="nx-card">
+          <label className="nx-form__field nx-form__field--inline">
+            <span>Sede</span>
+            <select value={siteId ?? ''} onChange={(e) => setSiteId(Number(e.target.value))}>
+              {sites.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+          </label>
+        </section>
+      )}
+
+      <section className="nx-card">
+        <div className="nx-stats">
+          <Kpi label="Vehículos dentro" value={data.inside.total} sub={data.inside.byType.map((t) => `${t.label} ${t.count}`).join(' · ')} tone="accent" />
+          <Kpi
+            label="Ocupación"
+            value={data.inside.occupancy == null ? '—' : `${data.inside.occupancy} %`}
+            sub={data.inside.capacity ? `de ${data.inside.capacity} cupos` : 'Sin capacidad configurada'}
+          />
+          <Kpi label="Entradas hoy" value={data.today.entries} />
+          <Kpi label="Salidas hoy" value={data.today.exits} />
+          <Kpi label="Ventas hoy" value={formatCOP(data.sales.total)} sub={`${data.sales.count} ventas`} tone="ok" />
+          <Kpi label="Efectivo" value={formatCOP(data.sales.cash)} />
+          <Kpi label="Electrónico" value={formatCOP(data.sales.electronic)} tone="info" />
+          <Kpi label="Pendientes" value={formatCOP(data.pending.total)} sub={`${data.pending.count} cobros`} tone={data.pending.count ? 'danger' : undefined} />
+        </div>
+        {data.inside.capacity ? (
+          <div className="nx-occupancy" role="meter" aria-valuenow={data.inside.occupancy} aria-valuemin={0} aria-valuemax={100} aria-label="Ocupación">
+            <span style={{ width: `${Math.min(100, data.inside.occupancy)}%` }} />
+          </div>
+        ) : null}
+      </section>
+
+      <div className="nx-grid-2">
+        <section className="nx-card">
+          <h2 className="nx-card__title nx-card__title--spaced">Mensualidades por vencer / en mora</h2>
+          {data.monthlyAlerts.length === 0 ? (
+            <p className="nx-muted">Ninguna vence en los próximos 6 días.</p>
+          ) : (
+            <ul className="nx-alerts">
+              {data.monthlyAlerts.map((a) => (
+                <li key={a.id} className={`nx-alert-item is-${a.color}`}>
+                  <span className="nx-alert-item__dot" aria-hidden="true" />
+                  <strong>{a.plate}</strong>
+                  <span>{a.clientName}</span>
+                  <span className="nx-alert-item__label">{a.label}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="nx-muted nx-small">Rojo: en mora o vence hoy · Amarillo: 1 a 3 días · Verde: 4 a 6 días.</p>
+        </section>
+
+        <section className="nx-card">
+          <h2 className="nx-card__title nx-card__title--spaced">Entradas por hora (hoy)</h2>
+          <div className="nx-hourbars" role="img" aria-label="Entradas por hora de hoy">
+            {data.entriesByHour.map((h) => (
+              <div key={h.hour} className="nx-hourbars__col" title={`${formatTime12h(new Date(2026, 0, 1, h.hour))}: ${h.count} entradas`}>
+                <span style={{ height: `${(h.count / maxHour) * 100}%` }} />
+                {h.hour % 3 === 0 && <small>{h.hour}</small>}
+              </div>
+            ))}
+          </div>
+          <h3 className="nx-section-title">Turnos abiertos</h3>
+          {data.openShifts.length === 0 ? (
+            <p className="nx-muted">No hay turnos abiertos.</p>
+          ) : (
+            <ul className="nx-plainlist">
+              {data.openShifts.map((s) => (
+                <li key={s.id}><strong>{s.zone}</strong> · {s.user} · desde {formatDate(s.openedAt)} {formatTime12h(s.openedAt)}</li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+    </div>
+  );
+}

@@ -54,7 +54,12 @@ frontend/src/
 | `/ventas` | Ventas con filtros, reimpresión y cambio de forma de pago | Todos |
 | `/pendientes` | Cobros pendientes y confirmación de pago | AG, AS |
 | `/sedes` | Sedes y zonas (listado) | AG |
-| Resto del menú | Aviso provisional con la fase en que se construye | Según el menú |
+| `/` | Inicio: tablero de la sede (AG/AS) o accesos del turno (OP) | Todos |
+| `/mensualidades` | Registro, pagos (único, quincenal, adelantado), importación CSV, historial | AG, AS |
+| `/transacciones` | Ingresos, egresos y base (verde/rojo/naranja); edición el mismo día | Todos (OP con tope) |
+| `/reportes` | KPIs, gráficas, efectivo vs electrónico, cierres, fidelidad, Excel/PDF | AG, AS |
+| `/reportes-mensualidades` | Pagos FM, totales y cartera | AG, AS |
+| `/configuracion` | Tarifas con vigencia, datos del local, recibos con vista previa, respaldos (AG) | AG, AS |
 
 ## Sesión
 
