@@ -20,6 +20,16 @@ const TYPES = ['INCOME', 'EXPENSE', 'BASE_IN', 'BASE_OUT'];
 const BASE_TYPES = ['BASE_IN', 'BASE_OUT'];
 const TYPE_LABELS = { INCOME: 'Ingreso', EXPENSE: 'Egreso', BASE_IN: 'Base +', BASE_OUT: 'Base −' };
 const PAGE_SIZE = 10;
+// Categorías de egreso (RF29: estado de resultados por categoría)
+const EXPENSE_CATEGORIES = {
+  SUPPLIES: 'Insumos',
+  UTILITIES: 'Servicios públicos',
+  PAYROLL: 'Nómina',
+  MAINTENANCE: 'Mantenimiento',
+  RENT: 'Arriendo',
+  TAXES: 'Impuestos',
+  OTHER: 'Otros',
+};
 
 const isAdmin = (user) => user.role === 'AG' || user.role === 'AS';
 
@@ -38,6 +48,12 @@ function validate(body, { partial = false } = {}) {
     out.amount = body.amount;
   }
   if (body.concept !== undefined) out.concept = String(body.concept ?? '').trim().slice(0, 200) || null;
+  if (body.category !== undefined && body.category !== null && body.category !== '') {
+    if (!EXPENSE_CATEGORIES[body.category]) {
+      throw new HttpError(400, 'Categoría de egreso inválida', { code: 'VALIDATION_ERROR' });
+    }
+    out.category = body.category;
+  }
   return out;
 }
 
@@ -52,6 +68,8 @@ function toDto(r, user) {
     typeLabel: TYPE_LABELS[r.type],
     amount: r.amount,
     concept: r.concept,
+    category: r.category,
+    categoryLabel: r.category ? EXPENSE_CATEGORIES[r.category] : null,
     withdrawalTo: r.withdrawal_to,
     createdAt: r.created_at,
     createdBy: r.created_by_name,
@@ -132,9 +150,10 @@ async function createMovement(req, body) {
     const shift = await requireOpenShift(client, req.user, siteId, { shiftId, lock: true });
     await checkOperatorRules(client, req.user, { ...data, siteId: shift.siteId });
     const { rows } = await client.query(
-      `INSERT INTO cash_movements (cash_register_id, type, amount, concept, created_by)
-       VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-      [shift.cashRegisterId, data.type, data.amount, data.concept ?? null, req.user.id],
+      `INSERT INTO cash_movements (cash_register_id, type, amount, concept, created_by, category)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+      [shift.cashRegisterId, data.type, data.amount, data.concept ?? null, req.user.id,
+        data.type === 'EXPENSE' ? data.category ?? 'OTHER' : null],
     );
     if (data.type === 'BASE_OUT') await assertBaseNotNegative(client, shift.cashRegisterId);
     await recordAudit(
@@ -171,14 +190,20 @@ async function updateMovement(req, rawId, body) {
     if (m.created_day !== m.today) {
       throw new HttpError(409, 'Solo se puede editar el mismo día en que se registró', { code: 'EDIT_SAME_DAY_ONLY' });
     }
-    const next = { type: data.type ?? m.type, amount: data.amount ?? m.amount, concept: data.concept !== undefined ? data.concept : m.concept };
+    const nextType = data.type ?? m.type;
+    const next = {
+      type: nextType,
+      amount: data.amount ?? m.amount,
+      concept: data.concept !== undefined ? data.concept : m.concept,
+      category: nextType === 'EXPENSE' ? data.category ?? m.category ?? 'OTHER' : null,
+    };
     if (m.register_closed && (BASE_TYPES.includes(m.type) || BASE_TYPES.includes(next.type))) {
       throw new HttpError(409, 'Un movimiento de base de una caja cerrada no se puede editar', { code: 'BASE_LOCKED' });
     }
     await checkOperatorRules(client, req.user, { ...next, siteId: m.site_id });
     await client.query(
-      'UPDATE cash_movements SET type = $2, amount = $3, concept = $4, updated_by = $5 WHERE id = $1',
-      [m.id, next.type, next.amount, next.concept, req.user.id],
+      'UPDATE cash_movements SET type = $2, amount = $3, concept = $4, updated_by = $5, category = $6 WHERE id = $1',
+      [m.id, next.type, next.amount, next.concept, req.user.id, next.category],
     );
     await assertBaseNotNegative(client, m.cash_register_id);
     await recordAudit(
@@ -189,7 +214,7 @@ async function updateMovement(req, rawId, body) {
         action: 'CASH_MOVEMENT_UPDATED',
         entityType: 'cash_movement',
         entityId: m.id,
-        details: { before: { type: m.type, amount: m.amount, concept: m.concept }, after: next },
+        details: { before: { type: m.type, amount: m.amount, concept: m.concept, category: m.category }, after: next },
       },
       client,
     );
@@ -225,4 +250,5 @@ async function deleteMovement(req, rawId) {
   publish(siteId, 'cash:movement', { action: 'deleted', id: Number.parseInt(rawId, 10) });
 }
 
-module.exports = { listMovements, createMovement, updateMovement, deleteMovement, TYPE_LABELS, canAccessSite };
+module.exports = {
+  EXPENSE_CATEGORIES, listMovements, createMovement, updateMovement, deleteMovement, TYPE_LABELS, canAccessSite };

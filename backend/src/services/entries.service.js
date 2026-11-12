@@ -228,6 +228,17 @@ async function createEntry(req, body) {
   const entryId = await withTransaction(async (client) => {
     const shift = await requireOpenShift(client, req.user, siteId, { lock: true });
 
+    // RF27: la zona del turno debe admitir este tipo de vehículo
+    const { rows: zone } = await client.query(
+      'SELECT name, $2::vehicle_type = ANY(vehicle_types) AS allowed FROM zones WHERE id = $1',
+      [shift.zoneId, vehicleType],
+    );
+    if (zone[0] && !zone[0].allowed) {
+      throw new HttpError(409, `La zona ${zone[0].name} no admite ${VEHICLE_LABELS[vehicleType].toLowerCase()}s`, {
+        code: 'ZONE_VEHICLE_NOT_ALLOWED',
+      });
+    }
+
     // Como en la v1.0, "ya está adentro" se avisa antes que la mensualidad. (El índice único
     // parcial lo vuelve a garantizar abajo aunque dos operadores registren la misma placa a la vez.)
     const { rowCount: inside } = await client.query(

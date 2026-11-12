@@ -15,6 +15,7 @@ const ADMINS = ['AG', 'AS'];
 // el operador ve lo mismo que el "Empleado" de la v1.0; los administradores ven todo.
 export const MENU = [
   { path: '/', label: 'Inicio', icon: 'dashboard', roles: ALL },
+  { path: '/panel', label: 'Panel multisede', icon: 'building', roles: ADMINS },
   { path: '/entradas', label: 'Entradas', icon: 'marker', roles: ALL },
   { path: '/mensualidades', label: 'Mensualidades', icon: 'calendar', roles: ADMINS },
   { path: '/pendientes', label: 'Pendientes', icon: 'clock', roles: ADMINS },
@@ -24,9 +25,11 @@ export const MENU = [
   { path: '/transacciones', label: 'Transacciones', icon: 'exchange', roles: ALL },
   { path: '/reportes', label: 'Reportes', icon: 'chart', roles: ADMINS },
   { path: '/reportes-mensualidades', label: 'Rep. Mensualidades', icon: 'wallet', roles: ADMINS },
+  { path: '/contabilidad', label: 'Contabilidad', icon: 'money', roles: ADMINS },
+  { path: '/horarios', label: 'Horarios', icon: 'calendar', roles: ADMINS },
   { path: '/conflictos', label: 'Conflictos', icon: 'alert', roles: ADMINS },
   { path: '/usuarios', label: 'Usuarios', icon: 'users', roles: ADMINS },
-  { path: '/sedes', label: 'Sedes y zonas', icon: 'building', roles: ['AG'] },
+  { path: '/sedes', label: 'Sedes y zonas', icon: 'building', roles: ADMINS },
   { path: '/configuracion', label: 'Configuración', icon: 'cog', roles: ADMINS },
 ];
 

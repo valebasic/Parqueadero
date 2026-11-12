@@ -8,6 +8,17 @@ import { formatCOP, formatDateTime, todayIso } from '../lib/format.js';
 
 // Transacciones (RF18): ingresos (verde), egresos (rojo) y movimientos de base (naranja) en una tabla.
 // Editar solo el mismo día. El OP registra ingresos y egresos de su caja (egresos con tope).
+// Categorías de egreso (RF29); deben coincidir con EXPENSE_CATEGORIES de la API
+const EXPENSE_CATEGORIES = {
+  SUPPLIES: 'Insumos',
+  UTILITIES: 'Servicios públicos',
+  PAYROLL: 'Nómina',
+  MAINTENANCE: 'Mantenimiento',
+  RENT: 'Arriendo',
+  TAXES: 'Impuestos',
+  OTHER: 'Otros',
+};
+
 const TYPES = [
   { id: 'INCOME', label: 'Ingreso', tone: 'income', sign: '+' },
   { id: 'EXPENSE', label: 'Egreso', tone: 'expense', sign: '−' },
@@ -102,7 +113,7 @@ export default function TransactionsPage() {
                   return (
                     <tr key={m.id}>
                       <td><span className={`nx-mov nx-mov--${t.tone}`}>{m.typeLabel}</span></td>
-                      <td>{m.withdrawalTo ? `Retiro entregado a ${m.withdrawalTo}` : m.concept || '—'}</td>
+                      <td>{m.withdrawalTo ? `Retiro entregado a ${m.withdrawalTo}` : m.concept || '—'}{m.categoryLabel && <div className="nx-muted nx-small">{m.categoryLabel}</div>}</td>
                       <td className={`nx-num nx-mov-value nx-mov-value--${t.tone}`}>{t.sign}{formatCOP(m.amount)}</td>
                       <td>{m.zone}</td>
                       <td>{m.createdBy}</td>
@@ -145,6 +156,7 @@ function MovementModal({ movement, isAdmin, siteId, shift, onClose }) {
   const [type, setType] = useState(movement?.type ?? '');
   const [amount, setAmount] = useState(movement ? String(movement.amount) : '');
   const [concept, setConcept] = useState(movement?.concept ?? '');
+  const [category, setCategory] = useState(movement?.category ?? 'OTHER');
   const [openShifts, setOpenShifts] = useState([]);
   const [shiftId, setShiftId] = useState(shift ? String(shift.id) : '');
   const [error, setError] = useState('');
@@ -160,7 +172,7 @@ function MovementModal({ movement, isAdmin, siteId, shift, onClose }) {
     setSaving(true);
     setError('');
     try {
-      const body = { type, amount: Number(amount), concept };
+      const body = { type, amount: Number(amount), concept, ...(type === 'EXPENSE' ? { category } : {}) };
       if (movement) await apiPatch(`/cash-movements/${movement.id}`, body);
       else await apiPost('/cash-movements', { ...body, siteId, shiftId: shiftId ? Number(shiftId) : undefined });
       onClose(true);
@@ -213,6 +225,14 @@ function MovementModal({ movement, isAdmin, siteId, shift, onClose }) {
           <input value={concept} onChange={(e) => setConcept(e.target.value)} maxLength={200} />
         </label>
       </div>
+      {type === 'EXPENSE' && (
+        <label className="nx-form__field">
+          <span>Categoría del egreso</span>
+          <select value={category} onChange={(e) => setCategory(e.target.value)}>
+            {Object.entries(EXPENSE_CATEGORIES).map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+          </select>
+        </label>
+      )}
       {error && <p className="nx-form__alert" role="alert">{error}</p>}
     </Modal>
   );

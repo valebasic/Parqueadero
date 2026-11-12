@@ -16,6 +16,9 @@ import TransactionsPage from './pages/TransactionsPage.jsx';
 import ReportsPage from './pages/ReportsPage.jsx';
 import ConfigPage from './pages/ConfigPage.jsx';
 import ConflictsPage from './pages/ConflictsPage.jsx';
+import PanelPage from './pages/PanelPage.jsx';
+import AccountingPage from './pages/AccountingPage.jsx';
+import SchedulesPage from './pages/SchedulesPage.jsx';
 import { RequireAuth, RequireRole } from './components/RequireAuth.jsx';
 import { OnlineOnly } from './components/OfflineGuards.jsx';
 
@@ -41,6 +44,9 @@ const PAGE_BY_PATH = {
   '/pendientes': PendingPage,
   '/usuarios': UsersPage,
   '/sedes': SitesPage,
+  '/panel': PanelPage,
+  '/contabilidad': AccountingPage,
+  '/horarios': SchedulesPage,
 };
 
 export default function App() {

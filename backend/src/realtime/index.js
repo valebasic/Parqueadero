@@ -17,6 +17,7 @@ const { query } = require('../db/pool');
 const { verifyAccessToken } = require('../services/token.service');
 const { resolveSession } = require('../services/auth.service');
 const { bus, publish } = require('./bus');
+const presence = require('./presence');
 
 const REVALIDATE_MS = Number.parseInt(process.env.REALTIME_REVALIDATE_MS, 10) || 60000;
 const ALERTS_EVERY_MS = 30 * 60 * 1000;
@@ -93,6 +94,12 @@ async function publishMonthlyAlerts(siteId) {
   publish(siteId, 'monthly:alerts', { alerts: await monthly.alerts(siteId) });
 }
 
+// Cambió la conexión de alguien con turno abierto: avisa a su sede (estado de conexión, RF28)
+async function publishPresence(userId) {
+  const { rows } = await query('SELECT DISTINCT site_id FROM shifts WHERE user_id = $1 AND closed_at IS NULL', [userId]);
+  rows.forEach((r) => publish(r.site_id, 'presence:changed', { userId, online: presence.isConnected(userId) }));
+}
+
 function initRealtime(httpServer) {
   io = new Server(httpServer, {
     path: '/socket.io',
@@ -108,6 +115,12 @@ function initRealtime(httpServer) {
     const sites = await siteIdsFor(user);
     sites.forEach((id) => socket.join(siteRoom(id)));
     socket.emit('ready', { sites });
+    presence.connected(user.id);
+    publishPresence(user.id).catch(() => {});
+    socket.on('disconnect', () => {
+      presence.disconnected(user.id);
+      publishPresence(user.id).catch(() => {});
+    });
   });
 
   // Reenvío de eventos de dominio a la sala de su sede

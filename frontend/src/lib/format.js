@@ -12,6 +12,8 @@ export function formatCOP(amount) {
 
 // Fecha dd/mm/aaaa
 export function formatDate(input) {
+  // 'AAAA-MM-DD' (fecha sin hora): se muestra tal cual, sin pasar por zonas horarias
+  if (typeof input === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(input)) return input.split('-').reverse().join('/');
   const d = input instanceof Date ? input : new Date(input);
   if (Number.isNaN(d.getTime())) return '—';
   return `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;

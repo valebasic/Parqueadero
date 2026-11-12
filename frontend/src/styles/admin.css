@@ -1,0 +1,47 @@
+/* ==========================================================================
+   Panel multisede: sedes y zonas, tablero, contabilidad y horarios (RF26-RF33, RF44-RF46)
+   ========================================================================== */
+.nx-card--muted { opacity: 0.72; }
+.nx-pre { white-space: pre-line; }
+.nx-occ { display: flex; align-items: center; gap: 8px; min-width: 110px; }
+.nx-occ .nx-occupancy { flex: 1; height: 8px; }
+.nx-occ small { font-weight: 700; min-width: 44px; text-align: right; }
+.nx-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+.nx-dot.is-on { background: var(--nx-green-600); }
+.nx-dot.is-off { background: var(--nx-gray-300); }
+.nx-row--strong td { font-weight: 700; border-top: 1px solid var(--nx-gray-300); }
+.nx-table--statement td:first-child { white-space: nowrap; }
+
+/* Horarios: una columna por día */
+.nx-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; }
+.nx-week__day { min-width: 0; background: var(--nx-gray-100); border-radius: var(--nx-radius-sm); padding: 10px; }
+.nx-week__day h3 { margin: 0 0 8px; font-size: 14px; color: var(--nx-primary); }
+.nx-week__slot {
+  display: flex; flex-direction: column; gap: 2px; background: #fff; border-left: 3px solid var(--nx-accent);
+  border-radius: 6px; padding: 8px; margin-bottom: 8px; font-size: 13px; box-shadow: var(--nx-shadow, 0 1px 2px rgba(0,0,0,.06));
+}
+.nx-week__slot.is-off { opacity: 0.55; border-left-color: var(--nx-gray-300); }
+.nx-week__actions { display: flex; gap: 10px; margin-top: 4px; }
+.nx-week__actions .nx-linkbtn { font-size: 12px; }
+
+/* Barras horizontales del comparativo */
+.nx-bars { display: flex; flex-direction: column; gap: 10px; }
+.nx-bars__row { display: grid; grid-template-columns: minmax(90px, 160px) 1fr minmax(80px, auto); align-items: center; gap: 10px; font-size: 14px; }
+.nx-bars__track { height: 14px; background: var(--nx-gray-100); border-radius: 999px; overflow: hidden; }
+.nx-bars__fill { height: 100%; background: #2a78d6; border-radius: 999px; }
+.nx-bars__value { font-weight: 700; text-align: right; }
+
+/* Alertas del panel */
+.nx-alert-row { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: var(--nx-radius-sm); background: #fff7e0; }
+.nx-alert-row.is-danger { background: #fdeeee; }
+.nx-alert-row + .nx-alert-row { margin-top: 8px; }
+.nx-alert-row__icon { font-size: 18px; }
+
+@media (max-width: 1100px) {
+  .nx-week { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .nx-week { grid-template-columns: 1fr 1fr; }
+  .nx-alert-row { grid-template-columns: 1fr; }
+}
+.nx-conn { min-width: 190px; }
