@@ -37,7 +37,7 @@ function nextCode(elements, prefix) {
 }
 
 function withSize(el) {
-  if (el.kind !== 'SPACE') return el;
+  if (el.kind !== 'SPACE' || el.size === 'custom') return el;
   const big = el.size === '1x2';
   return { ...el, width: big && el.orientation !== 'V' ? 2 : 1, height: big && el.orientation === 'V' ? 2 : 1 };
 }
@@ -123,8 +123,8 @@ export default function MapEditorPage() {
   }
 
   function rotate(el) {
-    if (el.kind === 'SPACE') update(el.id, { orientation: el.orientation === 'V' ? 'H' : 'V' });
-    else update(el.id, { width: el.height, height: el.width });
+    if (el.kind === 'SPACE' && el.size !== 'custom') update(el.id, { orientation: el.orientation === 'V' ? 'H' : 'V' });
+    else update(el.id, { width: el.height, height: el.width, ...(el.kind === 'SPACE' ? { orientation: el.orientation === 'V' ? 'H' : 'V' } : {}) });
   }
 
   // Atajos de teclado sobre el elemento seleccionado
@@ -322,11 +322,18 @@ function Properties({ el, onChange, onRotate, onDuplicate, onDelete }) {
           </label>
           <label className="nx-form__field">
             <span>Tamaño</span>
-            <select value={el.size} onChange={(e) => onChange({ size: e.target.value })}>
+            <select value={el.size} onChange={(e) => onChange(e.target.value === 'custom' ? { size: 'custom', width: el.width, height: el.height } : { size: e.target.value })}>
               <option value="1x1">1 × 1</option>
               <option value="1x2">1 × 2</option>
+              <option value="custom">Libre (ancho × alto)</option>
             </select>
           </label>
+          {el.size === 'custom' && (
+            <div className="nx-form__grid nx-form__grid--2">
+              <label className="nx-form__field"><span>Ancho</span><input type="number" min="1" max="20" value={el.width} onChange={(e) => onChange({ width: Math.max(1, Number(e.target.value) || 1) })} /></label>
+              <label className="nx-form__field"><span>Alto</span><input type="number" min="1" max="20" value={el.height} onChange={(e) => onChange({ height: Math.max(1, Number(e.target.value) || 1) })} /></label>
+            </div>
+          )}
           <label className="nx-check"><input type="checkbox" checked={el.covered} onChange={(e) => onChange({ covered: e.target.checked })} /><span>Techado</span></label>
           <label className="nx-check">
             <input type="checkbox" checked={Boolean(el.requiresKeys)} onChange={(e) => onChange({ requiresKeys: e.target.checked })} />

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // Plano de una zona en SVG (RF47-RF49, RF52). Modos:
 //   live    estado de cada puesto (verde libre, rojo ocupado, gris bloqueado)
@@ -294,12 +294,18 @@ export function MapLegend({ counts }) {
 }
 
 // Contenedor con zoom (botones, Ctrl + rueda) y desplazamiento (táctil)
-export function MapViewport({ rows, cols, zoom, setZoom, children }) {
+export function MapViewport({ rows, cols, zoom, setZoom, children, autoFit = true }) {
   const ref = useRef(null);
   function fit() {
     const w = ref.current?.clientWidth ?? 600;
     setZoom(Math.max(0.3, Math.min(2.5, (w - 8) / (cols * CELL))));
   }
+  // Al abrir un plano más ancho que la pantalla, se ajusta solo (después se puede acercar)
+  useEffect(() => {
+    const w = ref.current?.clientWidth ?? 0;
+    if (autoFit && w && cols * CELL > w) setZoom(Math.max(0.3, (w - 8) / (cols * CELL)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, cols]);
   return (
     <div className="nx-map-viewport">
       <div className="nx-map-zoom" role="group" aria-label="Zoom del mapa">
@@ -311,7 +317,7 @@ export function MapViewport({ rows, cols, zoom, setZoom, children }) {
       <div
         ref={ref}
         className="nx-map-scroll"
-        style={{ maxHeight: `${Math.max(240, rows * CELL * Math.min(zoom, 1) + 24)}px` }}
+        style={{ maxHeight: `${Math.max(240, Math.min(rows * CELL * zoom + 24, 1400))}px` }}
         onWheel={(e) => {
           if (!e.ctrlKey) return;
           e.preventDefault();

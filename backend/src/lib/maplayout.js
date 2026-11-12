@@ -1,7 +1,7 @@
 // Plano de una zona (RF47): cuadrícula filas × columnas con elementos rectangulares.
 //   SPACE    puesto: código único en la zona, tipo (CAR, MOTORCYCLE, BICYCLE, MOTORCYCLE_BICYCLE,
 //            REDUCED_MOBILITY), uso (MONTHLY, HOURLY, MIXED), techado, tamaño 1×1 o 1×2 con orientación
-//            H/V, si pide llaves (bloquea a otros puestos) y lado que mira hacia la vía (N, S, E, W)
+//            H/V (o "custom": ancho y alto libres en celdas, para planos de más resolución), si pide llaves (bloquea a otros puestos) y lado que mira hacia la vía (N, S, E, W)
 //   ROAD     vía · ENTRANCE entrada · EXIT salida (etiqueta opcional) · BLOCKED área no disponible (con etiqueta)
 // Reglas: todo dentro de la cuadrícula, sin superposiciones y códigos de puesto únicos.
 // El mismo archivo se usa en el frontend (frontend/src/lib/maplayout.js; prueba de paridad).
@@ -12,6 +12,7 @@ const FACINGS = ['N', 'S', 'E', 'W'];
 const USAGES = ['MONTHLY', 'HOURLY', 'MIXED'];
 const MAX_SIDE = 80;
 const CODE_RE = /^[A-Z0-9-]{1,10}$/;
+const MAX_SPACE_SIDE = 20; // celdas por lado de un puesto de tamaño libre
 
 // Tamaño en celdas de un puesto según su tamaño y orientación
 function spaceSize(size, orientation) {
@@ -56,7 +57,7 @@ function validateLayout(input) {
       if (!CODE_RE.test(code)) errors.push(`${where}: código de puesto inválido (letras, números o guion, máx. 10)`);
       else if (codes.has(code)) errors.push(`Puesto ${code}: el código está repetido`);
       codes.set(code, true);
-      const size = e.size === '1x2' ? '1x2' : '1x1';
+      const size = ['1x2', 'custom'].includes(e.size) ? e.size : '1x1';
       const orientation = e.orientation === 'V' ? 'V' : 'H';
       if (!SPACE_TYPES.includes(e.spaceType)) errors.push(`Puesto ${code || i + 1}: tipo inválido`);
       if (!USAGES.includes(e.usage)) errors.push(`Puesto ${code || i + 1}: uso inválido`);
@@ -71,6 +72,14 @@ function validateLayout(input) {
         orientation,
         ...spaceSize(size, orientation),
       });
+      if (size === 'custom') {
+        const width = Number(e.width);
+        const height = Number(e.height);
+        if (!isInt(width) || !isInt(height) || width < 1 || height < 1 || width > MAX_SPACE_SIDE || height > MAX_SPACE_SIDE) {
+          errors.push(`Puesto ${code || i + 1}: tamaño inválido (de 1 a ${MAX_SPACE_SIDE} celdas por lado)`);
+        }
+        Object.assign(out, { width, height });
+      }
     } else {
       const width = Number(e.width ?? 1);
       const height = Number(e.height ?? 1);
@@ -120,4 +129,4 @@ function entranceDistance(space, elements) {
 // Tipos de puesto que se le sugieren a cada tipo de vehículo (movilidad reducida solo si se elige)
 const SPACE_TYPE_FOR_VEHICLE = { CAR: ['CAR'], MOTORCYCLE: ['MOTORCYCLE', 'MOTORCYCLE_BICYCLE'], BICYCLE: ['BICYCLE', 'MOTORCYCLE_BICYCLE'] };
 
-module.exports = { validateLayout, spaceSize, rectDistance, entranceDistance, KINDS, SPACE_TYPES, USAGES, FACINGS, MAX_SIDE, SPACE_TYPE_FOR_VEHICLE };
+module.exports = { validateLayout, spaceSize, rectDistance, entranceDistance, KINDS, SPACE_TYPES, USAGES, FACINGS, MAX_SIDE, MAX_SPACE_SIDE, SPACE_TYPE_FOR_VEHICLE };

@@ -24,6 +24,8 @@ const CASES = [
   { rows: 2, cols: 4, elements: [{ id: 'x', kind: 'BLOCKED', row: 0, col: 0, width: 2, height: 2 }, sp('B', 0, 2, { spaceType: 'BUS' })] },
   { rows: 0, cols: 5, elements: [] },
   { rows: 4, cols: 4, elements: [{ id: 'e', kind: 'ENTRANCE', row: 3, col: 0 }, sp('Z9', 0, 3)] },
+  { rows: 6, cols: 6, elements: [sp('C1', 0, 0, { size: 'custom', width: 5, height: 2 }), sp('M1', 2, 0, { size: 'custom', width: 2, height: 1 })] },
+  { rows: 6, cols: 6, elements: [sp('C1', 0, 0, { size: 'custom', width: 0, height: 2 }), sp('C2', 2, 0, { size: 'custom', width: 21, height: 1 })] },
 ];
 
 describe('validación del plano', () => {
@@ -35,6 +37,10 @@ describe('validación del plano', () => {
     expect(server.validateLayout(CASES[4]).errors).toEqual(['Puesto B: tipo inválido']);
     expect(server.validateLayout(CASES[4]).elements[0].label).toBe('No disponible');
     expect(server.validateLayout(CASES[5]).errors[0]).toMatch('filas');
+    // Tamaño libre (planos de más resolución)
+    expect(server.validateLayout(CASES[7]).errors).toEqual([]);
+    expect(server.validateLayout(CASES[7]).elements.map((e) => [e.width, e.height])).toEqual([[5, 2], [2, 1]]);
+    expect(server.validateLayout(CASES[8]).errors.filter((x) => x.includes('tamaño inválido'))).toHaveLength(2);
   });
 
   test('distancia a la entrada (Manhattan entre rectángulos)', () => {
