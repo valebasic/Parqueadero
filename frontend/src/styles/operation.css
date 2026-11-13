@@ -449,3 +449,96 @@
 .nx-stack > * {
   min-width: 0;
 }
+
+/* ---------- Lectura de placa por cámara (Entradas) ---------- */
+.nx-cam {
+  margin-top: 10px;
+  font-size: 13px;
+}
+.nx-cam__bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.nx-cam__status {
+  color: var(--nx-muted);
+}
+.nx-cam__status.is-error {
+  color: var(--nx-red-600);
+}
+.nx-cam__body {
+  display: grid;
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+  gap: 12px;
+  margin-top: 8px;
+}
+.nx-cam__body[hidden] {
+  display: none;
+}
+.nx-cam__view {
+  position: relative;
+  background: #0b1220;
+  border-radius: var(--nx-radius-sm);
+  overflow: hidden;
+  line-height: 0;
+}
+.nx-cam__view video {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.nx-cam__view canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.nx-cam__side {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.nx-cam__debug {
+  font: 11px/1.3 ui-monospace, Consolas, monospace;
+  color: var(--nx-muted);
+  word-break: break-all;
+}
+.nx-cam__select {
+  max-width: 100%;
+}
+.nx-cam__last strong {
+  letter-spacing: 1px;
+  color: var(--nx-primary);
+}
+.nx-cam__notice {
+  padding: 6px 10px;
+  border-radius: var(--nx-radius-sm);
+  border: 1px solid var(--nx-border);
+  background: var(--nx-gray-100);
+  color: var(--nx-text);
+}
+.nx-cam__notice.is-info {
+  background: #fff3e6;
+  border-color: #ffb877;
+}
+.nx-cam__notice.is-ok {
+  color: var(--nx-green-600);
+}
+.nx-cam__notice.is-warn {
+  color: #9b4d00;
+  background: #fff8e6;
+  border-color: #ffe0a3;
+}
+.nx-cam__notice.is-error {
+  color: var(--nx-red-600);
+  background: #fdecec;
+  border-color: #f3b7b7;
+}
+@media (max-width: 560px) {
+  .nx-cam__body {
+    grid-template-columns: 1fr;
+  }
+}

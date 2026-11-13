@@ -2,3 +2,5 @@ node_modules/
 dist/
 .env
 .env.local
+# Archivos de Tesseract para la lectura de placas: los copia `npm install` (scripts/setup-tesseract.mjs)
+public/tesseract/
