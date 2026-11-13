@@ -1,0 +1,2 @@
+# Los scripts de inicialización corren dentro del contenedor Linux: deben quedar con fin de línea LF
+*.sh text eol=lf

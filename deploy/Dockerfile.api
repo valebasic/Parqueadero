@@ -1,0 +1,33 @@
+# Imagen de la API de Nexo.app (backend). Se construye desde la RAÍZ del repositorio:
+#   docker compose -f deploy/docker-compose.yml build api
+FROM node:20-bookworm-slim
+
+# pg_dump 16 para los respaldos (debe ser de la misma versión que PostgreSQL 16)
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates curl gnupg tzdata \
+ && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/pgdg.gpg \
+ && echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends postgresql-client-16 \
+ && apt-get purge -y curl gnupg && apt-get autoremove -y \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY backend/package.json backend/package-lock.json ./
+RUN npm ci --omit=dev
+COPY backend/src ./src
+COPY backend/scripts ./scripts
+
+ENV NODE_ENV=production \
+    PORT=3000 \
+    TZ=America/Bogota \
+    BACKUP_DIR=/backups \
+    PG_DUMP_PATH=pg_dump
+
+# Carpeta de respaldos con permisos para el usuario "node" (sin privilegios)
+RUN mkdir -p /backups && chown node:node /backups
+USER node
+EXPOSE 3000
+
+# Aplica las migraciones pendientes y arranca. Con una base nueva, el primer arranque crea todo.
+CMD ["sh", "-c", "node src/db/migrate.js up && node src/server.js"]

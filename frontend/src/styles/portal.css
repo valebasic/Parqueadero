@@ -1,0 +1,150 @@
+/* Portal del cliente (público, pensado para celular) */
+.nx-portal {
+  min-height: 100vh;
+  background: linear-gradient(160deg, var(--nx-navy-900), var(--nx-navy-700));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 40px;
+  color: var(--nx-text);
+}
+.nx-portal__brand {
+  color: #fff;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+.nx-portal__brand span { color: var(--nx-orange-600); }
+.nx-portal__card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--nx-surface);
+  border-radius: var(--nx-radius);
+  box-shadow: var(--nx-shadow-lg);
+  padding: 24px 20px;
+}
+.nx-portal__biz { margin: 0; text-align: center; color: var(--nx-muted); font-weight: 600; }
+.nx-portal__plate {
+  margin: 4px 0 8px;
+  text-align: center;
+  font-size: 2.4rem;
+  letter-spacing: 0.06em;
+  color: var(--nx-primary);
+}
+.nx-portal__state {
+  margin: 0 auto 18px;
+  width: fit-content;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: center;
+}
+.nx-portal__state.is-in { background: #e3f6ec; color: var(--nx-green-600); }
+.nx-portal__state.is-out { background: var(--nx-gray-100); color: var(--nx-gray-500); }
+.nx-portal__state.is-pending { background: #fff3e0; color: #b45f00; }
+.nx-portal__rows { border-top: 1px solid var(--nx-border); }
+.nx-portal__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--nx-border);
+}
+.nx-portal__row span { color: var(--nx-muted); }
+.nx-portal__row strong { text-align: right; }
+.nx-portal__total {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: var(--nx-radius-sm);
+  background: var(--nx-gray-50);
+  border: 1px solid var(--nx-border);
+  text-align: center;
+  display: grid;
+  gap: 4px;
+}
+.nx-portal__total span { color: var(--nx-muted); font-weight: 600; }
+.nx-portal__total strong { font-size: 2rem; color: var(--nx-primary); }
+.nx-portal__total small { color: var(--nx-muted); }
+.nx-portal__hint { text-align: center; color: var(--nx-muted); margin: 16px 0 0; }
+.nx-portal__foot { margin-top: 20px; text-align: center; color: var(--nx-muted); font-size: 0.82rem; }
+.nx-portal__muted { text-align: center; color: var(--nx-muted); }
+.nx-portal__error { text-align: center; }
+.nx-portal__error h1 { font-size: 1.25rem; margin: 0 0 8px; }
+.nx-portal__btn {
+  border: 0;
+  border-radius: var(--nx-radius-sm);
+  padding: 12px 20px;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--nx-accent-gradient);
+  color: #fff;
+}
+.nx-portal__btn--ghost { background: #fff; color: var(--nx-primary); border: 1px solid var(--nx-border); }
+
+/* Pantalla 2: pago */
+.nx-portal__btn--block { display: block; width: 100%; margin-top: 16px; font-size: 1.05rem; padding: 14px 20px; }
+.nx-portal__btn:disabled { opacity: 0.6; cursor: default; }
+.nx-portal__notice {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: var(--nx-radius-sm);
+  background: #eaf1fb;
+  color: var(--nx-navy-700);
+  font-size: 0.92rem;
+  text-align: center;
+}
+.nx-portal__notice.is-bad { background: #fdeaea; color: var(--nx-red-600); }
+.nx-portal__link { background: none; border: 0; padding: 0; color: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
+.nx-portal__paid {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: var(--nx-radius-sm);
+  background: #e3f6ec;
+  color: var(--nx-green-600);
+  text-align: center;
+  display: grid;
+  gap: 4px;
+}
+.nx-portal__paid.is-late { background: #fff3e0; color: #b45f00; }
+.nx-portal__paid strong { font-size: 1.2rem; }
+.nx-portal__count { font-size: 2.2rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.nx-portal__paid small { color: var(--nx-text); }
+.nx-portal__formerror { margin: 12px 0 0; color: var(--nx-red-600); text-align: center; font-weight: 600; }
+.nx-portal__mock {
+  margin-top: 16px;
+  padding: 16px;
+  border: 2px dashed var(--nx-orange-600);
+  border-radius: var(--nx-radius-sm);
+  text-align: center;
+}
+.nx-portal__mock p { margin: 6px 0 0; color: var(--nx-muted); font-size: 0.9rem; }
+.nx-portal__field { display: grid; gap: 4px; margin-top: 16px; }
+.nx-portal__field span { font-weight: 600; font-size: 0.9rem; }
+.nx-portal__field input {
+  border: 1px solid var(--nx-border);
+  border-radius: var(--nx-radius-sm);
+  padding: 12px;
+  font-size: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+.nx-portal__field input:focus { outline: none; box-shadow: var(--nx-ring); border-color: var(--nx-accent); }
+.nx-portal__field small { color: var(--nx-muted); }
+
+/* Pantalla 3: consulta por placa */
+.nx-portal__title { margin: 0 0 14px; text-align: center; font-size: 1.4rem; color: var(--nx-primary); }
+.nx-portal__tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; background: var(--nx-gray-100); border-radius: var(--nx-radius-sm); margin-bottom: 8px; }
+.nx-portal__tabs button { border: 0; background: transparent; padding: 10px 6px; border-radius: 8px; font-weight: 700; color: var(--nx-muted); cursor: pointer; }
+.nx-portal__tabs button.is-active { background: #fff; color: var(--nx-primary); box-shadow: var(--nx-shadow); }
+.nx-portal__muted { color: var(--nx-muted); font-size: 0.92rem; margin: 12px 0 0; text-align: center; }
+.nx-portal__h2 { margin: 22px 0 6px; font-size: 1.05rem; color: var(--nx-primary); }
+.nx-portal__state.is-bad { background: #fdeaea; color: var(--nx-red-600); }
+.nx-portal__notice.is-dev { background: #fff3e0; color: #8a4b00; }
+.nx-portal__code { text-align: center; font-size: 1.6rem !important; letter-spacing: 0.4em; font-variant-numeric: tabular-nums; }
+.nx-portal__center { display: block; margin: 14px auto 0; }
+
+/* Pago de mensualidad en el portal */
+.nx-portal__paybox { margin-top: 16px; text-align: center; }
+.nx-portal__paybox p { margin: 0 0 4px; color: var(--nx-text); font-size: 0.92rem; }

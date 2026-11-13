@@ -1,0 +1,59 @@
+# Nexo.app en Render (plan GRATIS, pensado para una DEMO o prueba, no para producción real).
+# Crea la base de datos PostgreSQL y un único servicio web que sirve la app y la API.
+# Guía: deploy/RENDER-DEMO.md
+#
+# Límites del plan gratis de Render (verifíquelos en su sitio): el servicio se duerme tras ~15 min sin
+# uso y tarda ~30 s en despertar; la base de datos gratis vence a los ~90 días.
+databases:
+  - name: nexo-db
+    plan: free
+    region: oregon
+    databaseName: nexo
+    user: nexo
+
+services:
+  - type: web
+    name: nexo
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: cd frontend && npm ci --include=dev && npm run build && cd ../backend && npm ci --omit=dev
+    # Aplica las migraciones, crea los datos iniciales (idempotente) y arranca
+    startCommand: cd backend && node src/db/migrate.js up && node src/db/seed.js && node src/server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # "development" en la DEMO: el pago de Wompi es SIMULADO y el código de verificación se muestra en
+      # pantalla. Para producción real use "production" y llaves reales de Wompi.
+      - key: NODE_ENV
+        value: development
+      - key: SERVE_FRONTEND
+        value: "1"
+      - key: TRUST_PROXY
+        value: "1"
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: APP_TIMEZONE
+        value: America/Bogota
+      - key: DATABASE_URL
+        fromDatabase:
+          name: nexo-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      # Los siguientes los pide Render al crear (no se guardan en git). Los opcionales pueden quedar vacíos.
+      - key: SEED_ADMIN_PASSWORD
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: MAIL_FROM
+        sync: false

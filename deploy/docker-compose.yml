@@ -1,0 +1,65 @@
+# Nexo.app en un servidor (VPS): PostgreSQL + API + web con HTTPS automático.
+# Uso (dentro de la carpeta deploy/, con el archivo .env ya creado a partir de .env.example):
+#   docker compose up -d --build
+#   docker compose logs -f api
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:?Falta DB_USER en .env}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Falta DB_PASSWORD en .env}
+      POSTGRES_DB: ${DB_NAME:?Falta DB_NAME en .env}
+      TZ: America/Bogota
+      PGTZ: America/Bogota
+    volumes:
+      - nexo-pgdata:/var/lib/postgresql/data
+    # SIN "ports": la base de datos solo se ve desde la API, nunca desde internet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      NODE_ENV: production
+      TRUST_PROXY: "1"
+      COOKIE_SECURE: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backups:/backups
+    # Solo Caddy habla con la API (red interna de Docker)
+    expose:
+      - "3000"
+
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.web
+    restart: unless-stopped
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?Falta SITE_ADDRESS en .env}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - api
+
+volumes:
+  nexo-pgdata:
+  caddy-data:
+  caddy-config:
