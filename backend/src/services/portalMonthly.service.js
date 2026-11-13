@@ -50,6 +50,9 @@ async function loadPlan(client, planId, { lock = false } = {}) {
 
 // Opciones de pago para mostrar en la vista del portal
 async function payInfo(planId) {
+  if (!wompi.paymentsEnabled()) {
+    return { canPay: false, reason: 'El pago en línea todavía no está disponible. Acérquese al parqueadero para renovar.' };
+  }
   const client = { query: (t, p) => query(t, p) };
   await rollQueuedPeriods(client);
   const p = await loadPlan(client, planId);
@@ -61,6 +64,9 @@ async function payInfo(planId) {
 
 // Inicia el pago: el valor lo fija el servidor (el valor mensual pactado)
 async function createPlanPayment(planId, { backPath = '/portal?tab=mensualidad' } = {}) {
+  if (!wompi.paymentsEnabled()) {
+    throw new HttpError(409, 'El pago en línea todavía no está disponible. Acérquese al parqueadero.', { code: 'PAYMENTS_DISABLED' });
+  }
   const client = { query: (t, p) => query(t, p) };
   await rollQueuedPeriods(client);
   const p = await loadPlan(client, planId);

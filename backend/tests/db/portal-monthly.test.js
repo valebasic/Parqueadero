@@ -2,6 +2,7 @@
 process.env.PORTAL_LOOKUP_IP_LIMIT = '1000';
 process.env.PORTAL_LOOKUP_PLATE_LIMIT = '1000';
 process.env.PORTAL_PAY_RATE_LIMIT_MAX = '1000';
+process.env.PORTAL_RATE_LIMIT_MAX = '1000';
 const request = require('supertest');
 const { query, closePool } = require('../../src/db/pool');
 const { app, freshDatabase, siteIdByCode } = require('./helpers');
@@ -280,5 +281,37 @@ describe('enlace de pago del correo/SMS (directo a pagar, sin placa ni código)'
     await query("UPDATE portal_pay_links SET expires_at = now() - interval '1 minute'");
     expect((await get(`/pagar/${t222}`)).status).toBe(404);
     expect((await post(`/pagar/${t222}/pago`)).status).toBe(404);
+  });
+});
+
+describe('producción sin Wompi: el pago en línea queda apagado y los avisos mandan al parqueadero', () => {
+  const { runMonthlyReminders } = require('../../src/services/notification.service');
+  let previous;
+  beforeAll(() => { previous = process.env.NODE_ENV; process.env.NODE_ENV = 'production'; });
+  afterAll(() => { process.env.NODE_ENV = previous; });
+
+  test('el portal no ofrece pagar, el servidor lo rechaza y el aviso no trae enlace de Wompi', async () => {
+    const id = await addPlan('OFF111', { endOffset: 3 });
+    const token = await sessionFor('OFF111');
+    const view = (await portal.get('/mensualidad', token)).body.data;
+    expect(view.payOnline.canPay).toBe(false);
+    expect(view.payOnline.reason).toMatch(/todavía no está disponible/);
+    const p = await portal.post('/mensualidad/pagos', {}, token);
+    expect(p.status).toBe(409);
+    expect(p.body.code).toBe('PAYMENTS_DISABLED');
+
+    sent.length = 0;
+    await runMonthlyReminders();
+    const m = sent.find((x) => /OFF111/.test(x.subject));
+    expect(m.text).toMatch(/Acérquese al parqueadero/);
+    expect(m.text).not.toMatch(/Wompi|\/pagar\//);
+    expect(m.html).not.toMatch(/Renovar mi mensualidad/);
+    expect((await query('SELECT count(*)::int AS n FROM portal_pay_links WHERE monthly_plan_id = $1', [id])).rows[0].n).toBe(0);
+  });
+
+  test('un tiquete por horas tampoco se puede pagar en línea', async () => {
+    const res = await portal.post('/pagos', { sede: 'FACA', recibo: 'FA1' });
+    expect(res.status).toBe(409);
+    expect(res.body.code).toBe('PAYMENTS_DISABLED');
   });
 });

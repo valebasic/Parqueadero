@@ -1,0 +1,11 @@
+.git
+**/node_modules
+**/.env
+**/.env.*
+!**/.env.example
+backend/backups
+deploy/backups
+frontend/dist
+dist
+*.log
+.vscode

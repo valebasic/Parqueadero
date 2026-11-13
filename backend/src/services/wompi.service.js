@@ -77,4 +77,13 @@ async function fetchTransaction(transactionId) {
 const STATUS_MAP = { APPROVED: 'APPROVED', DECLINED: 'DECLINED', VOIDED: 'VOIDED', ERROR: 'ERROR', PENDING: 'PENDING' };
 const mapStatus = (s) => STATUS_MAP[String(s).toUpperCase()] ?? 'PENDING';
 
-module.exports = { config, buildCheckout, verifyEvent, fetchTransaction, mapStatus, sha256 };
+/**
+ * ¿Está disponible el pago en línea? Con llaves de Wompi sí. Sin llaves solo en desarrollo/pruebas
+ * (pago simulado): en producción un pago simulado no tiene sentido, así que el portal lo apaga y
+ * manda al cliente al parqueadero.
+ */
+function paymentsEnabled() {
+  return config().mode === 'wompi' || process.env.NODE_ENV !== 'production';
+}
+
+module.exports = { paymentsEnabled, config, buildCheckout, verifyEvent, fetchTransaction, mapStatus, sha256 };

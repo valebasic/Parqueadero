@@ -80,6 +80,7 @@ async function getStay(rawSite, rawReceipt) {
     canPay: false,
     payment: null,
     paymentMode: wompi.config().mode,
+    paymentsEnabled: wompi.paymentsEnabled(),
   };
 
   if (open) {
@@ -93,7 +94,7 @@ async function getStay(rawSite, rawReceipt) {
       const fare = await fareNow(e);
       out.minutes = fare.minutes;
       out.amount = Number(fare.total);
-      out.canPay = !credit && out.amount > 0;
+      out.canPay = !credit && out.amount > 0 && wompi.paymentsEnabled();
     }
     if (credit) {
       out.payment = {
@@ -129,6 +130,9 @@ async function createPayment(rawSite, rawReceipt, rawEmail) {
   const email = String(rawEmail ?? '').trim().toLowerCase();
   if (email && (email.length > 120 || !EMAIL_RE.test(email))) {
     throw new HttpError(400, 'El correo no es válido. Revíselo o déjelo en blanco.', { code: 'VALIDATION_ERROR' });
+  }
+  if (!wompi.paymentsEnabled()) {
+    throw new HttpError(409, 'El pago en línea todavía no está disponible. Pague en caja al salir.', { code: 'PAYMENTS_DISABLED' });
   }
   const e = await findEntry(rawSite, rawReceipt);
   if (e.status !== 'OPEN') {

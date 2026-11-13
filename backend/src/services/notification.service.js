@@ -7,6 +7,7 @@ const env = require('../config/env');
 const { sendMail, maskEmail } = require('./mail.service');
 const { sendSms, maskPhone, isMobile, settings: smsSettings } = require('./sms.service');
 const { createPayLink } = require('./payLink.service');
+const { paymentsEnabled } = require('./wompi.service');
 const HttpError = require('../middlewares/httpError');
 const { assertSiteAccess } = require('../middlewares/authorize');
 const { recordAudit } = require('./audit.service');
@@ -29,7 +30,9 @@ ${lines.map((l) => `<p style="margin:6px 0;color:#1c2430">${l.html ?? esc(l)}</p
 }
 
 // Enlace personal que lleva directo a pagar (sin placa ni código): se crea uno por aviso
-const renewUrl = async (planId) => `${env.portalUrl.replace(/\/+$/, '')}/pagar/${await createPayLink(planId)}`;
+// Si el pago en línea no está disponible no se crea enlace (null) y el aviso manda al parqueadero
+const renewUrl = async (planId) =>
+  paymentsEnabled() ? `${env.portalUrl.replace(/\/+$/, '')}/pagar/${await createPayLink(planId)}` : null;
 // "2026-11-15" -> "15 nov"
 const fmtShort = (isoDate) =>
   new Date(`${isoDate}T12:00:00-05:00`)
@@ -212,11 +215,13 @@ function buildReminder(m, daysLeft, link) {
             text: `Le recordamos que la mensualidad de su vehículo con placa ${m.plate} en ${m.site_name} vence el ${vence} (${dias}).`,
           },
       overdue ? 'Renuévela para volver a usar su puesto:' : 'Para seguir usando su puesto sin interrupciones, renuévela antes de esa fecha:',
-      `• Acérquese al parqueadero${m.address ? ` (${m.address})` : ''}, o`,
-      {
-        html: `• Pague en línea con Wompi: <a href="${esc(link)}" style="display:inline-block;background:#ff6b00;color:#fff;text-decoration:none;font-weight:700;padding:10px 16px;border-radius:8px">Renovar mi mensualidad</a>`,
-        text: `• Pague en línea con Wompi: ${link}`,
-      },
+      link ? `• Acérquese al parqueadero${m.address ? ` (${m.address})` : ''}, o` : `• Acérquese al parqueadero${m.address ? ` (${m.address})` : ''}.`,
+      link
+        ? {
+            html: `• Pague en línea con Wompi: <a href="${esc(link)}" style="display:inline-block;background:#ff6b00;color:#fff;text-decoration:none;font-weight:700;padding:10px 16px;border-radius:8px">Renovar mi mensualidad</a>`,
+            text: `• Pague en línea con Wompi: ${link}`,
+          }
+        : '',
       m.phone ? `¿Dudas? Llámenos al ${m.phone}.` : '',
     ].filter((l) => l !== ''),
     FOOTER,
@@ -227,8 +232,8 @@ function buildReminder(m, daysLeft, link) {
     html,
     text,
     sms: overdue
-      ? `Nexo.app: ${m.client_name}, la mensualidad de ${m.plate} venció el ${corta}. Renueve aquí: ${link}`
-      : `Nexo.app: ${m.client_name}, la mensualidad de ${m.plate} vence el ${corta} (${dias}). Renueve aquí: ${link}`,
+      ? `Nexo.app: ${m.client_name}, la mensualidad de ${m.plate} venció el ${corta}. Renueve ${link ? `aquí: ${link}` : 'en el parqueadero.'}`
+      : `Nexo.app: ${m.client_name}, la mensualidad de ${m.plate} vence el ${corta} (${dias}). Renueve ${link ? `aquí: ${link}` : 'en el parqueadero.'}`,
   };
 }
 

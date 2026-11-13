@@ -1,0 +1,32 @@
+# Caddy: sirve el frontend, reenvía /api y /socket.io a la API y saca el certificado HTTPS solo
+# (Let's Encrypt). SITE_ADDRESS viene del .env: un dominio (portal.midominio.com) o, mientras no
+# haya dominio, la IP del servidor con guiones + .sslip.io (por ejemplo 203-0-113-10.sslip.io).
+{$SITE_ADDRESS} {
+	encode zstd gzip
+
+	# API y tiempo real (WebSocket): Caddy maneja el Upgrade solo
+	handle /api/* {
+		reverse_proxy api:3000
+	}
+	handle /socket.io/* {
+		reverse_proxy api:3000
+	}
+
+	# Frontend (React): cualquier ruta que no sea un archivo vuelve a index.html
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+
+	# Estos archivos no se guardan en caché para que las versiones nuevas lleguen de inmediato
+	@sinCache path /index.html /sw.js /registerSW.js /manifest.webmanifest
+	header @sinCache Cache-Control "no-cache"
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}

@@ -223,7 +223,11 @@ export default function PortalReceiptPage() {
               <div className="nx-portal__total">
                 <span>Valor a la fecha</span>
                 <strong>{formatCOP(stay.amount)}</strong>
-                <small>Se actualiza solo. Si paga ahora, tendrá 10 minutos para salir sin cobro adicional.</small>
+                <small>
+                  {stay.paymentsEnabled === false
+                    ? 'Se actualiza solo. Pague en caja al salir: el valor final se calcula en ese momento.'
+                    : 'Se actualiza solo. Si paga ahora, tendrá 10 minutos para salir sin cobro adicional.'}
+                </small>
               </div>
             )}
 
