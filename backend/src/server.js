@@ -26,7 +26,7 @@ server.listen(env.port, () => {
 
 // Respaldo diario con pg_dump (si BACKUP_HOUR está configurado)
 const stopBackups = scheduleDailyBackups();
-// Avisos de mensualidad por correo, todos los días a NOTIFY_HOUR (por defecto 8)
+// Avisos de mensualidad: revisa al arrancar y cada hora; envía de NOTIFY_HOUR a NOTIFY_UNTIL_HOUR (8 a 21, hora de Colombia)
 const stopReminders = scheduleMonthlyReminders();
 
 // Cierre ordenado: deja de aceptar conexiones y libera el pool de PostgreSQL

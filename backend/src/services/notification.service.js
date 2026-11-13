@@ -43,13 +43,16 @@ const FOOTER = 'Este mensaje es automático, no lo responda. Usamos su correo so
 
 /**
  * Envía una sola vez por `dedupeKey`. Devuelve false si ya se había enviado antes.
+ * Un envío que FALLÓ se reintenta (pasados 30 minutos, para no pisar un envío en curso).
  */
 async function sendOnce({ kind, channel = 'EMAIL', siteId, entityType, entityId, to, dedupeKey, subject, text, html }) {
   const isSms = channel === 'SMS';
   const ins = await query(
     `INSERT INTO notification_log (kind, channel, site_id, entity_type, entity_id, recipient, dedupe_key, status)
      VALUES ($1, $2, $3, $4, $5, $6, $7, 'FAILED')
-     ON CONFLICT (dedupe_key) DO NOTHING RETURNING id`,
+     ON CONFLICT (dedupe_key) DO UPDATE SET error = NULL, created_at = now(), recipient = EXCLUDED.recipient
+       WHERE notification_log.status = 'FAILED' AND notification_log.created_at < now() - interval '30 minutes'
+     RETURNING id`,
     [kind, channel, siteId ?? null, entityType ?? null, entityId == null ? null : String(entityId),
       isSms ? maskPhone(to) : maskEmail(to), dedupeKey],
   );
@@ -190,6 +193,26 @@ async function sendPortalCode({ codeId, planId, email, phone, channel = 'EMAIL',
 // Avisos de mensualidad
 // ---------------------------------------------------------------------------
 const DUE_DAYS = [6, 3, 1];
+// Avisos de vencida: se intentan hasta 3 días después del vencimiento (por si el servidor estuvo apagado)
+const OVERDUE_CATCHUP_DAYS = 3;
+
+// Aviso que corresponde con `daysLeft` días por vencer: el menor de DUE_DAYS que sea >= daysLeft.
+// Así, si el día exacto (6, 3 o 1) el servidor estaba dormido, el aviso sale en la siguiente revisión.
+function dueThreshold(daysLeft) {
+  if (daysLeft < 1) return null;
+  return [...DUE_DAYS].sort((a, b) => a - b).find((d) => d >= daysLeft) ?? null;
+}
+
+// ¿Ya se envió (o se está enviando) este aviso? Los FAILED de hace más de 30 min se reintentan.
+async function alreadyLogged(keys) {
+  const { rows } = await query(
+    `SELECT dedupe_key FROM notification_log
+      WHERE dedupe_key = ANY($1::text[])
+        AND (status <> 'FAILED' OR created_at >= now() - interval '30 minutes')`,
+    [keys],
+  );
+  return new Set(rows.map((r) => r.dedupe_key));
+}
 
 /**
  * Arma el aviso de mensualidad (correo y SMS) para cualquier cantidad de días: por vencer (6, 3, 1,
@@ -248,23 +271,30 @@ async function runMonthlyReminders() {
             (mp.end_date - CURRENT_DATE) AS days_left
        FROM monthly_plans mp
        JOIN sites s ON s.id = mp.site_id
-      WHERE mp.is_active AND mp.data_consent
+      WHERE mp.is_active AND mp.data_consent AND mp.deleted_at IS NULL
         AND (mp.email IS NOT NULL OR array_to_string(mp.phones, ',') ~ '(^|,)3[0-9]{9}(,|$)')
-        AND ((mp.end_date - CURRENT_DATE) = ANY($1::int[]) OR (mp.end_date - CURRENT_DATE) = -1)
+        AND (mp.end_date - CURRENT_DATE) BETWEEN -$2::int AND $1::int
+        AND (mp.end_date - CURRENT_DATE) <> 0
         AND NOT EXISTS (
           SELECT 1 FROM monthly_plans n
            WHERE n.plate = mp.plate AND n.site_id = mp.site_id AND n.is_active AND n.end_date > mp.end_date
         )`,
-    [DUE_DAYS],
+    [Math.max(...DUE_DAYS), OVERDUE_CATCHUP_DAYS],
   );
   const counts = { due: 0, overdue: 0 };
   for (const m of rows) {
     const daysLeft = Number(m.days_left);
+    const overdue = daysLeft < 0;
+    const threshold = overdue ? null : dueThreshold(daysLeft);
+    if (!overdue && threshold === null) continue;
+    const kind = overdue ? 'MONTHLY_OVERDUE' : 'MONTHLY_DUE';
+    const key = `${overdue ? 'MONTHLY_OVERDUE' : `MONTHLY_DUE_${threshold}`}:${m.id}:${m.end_text}`;
+    const mobile = (m.phones ?? []).find(isMobile);
+    // Antes de crear el enlace de pago: si ya se avisó por todos los canales, no hay nada que hacer
+    const done = await alreadyLogged([key, `SMS:${key}`]);
+    if ((!m.email || done.has(key)) && (!mobile || done.has(`SMS:${key}`))) continue;
     const link = await renewUrl(m.id);
     const msg = buildReminder(m, daysLeft, link);
-    const overdue = msg.overdue;
-    const kind = overdue ? 'MONTHLY_OVERDUE' : 'MONTHLY_DUE';
-    const key = `${overdue ? 'MONTHLY_OVERDUE' : `MONTHLY_DUE_${daysLeft}`}:${m.id}:${m.end_text}`;
     if (m.email) {
       const sent = await sendOnce({
         kind, siteId: m.site_id, entityType: 'monthly_plan', entityId: m.id, to: m.email, dedupeKey: key,
@@ -273,7 +303,6 @@ async function runMonthlyReminders() {
       if (sent) counts[overdue ? 'overdue' : 'due'] += 1;
     }
     // SMS corto al primer celular registrado (los fijos no reciben SMS)
-    const mobile = (m.phones ?? []).find(isMobile);
     if (mobile) {
       const sentSms = await sendOnce({
         kind, channel: 'SMS', siteId: m.site_id, entityType: 'monthly_plan', entityId: m.id, to: mobile,
@@ -326,29 +355,51 @@ async function sendMonthlyReminderNow(planId, req) {
   return { sent: true, to: maskEmail(m.email) };
 }
 
-// Todos los días a NOTIFY_HOUR (por defecto 8, hora del servidor). Devuelve una función para detenerla.
-function scheduleMonthlyReminders(logger = console) {
-  const hour = process.env.NOTIFY_HOUR === undefined || process.env.NOTIFY_HOUR === '' ? 8 : Number(process.env.NOTIFY_HOUR);
-  if (!Number.isInteger(hour) || hour < 0 || hour > 23) return () => {};
-  let timer = null;
-  const planNext = () => {
-    const now = new Date();
-    const next = new Date(now);
-    next.setHours(hour, 0, 0, 0);
-    if (next <= now) next.setDate(next.getDate() + 1);
-    timer = setTimeout(async () => {
-      try {
-        const r = await runMonthlyReminders();
-        logger.log(`Avisos de mensualidad: ${r.due} por vencer, ${r.overdue} vencidas por correo, ${r.sms ?? 0} SMS`);
-      } catch (err) {
-        logger.error(`Avisos de mensualidad fallaron: ${err.message}`);
-      }
-      planNext();
-    }, next - now);
-    timer.unref?.();
-  };
-  planNext();
-  return () => clearTimeout(timer);
+// Hora actual (0-23) en la zona de la app (America/Bogota), sin importar la zona del servidor
+// (Render y la mayoría de servidores están en UTC).
+function localHour(now = new Date()) {
+  const h = new Intl.DateTimeFormat('en-US', { hour: 'numeric', hourCycle: 'h23', timeZone: env.timezone }).format(now);
+  return Number(h) % 24;
 }
 
-module.exports = { sendMonthlyReminderNow, sendPaymentReceipt, sendMonthlyPaymentReceipt, sendPortalCode, runMonthlyReminders, scheduleMonthlyReminders, sendOnce };
+/**
+ * Revisa los avisos al arrancar (a los 30 s) y luego cada hora, pero solo envía dentro del horario
+ * NOTIFY_HOUR (por defecto 8) a NOTIFY_UNTIL_HOUR (por defecto 21), hora de Colombia.
+ * Pensado para servidores que se duermen (Render gratis): cada vez que despierta, se pone al día.
+ * Cada aviso sale una sola vez (notification_log). Devuelve una función para detenerla.
+ */
+function scheduleMonthlyReminders(logger = console) {
+  const num = (v, d) => (v === undefined || v === '' ? d : Number(v));
+  const from = num(process.env.NOTIFY_HOUR, 8);
+  const until = num(process.env.NOTIFY_UNTIL_HOUR, 21);
+  if (![from, until].every((h) => Number.isInteger(h) && h >= 0 && h <= 24) || from >= until) return () => {};
+  let running = false;
+  const tick = async () => {
+    const h = localHour();
+    if (running || h < from || h >= until) return;
+    running = true;
+    try {
+      const r = await runMonthlyReminders();
+      if (r.due || r.overdue || r.sms) {
+        logger.log(`Avisos de mensualidad: ${r.due} por vencer, ${r.overdue} vencidas por correo, ${r.sms ?? 0} SMS`);
+      }
+    } catch (err) {
+      logger.error(`Avisos de mensualidad fallaron: ${err.message}`);
+    } finally {
+      running = false;
+    }
+  };
+  const startup = setTimeout(tick, 30 * 1000);
+  const hourly = setInterval(tick, 60 * 60 * 1000);
+  startup.unref?.();
+  hourly.unref?.();
+  return () => {
+    clearTimeout(startup);
+    clearInterval(hourly);
+  };
+}
+
+module.exports = {
+  sendMonthlyReminderNow, sendPaymentReceipt, sendMonthlyPaymentReceipt, sendPortalCode, runMonthlyReminders,
+  scheduleMonthlyReminders, sendOnce, dueThreshold, localHour,
+};

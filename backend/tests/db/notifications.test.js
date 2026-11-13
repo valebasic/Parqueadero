@@ -114,6 +114,43 @@ describe('avisos de mensualidad', () => {
     expect(sent).toHaveLength(4);
   });
 
+  test('se pone al día: si el servidor estuvo dormido el día exacto, el aviso sale en la siguiente revisión', async () => {
+    const { dueThreshold } = require('../../src/services/notification.service');
+    expect([7, 6, 5, 4, 3, 2, 1, 0].map(dueThreshold)).toEqual([null, 6, 6, 6, 3, 3, 1, null]);
+    await addMonthly({ plate: 'ATR005', endOffset: 5 }); // no salió el de 6: sale ahora
+    await addMonthly({ plate: 'ATR002', endOffset: 2 }); // no salió el de 3: sale ahora
+    await addMonthly({ plate: 'ATRV03', endOffset: -3 }); // vencida hace 3 días sin aviso: sale ahora
+    await addMonthly({ plate: 'ATRV05', endOffset: -5 }); // demasiado atrás: no
+    const r1 = await runMonthlyReminders();
+    expect(r1).toEqual({ due: 2, overdue: 1 });
+    expect(sent.some((m) => /vence en 5 días · ATR005/.test(m.subject))).toBe(true);
+    expect(sent.some((m) => /vence en 2 días · ATR002/.test(m.subject))).toBe(true);
+    expect(await runMonthlyReminders()).toEqual({ due: 0, overdue: 0 }); // no repite
+    const { rows } = await query(
+      `SELECT mp.plate, split_part(nl.dedupe_key, ':', 1) AS k
+         FROM notification_log nl JOIN monthly_plans mp ON nl.entity_id = mp.id::text
+        WHERE nl.kind = 'MONTHLY_DUE' AND mp.plate IN ('ATR005', 'ATR002') ORDER BY mp.plate`,
+    );
+    expect(rows).toEqual([{ plate: 'ATR002', k: 'MONTHLY_DUE_3' }, { plate: 'ATR005', k: 'MONTHLY_DUE_6' }]);
+  });
+
+  test('un aviso que falló se reintenta en una revisión posterior', async () => {
+    mail.setTransportForTests({ sendMail: async () => { throw new Error('SMTP caído'); } });
+    await addMonthly({ plate: 'RTY003', endOffset: 3 });
+    expect(await runMonthlyReminders()).toEqual({ due: 0, overdue: 0 });
+    mail.setTransportForTests({ sendMail: async (m) => { sent.push(m); } });
+    expect(await runMonthlyReminders()).toEqual({ due: 0, overdue: 0 }); // recién falló: espera
+    await query("UPDATE notification_log SET created_at = now() - interval '1 hour' WHERE status = 'FAILED'");
+    expect(await runMonthlyReminders()).toEqual({ due: 1, overdue: 0 });
+    expect(sent.filter((m) => /RTY003/.test(m.subject))).toHaveLength(1);
+  });
+
+  test('la hora de envío es la de Colombia aunque el servidor esté en UTC', () => {
+    const { localHour } = require('../../src/services/notification.service');
+    expect(localHour(new Date('2026-11-13T13:00:00Z'))).toBe(8);
+    expect(localHour(new Date('2026-11-14T02:30:00Z'))).toBe(21);
+  });
+
   test('no avisa sin correo, sin autorización de datos ni si ya renovó', async () => {
     await addMonthly({ plate: 'NOM001', endOffset: 3, email: null });
     await addMonthly({ plate: 'NOC001', endOffset: 3, consent: false });
