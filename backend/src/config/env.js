@@ -42,7 +42,8 @@ const env = {
   // Valor de "trust proxy" de Express (p. ej. 1 = un proxy inverso delante). Vacío = no confiar.
   trustProxy: parseTrustProxy(process.env.TRUST_PROXY),
   // Portal del cliente (QR de los recibos)
-  portalUrl: process.env.PORTAL_URL || 'https://portal.ejemplo.com',
+  // En Render, RENDER_EXTERNAL_URL trae la dirección pública del servicio: el QR de los tiquetes sale bien sin configurar nada
+  portalUrl: process.env.PORTAL_URL || process.env.RENDER_EXTERNAL_URL || 'https://portal.ejemplo.com',
   // Zona horaria de las sesiones de PostgreSQL (fechas "de hoy", cortes por día, etc.)
   timezone: process.env.APP_TIMEZONE || 'America/Bogota',
 };
