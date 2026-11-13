@@ -16,7 +16,7 @@ Cada pendiente tiene un issue en GitHub con las etiquetas `V3`, `V4`, `pruebas`,
 | V1 | RF26–RF33 (panel multisede) y RF44–RF46 (turnos y horas trabajadas) | Hecho, con pruebas | `v2-web` (incluido en PR #1) |
 | Valor agregado | NexoIA: asistente con Gemini portado de la v1.0 (solo lectura + propuestas que aprueba una persona) | Hecho, probado con Gemini simulado; **falta probar con una clave real** | `v2-web` (incluido en PR #1) |
 | V2 | RF47–RF52 (mapa de espacios en tiempo real) + plano real de Facaparking en el seed + puestos que piden llaves | Hecho, con pruebas | `v2-mapa` → PR hacia `v2-web` |
-| V3 | RF34–RF40 (lectura automática de placas) | **Pendiente** | — |
+| V3 | RF34–RF40 (lectura automática de placas) | **Parcial:** lectura con la cámara del equipo en Entradas (RF35, RF37), traída de la v1.0 web. Faltan cámaras IP, evidencia, monitoreo y listas | `v2-camara` → PR hacia `v2-mapa` |
 | V4 | RF53–RF59 (portal del cliente) | **Pendiente** (solo existe el enlace del QR en los recibos) | — |
 
 Otras ramas:
@@ -175,6 +175,11 @@ Reutilizar:
   válida/ inválida/ repetido, rate limit.
 
 ### 2. V3 — Lectura automática de placas (RF34–RF40) · `V3`
+
+**Ya hecho (rama `v2-camara`):** lectura con la webcam del equipo en Entradas, en el navegador (Tesseract),
+con registro automático cancelable y apertura de la salida si el vehículo ya está adentro. Ver
+[`frontend/README.md`](frontend/README.md#lectura-de-placas-por-cámara). Sirve para operar ya con una
+cámara USB; lo de abajo es para cámaras IP y la versión completa del requisito.
 
 - **Servicio aparte en Python** (p. ej. `lpr/` con FastAPI): detección de la placa con **YOLO** y
   lectura con **OCR**; formato colombiano (carro `ABC123`, moto `ABC12D`). Probar **primero con un

@@ -20,10 +20,14 @@ import {
 import { formatCOP, formatDate, formatDuration, formatTime12h } from '../lib/format.js';
 import { detectVehicleType, normalizePlate, plateError, PLATE_MAX_LENGTH, VEHICLE_LABELS } from '../lib/plates.js';
 import SpacePicker from '../components/map/SpacePicker.jsx';
+import PlateCamera from '../components/PlateCamera.jsx';
 
 // Entradas (RF07-RF11), con el flujo de ParkApp.html de la v1.0:
 //   ENTRADA (≤ 3 acciones): escribir la placa → Enter (registra) → Enter (imprime el tiquete).
 //   SALIDA: escribir la placa (o tocarla en la lista) → elegir forma de pago → "Finalizar venta".
+//   CÁMARA (VA2, RF35/RF37): la placa leída se escribe en el campo como si la hubieran digitado. Si es una entrada
+//   nueva y el registro automático está activo, se registra tras un instante (con Cancelar); si el vehículo ya está
+//   adentro se abre su salida para cobrar (Facaparking tiene una sola entrada y salida). Nunca cobra sola.
 // El tipo de vehículo se deduce de la placa; la lista de la izquierda se filtra mientras se escribe.
 
 const METHODS = [
@@ -42,6 +46,18 @@ export default function EntriesPage() {
   const offline = !online;
   const [snapshot, setSnapshot] = useState(null);
   const plateRef = useRef(null);
+  // Cámara: registro automático (preferencia de este equipo), placa leída que espera registrarse y aviso del panel
+  const [camAuto, setCamAuto] = useState(() => {
+    try {
+      return localStorage.getItem('nexo_plate_auto') !== '0';
+    } catch {
+      return true;
+    }
+  });
+  const [camPending, setCamPending] = useState(null);
+  const [camNotice, setCamNotice] = useState(null);
+  const camFilledRef = useRef(''); // última placa que escribió la cámara (para no pisar lo que digite el operador)
+  const camCancelledRef = useRef(''); // el operador canceló el registro automático de esta placa
 
   const [openEntries, setOpenEntries] = useState([]);
   const [plateInput, setPlateInput] = useState('');
@@ -314,6 +330,81 @@ export default function EntriesPage() {
     (method !== 'MIXED' || goesToPending || (cash > 0 && cash < total));
   const canRegister = !selected && !blocked && !plateError(plate) && !(monthly?.blocksEntry) && !lookup?.openEntry;
 
+  // --- Cámara ---
+  function changeCamAuto(onOff) {
+    setCamAuto(onOff);
+    try {
+      if (onOff) localStorage.removeItem('nexo_plate_auto');
+      else localStorage.setItem('nexo_plate_auto', '0');
+    } catch {
+      /* sin almacenamiento: solo no se recuerda */
+    }
+    if (!onOff) cancelCamAuto();
+  }
+  function cancelCamAuto(text) {
+    if (camPending) camCancelledRef.current = camPending;
+    setCamPending(null);
+    setCamNotice(text ? { type: 'warn', text } : null);
+  }
+  function onCameraPlate(read, { force = false } = {}) {
+    const current = normalizePlate(plateInput);
+    if (!force && busy) return;
+    if (!force && current && current !== read && current !== camFilledRef.current) {
+      setCamNotice({ type: 'warn', text: `Placa leída: ${read}. El campo ya tiene otra placa; use «Usar» para reemplazarla.` });
+      return;
+    }
+    if (!force && selected && selected.plate !== read) {
+      setCamNotice({ type: 'warn', text: `Placa leída: ${read}. Termine primero la salida de ${selected.plate}.` });
+      return;
+    }
+    camFilledRef.current = read;
+    if (current !== read) {
+      setPlateInput(read);
+      if (selected && selected.plate !== read) {
+        setSelected(null);
+        setQuote(null);
+      }
+    }
+    if (force) camCancelledRef.current = '';
+    setCamNotice({ type: 'ok', text: `Placa leída: ${read}` });
+    if (camAuto && camCancelledRef.current !== read) setCamPending(read);
+    else if (!camAuto) setCamNotice({ type: 'ok', text: `Placa leída: ${read}. El registro automático está apagado: presione Enter o Registrar.` });
+  }
+
+  // Registro automático de la placa leída: espera la consulta de la placa (lookup) y decide con las mismas reglas
+  // que el botón Registrar. Si algo lo impide, dice por qué (antes la v1.0 se quedaba callada).
+  useEffect(() => {
+    if (!camPending) return undefined;
+    if (plate !== camPending) {
+      setCamPending(null); // el operador cambió la placa: no registrar
+      return undefined;
+    }
+    const waiting = !(offline && !snapshot) && (!lookup || lookup.plate !== camPending);
+    if (waiting) return undefined; // esperando la consulta de la placa
+    let why = null;
+    if (lookup?.openEntry) {
+      why = lookup.openEntry.inThisSite
+        ? `${camPending} ya está adentro: se abrió su salida para cobrar.`
+        : `${camPending} figura adentro en otra sede: revise antes de registrar.`;
+    } else if (noShift) why = 'no hay un turno abierto.';
+    else if (noLocalCopy) why = 'sin conexión y sin copia local de tarifas.';
+    else if (monthly?.blocksEntry) why = 'tiene una mensualidad activa que cubre este horario.';
+    else if (!canRegister) why = 'revise el aviso bajo la placa.';
+    if (why) {
+      setCamPending(null);
+      setCamNotice({ type: lookup?.openEntry?.inThisSite ? 'ok' : 'warn', text: lookup?.openEntry ? why : `Placa leída: ${camPending}, pero no se registró: ${why}` });
+      return undefined;
+    }
+    setCamNotice({ type: 'info', text: `Registrando ${camPending}…`, cancelable: true });
+    const t = setTimeout(() => {
+      setCamPending(null);
+      setCamNotice(null);
+      registerEntry();
+    }, 1200);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [camPending, plate, lookup, canRegister, offline, snapshot]);
+
   return (
     <div className="nx-entries">
       {offline && (
@@ -380,6 +471,13 @@ export default function EntriesPage() {
           {selected?.keysReceived && (
             <div className="nx-keys-alert" role="status"><strong>Devolver las llaves</strong> del vehículo antes de que salga.</div>
           )}
+          <PlateCamera
+            onPlate={onCameraPlate}
+            autoRegister={camAuto}
+            onAutoRegisterChange={changeCamAuto}
+            notice={camNotice}
+            onCancelNotice={() => cancelCamAuto('Registro automático cancelado. Corrija la placa o registre a mano.')}
+          />
         </div>
         <div className={`nx-bigtotal${goesToPending && selected ? ' is-pending' : ''}`} aria-live="polite">
           {formatCOP(total)}

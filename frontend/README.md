@@ -27,6 +27,8 @@ Si el backend corre en otra dirección, copiar `.env.example` a `.env` y cambiar
 | `npm run dev` | Servidor de desarrollo con recarga en caliente. |
 | `npm run build` | Genera la versión de producción en `dist/`. |
 | `npm run preview` | Sirve `dist/` para revisarla localmente. |
+| `npm run setup:placas` | Copia a `public/tesseract/` los archivos de la lectura de placas (corre solo con `npm install`). |
+| `npm run test:placas` | Pruebas de la lógica de lectura de placas (`src/lib/alpr/plateLogic.js`). |
 
 ## Estructura
 
@@ -125,3 +127,24 @@ bloqueada). AS/AG ven el "Asistente del administrador" (y las alertas abiertas a
 "Asistente operativo". Sin internet o sin clave de Gemini en el servidor muestra "No disponible".
 Las acciones llegan como tarjetas (título, riesgo, detalle): solo se ejecutan con un clic real en
 **Confirmar**, contra el endpoint normal de la API; luego se informa el resultado para la auditoría.
+
+## Lectura de placas por cámara
+
+En **Entradas** hay un panel con la cámara del equipo (webcam USB fija, de frente al carril, con buena luz).
+Todo corre en el navegador con Tesseract (WASM): no se envía video ni imágenes a ningún servidor.
+Viene de la v1.0 web (`mvc/plate-reader.js` y `mvc/plate-ui.js`) y es la primera parte de V3 (RF35, RF37).
+
+- **Archivos:** `npm install` copia Tesseract a `public/tesseract/` (no se sube a git). Si faltan, el panel lo
+  avisa. El service worker los guarda la primera vez que se usa la cámara, y desde ahí funcionan sin internet.
+- **Cómo lee:** busca la placa amarilla, recorta la banda de las letras, hace OCR, corrige letra/número según la
+  posición (carro `ABC123`, moto `ABC12D`) y confirma cuando 3 lecturas coinciden.
+- **Qué hace con la placa leída:** la escribe en el campo como si la hubieran digitado.
+  - Vehículo nuevo y "Registrar la entrada automáticamente" activo: la registra tras 1,2 s (con **Cancelar**).
+  - Vehículo que ya está adentro: abre su salida para cobrar (nunca cobra sola).
+  - Si no se puede registrar (sin turno, mensualidad que cubre el horario, adentro en otra sede, el operador
+    escribió otra placa), el panel dice por qué.
+- **Cámara:** solo funciona en `https://` o en `http://localhost`. Las preferencias (apagada, cámara elegida,
+  registro automático) se guardan en el equipo (`nexo_plate_*` en localStorage).
+- Código: [`components/PlateCamera.jsx`](src/components/PlateCamera.jsx) (panel),
+  [`lib/alpr/plateCamera.js`](src/lib/alpr/plateCamera.js) (cámara + Tesseract),
+  [`lib/alpr/plateLogic.js`](src/lib/alpr/plateLogic.js) (reglas puras, con pruebas).

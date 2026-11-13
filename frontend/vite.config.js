@@ -38,6 +38,16 @@ export default defineConfig(({ mode }) => {
         workbox: {
           // Íconos y manifiesto los agrega el plugin; repetirlos aquí rompe la instalación ("Entry already exists")
           globPatterns: ['**/*.{js,css,html}'],
+          // Lectura de placas: los archivos de Tesseract (~30 MB) no se precargan con la app; se guardan la primera
+          // vez que se usa la cámara y desde ahí funcionan sin internet.
+          globIgnores: ['tesseract/**'],
+          runtimeCaching: [
+            {
+              urlPattern: ({ url }) => url.pathname.startsWith('/tesseract/'),
+              handler: 'CacheFirst',
+              options: { cacheName: 'nexo-tesseract', expiration: { maxEntries: 30 } },
+            },
+          ],
           navigateFallback: '/index.html',
           navigateFallbackDenylist: [/^\/api\//, /^\/socket\.io\//],
           maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
