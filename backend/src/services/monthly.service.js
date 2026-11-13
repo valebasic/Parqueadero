@@ -889,6 +889,9 @@ async function alerts(siteId) {
         plate: p.plate,
         clientName: p.client_name,
         phones: p.phones,
+        // ¿Se le puede avisar por correo? (tiene correo y autorizó el tratamiento de datos)
+        canNotify: Boolean(p.email && p.data_consent),
+        notifyReason: !p.email ? 'Sin correo registrado' : !p.data_consent ? 'Sin autorización de datos' : null,
         endDate: effectiveEnd(p),
         daysToEnd: s.daysToEnd,
         moraDays: s.moraDays,

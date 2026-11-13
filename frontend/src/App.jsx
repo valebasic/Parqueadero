@@ -1,6 +1,9 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import AppLayout from './layouts/AppLayout.jsx';
 import LoginPage from './pages/LoginPage.jsx';
+import PortalReceiptPage from './pages/PortalReceiptPage.jsx';
+import PortalHomePage from './pages/PortalHomePage.jsx';
+import PortalPayLinkPage from './pages/PortalPayLinkPage.jsx';
 import PlaceholderPage from './pages/PlaceholderPage.jsx';
 import SitesPage from './pages/SitesPage.jsx';
 import UsersPage from './pages/UsersPage.jsx';
@@ -63,6 +66,10 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      {/* Portal del cliente: público, sin login (se llega con el QR del tiquete) */}
+      <Route path="/recibo" element={<PortalReceiptPage />} />
+      <Route path="/portal" element={<PortalHomePage />} />
+      <Route path="/pagar/:token" element={<PortalPayLinkPage />} />
       <Route
         element={
           <RequireAuth>

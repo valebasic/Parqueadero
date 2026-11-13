@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { apiGet } from '../lib/api.js';
+import { apiGet, apiPost } from '../lib/api.js';
 import { useSession } from '../context/SessionContext.jsx';
 import { useShift, useWorkingSite } from '../context/ShiftContext.jsx';
 import { useSiteEvents } from '../context/RealtimeContext.jsx';
@@ -44,10 +44,58 @@ function Kpi({ label, value, sub, tone }) {
   );
 }
 
+// Botón de sobre: envía a mano el aviso de mensualidad por correo (aparte de los automáticos)
+function MailIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="m3.5 7 8.5 6 8.5-6" />
+    </svg>
+  );
+}
+
+function RemindButton({ alert, state, onSend }) {
+  const sending = state === 'sending';
+  const sent = state === 'sent';
+  const title = !alert.canNotify
+    ? `No se puede avisar: ${alert.notifyReason.toLowerCase()}`
+    : sent
+      ? 'Aviso enviado'
+      : 'Enviar aviso por correo ahora';
+  return (
+    <button
+      type="button"
+      className={`nx-alert-item__mail${sent ? ' is-sent' : ''}`}
+      onClick={() => onSend(alert)}
+      disabled={!alert.canNotify || sending}
+      title={title}
+      aria-label={`${title} a ${alert.clientName} (${alert.plate})`}
+    >
+      {sending ? '…' : sent ? '✔' : <MailIcon />}
+    </button>
+  );
+}
+
 function AdminDashboard() {
   const { siteId, sites, setSiteId } = useWorkingSite();
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
+  const [remind, setRemind] = useState({}); // id de la mensualidad -> 'sending' | 'sent'
+  const [remindMsg, setRemindMsg] = useState(null); // { ok, text }
+
+  async function sendReminder(a) {
+    if (!window.confirm(`¿Enviar ahora el aviso por correo a ${a.clientName} (${a.plate})?`)) return;
+    setRemind((r) => ({ ...r, [a.id]: 'sending' }));
+    setRemindMsg(null);
+    try {
+      const r = await apiPost(`/monthly/${a.id}/remind`, {});
+      setRemind((x) => ({ ...x, [a.id]: 'sent' }));
+      setRemindMsg({ ok: true, text: `Aviso enviado a ${a.clientName} (${r.to}).` });
+    } catch (err) {
+      setRemind((x) => ({ ...x, [a.id]: undefined }));
+      setRemindMsg({ ok: false, text: err.message });
+    }
+  }
 
   const load = useCallback(async () => {
     if (!siteId) return;
@@ -120,9 +168,15 @@ function AdminDashboard() {
                   <strong>{a.plate}</strong>
                   <span>{a.clientName}</span>
                   <span className="nx-alert-item__label">{a.label}</span>
+                  <RemindButton alert={a} state={remind[a.id]} onSend={sendReminder} />
                 </li>
               ))}
             </ul>
+          )}
+          {remindMsg && (
+            <p className={`nx-alert-feedback${remindMsg.ok ? ' is-ok' : ' is-error'}`} role="status">
+              {remindMsg.text}
+            </p>
           )}
           <p className="nx-muted nx-small">Rojo: en mora o vence hoy · Amarillo: 1 a 3 días · Verde: 4 a 6 días.</p>
         </section>

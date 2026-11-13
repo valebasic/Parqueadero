@@ -14,6 +14,7 @@ const { requireOpenShift } = require('./shifts.service');
 const { nextReceiptNumber, buildReceipt } = require('./receipts.service');
 const { publish } = require('../realtime/bus');
 const { assignForEntry, keysFields } = require('./spaces.service');
+const { findCredit, withinWindow, consumeCredit } = require('./portalCredit.service');
 
 const VEHICLE_TYPES = ['CAR', 'MOTORCYCLE', 'BICYCLE'];
 const MONTHLY_GRACE_DAYS = 3;
@@ -195,11 +196,24 @@ async function quoteExit(req, rawEntryId) {
   const { rows } = await query('SELECT now() AS now');
   const rate = await findRate(client, entry.site_id, entry.vehicle_type, rows[0].now);
   const fare = calculateFare({ entryAt: entry.entry_at, exitAt: rows[0].now, rate });
+  // Pago hecho por el cliente en el portal (Wompi): dentro de la ventana no se cobra más
+  const credit = await findCredit(client, entry.id);
+  const inWindow = withinWindow(credit, rows[0].now);
   return {
     entry: toDto(entry),
     at: rows[0].now,
     rate,
     ...fare,
+    portalPayment: credit
+      ? {
+          amount: credit.amount,
+          paidAt: credit.paidAt,
+          exitUntil: credit.windowEndsAt,
+          withinWindow: inWindow,
+          // Lo que todavía debe cobrarse en caja
+          due: inWindow ? 0 : Math.max(0, Number(fare.total) - credit.amount),
+        }
+      : null,
     // Mensualidad nocturna fuera de franja: el cobro irá a Pendientes
     goesToPending: entry.monthly_plan_id != null,
   };
@@ -348,6 +362,13 @@ async function registerExit(req, rawEntryId, body) {
     const charge = resolveCharge(fare.total, body?.chargedAmount, body?.discountReason);
 
     const goesToPending = method === 'PENDING' || entry.monthly_plan_id != null;
+    // Pago del portal pendiente de aplicar (el cliente pagó con Wompi antes de salir)
+    const credit = await findCredit(client, entryId);
+    if (credit && goesToPending) {
+      throw new HttpError(409, 'Este vehículo ya pagó en el portal: no se puede dejar como cobro pendiente.', {
+        code: 'PORTAL_PAID',
+      });
+    }
     if (goesToPending) {
       await client.query(
         `UPDATE entries
@@ -367,7 +388,28 @@ async function registerExit(req, rawEntryId, body) {
       return;
     }
 
-    const split = splitPayment(method, charge.charged, body?.cashAmount);
+    let final = { calculated: fare.total, discount: charge.discount, reason: charge.reason, charged: charge.charged, method };
+    let split;
+    if (!credit) {
+      split = splitPayment(method, charge.charged, body?.cashAmount);
+    } else if (withinWindow(credit, exitAt)) {
+      // Pagó en el portal y sale dentro de la ventana: sin cobro adicional
+      final = { calculated: credit.amount, discount: 0, reason: null, charged: credit.amount, method: 'ELECTRONIC' };
+      split = { cash: 0, electronic: credit.amount };
+    } else {
+      // Se pasó de la ventana: se cobra en caja solo la diferencia
+      const due = Math.max(0, charge.charged - credit.amount);
+      const charged = credit.amount + due;
+      const extra = due > 0 ? splitPayment(method, due, body?.cashAmount) : { cash: 0, electronic: 0 };
+      split = { cash: extra.cash, electronic: credit.amount + extra.electronic };
+      final = {
+        calculated: Math.max(fare.total, charged),
+        discount: Math.max(0, fare.total - charged),
+        reason: charge.reason,
+        charged,
+        method: split.cash > 0 && split.electronic > 0 ? 'MIXED' : split.cash > 0 ? 'CASH' : 'ELECTRONIC',
+      };
+    }
     await client.query(
       `UPDATE entries
           SET status = 'PAID', exit_at = $2, exit_by = $3, exit_shift_id = $4, rate_id = $5,
@@ -375,9 +417,10 @@ async function registerExit(req, rawEntryId, body) {
               charged_amount = $10, payment_method = $11, cash_amount = $12, electronic_amount = $13,
               cash_register_id = $14, paid_at = $2
         WHERE id = $1`,
-      [entryId, exitAt, req.user.id, shift.shiftId, rate.id, fare.minutes, fare.total, charge.discount,
-        charge.reason, charge.charged, method, split.cash, split.electronic, shift.cashRegisterId],
+      [entryId, exitAt, req.user.id, shift.shiftId, rate.id, fare.minutes, final.calculated, final.discount,
+        final.reason, final.charged, final.method, split.cash, split.electronic, shift.cashRegisterId],
     );
+    if (credit) await consumeCredit(client, credit.id);
   });
 
   const receipt = await buildReceipt({ query: (t, p) => query(t, p) }, entryId);
@@ -407,5 +450,6 @@ module.exports = {
   registerExit,
   getReceipt,
   findActiveMonthly,
+  findRate,
   toDto,
 };

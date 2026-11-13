@@ -5,7 +5,8 @@
   "main": "main.js",
   "private": true,
   "scripts": {
-    "start": "electron .",
+    "start": "node scripts/start-v2.js",
+    "start:v1": "electron .",
     "dist": "electron-builder --win nsis"
   },
   "devDependencies": {

@@ -23,6 +23,8 @@ router.use('/health', healthRoutes);
 router.use('/auth', authRoutes);
 // Con su propia autenticación (acepta el token de sincronización sin conexión)
 router.use('/sync', syncRoutes);
+// Portal del cliente: público (el QR del tiquete es la prueba), con límite por IP
+router.use('/portal', require('./portal.routes'));
 
 // --- Protegidas ---
 router.use(authenticate);

@@ -34,6 +34,9 @@ monthlyRouter.delete('/:id', async (req, res) => {
 });
 monthlyRouter.post('/:id/pay', async (req, res) => ok(res, await monthly.payPlan(req, req.params.id, req.body)));
 monthlyRouter.post('/:id/prepay', async (req, res) => ok(res, await monthly.prepayPlan(req, req.params.id, req.body)));
+// Aviso por correo enviado a mano desde el panel principal (aparte de los automáticos)
+monthlyRouter.post('/:id/remind', async (req, res) =>
+  ok(res, await require('../services/notification.service').sendMonthlyReminderNow(Number.parseInt(req.params.id, 10), req)));
 monthlyRouter.post('/:id/confirm-import', async (req, res) => ok(res, await monthly.confirmImported(req, req.params.id)));
 
 // --- Transacciones (RF18): todos los roles (el OP con límites) ---

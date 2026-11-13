@@ -473,6 +473,14 @@ export default function EntriesPage() {
                   Mensualidad nocturna fuera de su horario: al dar salida, el cobro queda en Pendientes.
                 </div>
               )}
+              {quote?.portalPayment && (
+                <div className={`nx-banner ${quote.portalPayment.withinWindow ? 'nx-banner--ok' : 'nx-banner--warn'}`} role="status">
+                  <strong>Pagó en el portal {formatCOP(quote.portalPayment.amount)}.</strong>{' '}
+                  {quote.portalPayment.withinWindow
+                    ? `Sale sin cobro adicional (tiene hasta las ${formatTime12h(quote.portalPayment.exitUntil)}). Pulse Finalizar venta.`
+                    : `Se pasó del tiempo para salir: cobre solo la diferencia, ${formatCOP(quote.portalPayment.due)}.`}
+                </div>
+              )}
 
               <div className="nx-paypanel">
                 <div className="nx-paypanel__title">Descuento</div>

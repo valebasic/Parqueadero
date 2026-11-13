@@ -7,6 +7,7 @@ const { closePool } = require('./db/pool');
 const { assertSecurityConfig } = require('./config/security');
 const { scheduleDailyBackups } = require('./services/backup.service');
 const { initRealtime } = require('./realtime');
+const { scheduleMonthlyReminders } = require('./services/notification.service');
 
 // Sin JWT_SECRET la API no arranca
 try {
@@ -25,11 +26,14 @@ server.listen(env.port, () => {
 
 // Respaldo diario con pg_dump (si BACKUP_HOUR está configurado)
 const stopBackups = scheduleDailyBackups();
+// Avisos de mensualidad por correo, todos los días a NOTIFY_HOUR (por defecto 8)
+const stopReminders = scheduleMonthlyReminders();
 
 // Cierre ordenado: deja de aceptar conexiones y libera el pool de PostgreSQL
 function shutdown(signal) {
   console.log(`${signal} recibido, cerrando servidor...`);
   stopBackups();
+  stopReminders();
   realtime.close();
   server.close(async () => {
     await closePool();
